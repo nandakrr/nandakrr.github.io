@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nandakumar M — Senior Application Security Engineer</title>
+<meta name="description" content="Nandakumar M — Senior Application Security Engineer. Manual-first web, API, mobile, and cloud security. 60+ assessments, 120+ high/critical findings, 2 CVEs." />
+<meta name="author" content="Nandakumar M" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Nandakumar M — Senior Application Security Engineer" />
+<meta property="og:description" content="Manual-first application security: web, API, mobile, and cloud. 60+ assessments, 120+ high/critical findings, 2 CVEs." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+:root{
+  --ink:#080B11;
+  --ink-2:#0C111A;
+  --panel:#111824;
+  --panel-2:#161F2E;
+  --line:#1F2A3A;
+  --line-soft:#192334;
+  --text:#E6EAF2;
+  --muted:#8694AC;
+  --muted-2:#5E6C84;
+  --amber:#FF7A45;
+  --amber-soft:rgba(255,122,69,.12);
+  --teal:#52E0C4;
+  --teal-soft:rgba(82,224,196,.10);
+  --crit:#FF5066;
+  --high:#FF7A45;
+  --med:#F4C152;
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --body:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --maxw:1100px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  background:var(--ink);
+  color:var(--text);
+  font-family:var(--body);
+  font-size:16px;
+  line-height:1.6;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+/* ambient grid + glow */
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(900px 500px at 78% -8%, rgba(255,122,69,.10), transparent 60%),
+    radial-gradient(700px 600px at 0% 100%, rgba(82,224,196,.07), transparent 55%),
+    linear-gradient(rgba(31,42,58,.30) 1px, transparent 1px) 0 0/100% 38px,
+    linear-gradient(90deg, rgba(31,42,58,.30) 1px, transparent 1px) 0 0/38px 100%;
+  mask-image:linear-gradient(180deg, #000 0%, #000 65%, transparent 100%);
+}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--amber);color:#0a0a0a}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px;position:relative;z-index:1}
+
+.eyebrow{
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--amber);font-weight:500;
+}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono)}
+
+/* ---------- NAV ---------- */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  backdrop-filter:blur(10px);
+  background:rgba(8,11,17,.72);
+  border-bottom:1px solid transparent;
+  transition:border-color .3s, background .3s;
+}
+nav.scrolled{border-bottom-color:var(--line);background:rgba(8,11,17,.86)}
+.nav-inner{max-width:var(--maxw);margin:0 auto;padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+.brand{font-family:var(--mono);font-weight:700;font-size:.95rem;letter-spacing:.02em;display:flex;align-items:center;gap:9px}
+.brand .blip{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 10px var(--teal);animation:pulse 2.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.brand .slash{color:var(--amber)}
+.nav-links{display:flex;gap:26px;font-family:var(--mono);font-size:.82rem}
+.nav-links a{color:var(--muted);transition:color .2s;position:relative}
+.nav-links a:hover{color:var(--text)}
+.nav-links a::after{content:"";position:absolute;left:0;bottom:-5px;height:1px;width:0;background:var(--amber);transition:width .25s}
+.nav-links a:hover::after{width:100%}
+.nav-cta{color:var(--amber)!important}
+@media(max-width:760px){.nav-links{display:none}}
+
+/* ---------- HERO ---------- */
+header{padding:148px 0 86px;position:relative}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:54px;align-items:center}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:38px}}
+
+.hero-tag{display:inline-flex;align-items:center;gap:10px;margin-bottom:26px;
+  font-family:var(--mono);font-size:.74rem;color:var(--muted);
+  border:1px solid var(--line);border-radius:100px;padding:7px 14px;background:var(--panel)}
+.hero-tag .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal)}
+
+h1.hero-name{
+  font-family:var(--display);font-weight:700;
+  font-size:clamp(2.7rem,6.2vw,4.6rem);line-height:1.02;letter-spacing:-.02em;
+  margin-bottom:18px;
+}
+h1.hero-name .accent{color:var(--amber)}
+.hero-role{
+  font-family:var(--mono);font-size:clamp(.95rem,2vw,1.12rem);
+  color:var(--teal);font-weight:500;margin-bottom:22px;letter-spacing:.01em;
+}
+.hero-desc{font-size:1.06rem;color:var(--muted);max-width:34ch;margin-bottom:34px}
+.hero-desc strong{color:var(--text);font-weight:600}
+
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap}
+.btn{
+  font-family:var(--mono);font-size:.85rem;font-weight:500;
+  padding:13px 22px;border-radius:8px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:9px;transition:transform .15s, background .2s, border-color .2s, color .2s;
+  border:1px solid var(--line);
+}
+.btn:hover{transform:translateY(-2px)}
+.btn-primary{background:var(--amber);color:#120a06;border-color:var(--amber);font-weight:700}
+.btn-primary:hover{background:#ff8c5e}
+.btn-ghost{background:transparent;color:var(--text)}
+.btn-ghost:hover{border-color:var(--teal);color:var(--teal)}
+
+/* terminal */
+.terminal{
+  background:var(--ink-2);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 28px 70px -30px rgba(0,0,0,.8), 0 0 0 1px rgba(255,122,69,.04);
+  overflow:hidden;font-family:var(--mono);font-size:.82rem;line-height:1.75;
+  position:relative;
+}
+.term-bar{display:flex;align-items:center;gap:8px;padding:11px 15px;background:var(--panel);border-bottom:1px solid var(--line)}
+.term-dot{width:11px;height:11px;border-radius:50%}
+.term-dot.r{background:#ff5f57}.term-dot.y{background:#febc2e}.term-dot.g{background:#28c840}
+.term-title{margin-left:10px;color:var(--muted-2);font-size:.74rem;letter-spacing:.04em}
+.term-body{padding:18px 18px 22px;min-height:330px;white-space:pre-wrap;word-break:break-word}
+.term-body .cmt{color:var(--muted-2)}
+.term-body .req{color:var(--amber)}
+.term-body .ok{color:var(--teal)}
+.term-body .key{color:#9db4d6}
+.term-body .str{color:var(--teal)}
+.term-body .num{color:#f4c152}
+.term-body .pun{color:var(--muted)}
+.cursor{display:inline-block;width:8px;height:1.05em;background:var(--amber);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* stat chips */
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+.chip{font-family:var(--mono);font-size:.78rem;border:1px solid var(--line);background:var(--panel);
+  border-radius:7px;padding:9px 13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.chip b{color:var(--text);font-weight:700;font-size:.92rem}
+.chip .c-amber{color:var(--amber)}
+
+/* ---------- SECTIONS ---------- */
+section{padding:92px 0;position:relative}
+.sec-head{margin-bottom:46px;max-width:60ch}
+.sec-head .eyebrow{display:block;margin-bottom:14px}
+.sec-head h2{font-family:var(--display);font-weight:600;font-size:clamp(1.7rem,3.6vw,2.5rem);letter-spacing:-.015em;line-height:1.1}
+.sec-head p{color:var(--muted);margin-top:14px;font-size:1.02rem}
+.divider{height:1px;background:linear-gradient(90deg,var(--line),transparent);border:0}
+
+/* expertise / capability matrix */
+.cap-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:760px){.cap-grid{grid-template-columns:1fr}}
+.cap{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px 24px 22px;
+  position:relative;overflow:hidden;transition:border-color .25s, transform .25s, background .25s;
+}
+.cap::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber);transform:scaleY(0);transform-origin:top;transition:transform .3s}
+.cap:hover{border-color:var(--line);background:var(--panel-2);transform:translateY(-3px)}
+.cap:hover::before{transform:scaleY(1)}
+.cap-id{font-family:var(--mono);font-size:.72rem;color:var(--muted-2);letter-spacing:.05em}
+.cap h3{font-family:var(--display);font-weight:600;font-size:1.18rem;margin:10px 0 8px}
+.cap p{color:var(--muted);font-size:.93rem;margin-bottom:16px}
+.cap .tags{display:flex;flex-wrap:wrap;gap:7px}
+.cap .tags span{font-family:var(--mono);font-size:.71rem;color:var(--teal);background:var(--teal-soft);
+  border:1px solid rgba(82,224,196,.18);border-radius:5px;padding:4px 8px}
+
+/* disclosures / CVE ledger */
+.cve-list{display:flex;flex-direction:column;gap:14px}
+.cve{
+  display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 24px;
+  transition:border-color .25s, background .25s;
+}
+.cve:hover{border-color:rgba(255,80,102,.4);background:var(--panel-2)}
+.cve-sev{font-family:var(--mono);font-size:.7rem;font-weight:700;letter-spacing:.08em;
+  padding:6px 10px;border-radius:6px;text-transform:uppercase}
+.sev-high{color:var(--high);background:var(--amber-soft);border:1px solid rgba(255,122,69,.3)}
+.sev-med{color:var(--med);background:rgba(244,193,82,.10);border:1px solid rgba(244,193,82,.3)}
+.cve-main .cve-id{font-family:var(--mono);font-weight:700;font-size:1.02rem;color:var(--text)}
+.cve-main .cve-type{color:var(--muted);font-size:.9rem;margin-top:3px}
+.cve-main .cve-target{font-family:var(--mono);font-size:.76rem;color:var(--teal);margin-top:6px}
+.cve-link{font-family:var(--mono);font-size:.78rem;color:var(--muted);white-space:nowrap;transition:color .2s}
+.cve-link:hover{color:var(--amber)}
+@media(max-width:680px){.cve{grid-template-columns:1fr;gap:12px}.cve-link{justify-self:start}}
+
+/* experience timeline */
+.timeline{position:relative;padding-left:30px}
+.timeline::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:1px;background:var(--line)}
+.tl-item{position:relative;padding-bottom:38px}
+.tl-item:last-child{padding-bottom:0}
+.tl-item::before{content:"";position:absolute;left:-27px;top:5px;width:11px;height:11px;border-radius:50%;
+  background:var(--ink);border:2px solid var(--muted-2);transition:border-color .25s, box-shadow .25s}
+.tl-item.active::before{border-color:var(--amber);box-shadow:0 0 0 4px var(--amber-soft)}
+.tl-date{font-family:var(--mono);font-size:.76rem;color:var(--amber)}
+.tl-role{font-family:var(--display);font-weight:600;font-size:1.16rem;margin:4px 0 2px}
+.tl-co{font-family:var(--mono);font-size:.86rem;color:var(--muted);margin-bottom:10px}
+.tl-desc{color:var(--muted);font-size:.94rem;max-width:62ch}
+.tl-resp{list-style:none;margin:14px 0 0;max-width:70ch;display:grid;gap:9px}
+.tl-resp li{position:relative;padding-left:22px;color:var(--muted);font-size:.92rem;line-height:1.55}
+.tl-resp li::before{content:"▸";position:absolute;left:0;top:0;color:var(--amber);font-size:.8rem}
+.tl-resp li b{color:var(--text);font-weight:600;border-bottom:1px solid var(--line)}
+.tl-resp li .m{font-family:var(--mono);font-weight:700;color:var(--amber);
+  background:var(--amber-soft);border:1px solid rgba(255,122,69,.22);
+  border-radius:5px;padding:1px 7px;font-size:.86em;letter-spacing:-.01em}
+
+/* arsenal */
+.arsenal{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:760px){.arsenal{grid-template-columns:1fr}}
+.arse{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.arse-h{font-family:var(--mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-2);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.arse-h::before{content:"›";color:var(--amber);font-weight:700}
+.arse-tools{display:flex;flex-wrap:wrap;gap:8px}
+.arse-tools span{font-family:var(--mono);font-size:.78rem;color:var(--text);
+  background:var(--ink-2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;transition:border-color .2s,color .2s}
+.arse-tools span:hover{border-color:var(--teal);color:var(--teal)}
+
+/* certs */
+.certs{display:flex;flex-wrap:wrap;gap:14px}
+.cert{flex:1 1 220px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px;
+  display:flex;align-items:center;gap:16px;transition:border-color .25s,transform .25s}
+.cert:hover{border-color:var(--teal);transform:translateY(-3px)}
+.cert-badge{font-family:var(--mono);font-weight:700;font-size:1.05rem;color:var(--ink);
+  background:linear-gradient(135deg,var(--teal),#37b59c);width:54px;height:54px;border-radius:10px;
+  display:grid;place-items:center;flex-shrink:0;letter-spacing:-.02em}
+.cert-name{font-weight:600;font-size:.98rem}
+.cert-org{font-family:var(--mono);font-size:.76rem;color:var(--muted);margin-top:3px}
+
+/* contact */
+#contact{padding-bottom:60px}
+.contact-card{
+  background:linear-gradient(160deg,var(--panel-2),var(--panel));
+  border:1px solid var(--line);border-radius:18px;padding:48px clamp(28px,5vw,56px);position:relative;overflow:hidden;
+}
+.contact-card::after{content:"";position:absolute;right:-80px;top:-80px;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,var(--amber-soft),transparent 70%);pointer-events:none}
+.contact-card h2{font-family:var(--display);font-weight:600;font-size:clamp(1.7rem,4vw,2.5rem);letter-spacing:-.015em;margin-bottom:14px}
+.contact-card p{color:var(--muted);max-width:48ch;margin-bottom:30px}
+.contact-links{display:flex;flex-wrap:wrap;gap:12px}
+.clink{font-family:var(--mono);font-size:.85rem;border:1px solid var(--line);background:var(--ink-2);
+  border-radius:9px;padding:13px 18px;display:inline-flex;align-items:center;gap:10px;transition:border-color .2s,color .2s,transform .15s}
+.clink:hover{border-color:var(--amber);color:var(--amber);transform:translateY(-2px)}
+.clink .ic{color:var(--teal)}
+.clink:hover .ic{color:var(--amber)}
+
+/* footer */
+footer{border-top:1px solid var(--line);padding:30px 0;position:relative;z-index:1}
+.foot-inner{max-width:var(--maxw);margin:0 auto;padding:0 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.foot-inner span{font-family:var(--mono);font-size:.76rem;color:var(--muted-2)}
+.foot-inner .amber{color:var(--amber)}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1)}
+.reveal.in{opacity:1;transform:none}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#top" class="brand"><span class="blip"></span>nandakumar<span class="slash">/</span>sec</a>
+    <div class="nav-links">
+      <a href="#expertise">expertise</a>
+      <a href="#disclosures">disclosures</a>
+      <a href="#experience">experience</a>
+      <a href="#arsenal">arsenal</a>
+      <a href="#contact" class="nav-cta">contact →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header id="top">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-tag"><span class="dot"></span> Available for senior AppSec roles &amp; bug bounty collaboration</div>
+        <h1 class="hero-name">Nandakumar<span class="accent">.</span><br>M</h1>
+        <div class="hero-role">Senior Application Security Engineer</div>
+        <p class="hero-desc">I break <strong>web, API, mobile, and cloud</strong> applications the way attackers do — by hand, before they reach production. Manual-first, scanner-skeptical.</p>
+        <div class="hero-actions">
+          <a href="#disclosures" class="btn btn-primary">View disclosures</a>
+          <a href="./Nandakumar_Senior_AppSec_Resume.pdf" class="btn btn-ghost" download><span aria-hidden="true">↓</span> Download résumé</a>
+          <a href="#contact" class="btn btn-ghost">Get in touch</a>
+        </div>
+        <div class="chips">
+          <div class="chip"><b>60+</b> assessments</div>
+          <div class="chip"><b class="c-amber">120+</b> high / critical findings</div>
+          <div class="chip"><b>2</b> CVEs</div>
+          <div class="chip"><b>~40%</b> fewer defects to prod</div>
+        </div>
+      </div>
+
+      <div class="terminal" aria-label="Profile response">
+        <div class="term-bar">
+          <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+          <span class="term-title">~ /requests/whoami.http</span>
+        </div>
+        <div class="term-body" id="term"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= EXPERTISE ================= -->
+<section id="expertise">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">// capability matrix</span>
+      <h2>Where I find the bugs</h2>
+      <p>Full-SDLC application security — from threat modeling at design to manual exploitation in production-grade environments, then back to engineering with a fix.</p>
+    </div>
+    <div class="cap-grid">
+      <div class="cap reveal">
+        <div class="cap-id">CAP-01</div>
+        <h3>Web Application Security</h3>
+        <p>Auth bypass, broken access control, insecure deserialization, business-logic flaws — mapped to OWASP Top 10 &amp; SANS Top 25.</p>
+        <div class="tags"><span>Burp Suite Pro</span><span>SQLmap</span><span>OWASP Top 10</span></div>
+      </div>
+      <div class="cap reveal">
+        <div class="cap-id">CAP-02</div>
+        <h3>API Security</h3>
+        <p>BOLA/IDOR, mass assignment, broken function-level auth and rate-limit abuse across REST and GraphQL surfaces.</p>
+        <div class="tags"><span>OWASP API Top 10</span><span>Postman</span><span>GraphQL</span></div>
+      </div>
+      <div class="cap reveal">
+        <div class="cap-id">CAP-03</div>
+        <h3>Mobile Security — Android &amp; iOS</h3>
+        <p>Static &amp; dynamic analysis, SSL-pinning bypass, runtime instrumentation, insecure storage and hardcoded-secret discovery.</p>
+        <div class="tags"><span>MobSF</span><span>Frida</span><span>Objection</span><span>Jadx</span></div>
+      </div>
+      <div class="cap reveal">
+        <div class="cap-id">CAP-04</div>
+        <h3>Cloud &amp; DevSecOps</h3>
+        <p>AWS/Azure assessments, Kubernetes runtime security, and SAST/DAST/SCA wired into CI/CD for detection at commit time.</p>
+        <div class="tags"><span>AWS</span><span>Azure</span><span>Kubernetes</span><span>Semgrep</span></div>
+      </div>
+      <div class="cap reveal">
+        <div class="cap-id">CAP-05</div>
+        <h3>Secure Code Review</h3>
+        <p>Manual review across Java, Python, and JavaScript for logic flaws, insecure data handling, and access-control weaknesses.</p>
+        <div class="tags"><span>Checkmarx</span><span>SonarQube</span><span>Java / Py / JS</span></div>
+      </div>
+      <div class="cap reveal">
+        <div class="cap-id">CAP-06</div>
+        <h3>Bug Bounty &amp; Research</h3>
+        <p>Active manual-first hunting on HackerOne, plus published CVE research in open-source software.</p>
+        <div class="tags"><span>HackerOne</span><span>CVE research</span><span>Recon automation</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ================= DISCLOSURES ================= -->
+<section id="disclosures">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">// responsible disclosure ledger</span>
+      <h2>CVE disclosures</h2>
+      <p>Vulnerabilities discovered, reported, and assigned identifiers in open-source software.</p>
+    </div>
+    <div class="cve-list">
+      <div class="cve reveal">
+        <span class="cve-sev sev-high">High</span>
+        <div class="cve-main">
+          <div class="cve-id">CVE-2023-2240</div>
+          <div class="cve-type">Improper Privilege Management — privilege escalation</div>
+          <div class="cve-target">target: Microweber CMS (open source)</div>
+        </div>
+        <a class="cve-link" href="https://nvd.nist.gov/vuln/detail/CVE-2023-2240" target="_blank" rel="noopener">verify on NVD →</a>
+      </div>
+      <div class="cve reveal">
+        <span class="cve-sev sev-med">Medium</span>
+        <div class="cve-main">
+          <div class="cve-id">CVE-2023-2014</div>
+          <div class="cve-type">Cross-Site Scripting (XSS)</div>
+          <div class="cve-target">target: Microweber CMS (open source)</div>
+        </div>
+        <a class="cve-link" href="https://nvd.nist.gov/vuln/detail/CVE-2023-2014" target="_blank" rel="noopener">verify on NVD →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ================= EXPERIENCE ================= -->
+<section id="experience">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">// engagement log</span>
+      <h2>Experience</h2>
+    </div>
+    <div class="timeline">
+      <div class="tl-item active reveal">
+        <div class="tl-date">May 2022 — Present</div>
+        <div class="tl-role">Senior Application Security Engineer</div>
+        <div class="tl-co">CyberneticsPlus Services Pvt Ltd</div>
+        <p class="tl-desc">Owned end-to-end security across financial services, trading platforms, healthcare, SaaS, and e-commerce — testing, remediation, and compliance through the full SDLC.</p>
+        <ul class="tl-resp">
+          <li>Conducted <span class="m">50+</span> end-to-end assessments across web, SaaS, API, Android, and iOS, surfacing critical pre-production flaws including <b>authentication bypass, insecure deserialization, and broken authorization</b>.</li>
+          <li>Uncovered <span class="m">120+</span> high/critical findings automated tools missed, using manual test cases aligned to OWASP Top 10, API Top 10, Mobile Top 10, and SANS Top 25 via Burp Suite Pro.</li>
+          <li>Cut security defects reaching production by <span class="m">~40%</span> by integrating SAST (Semgrep, SonarQube, Checkmarx), DAST, and SCA into CI/CD for detection at commit time.</li>
+          <li>Reduced mean-time-to-remediate by <span class="m">~35%</span> by co-owning triage and remediation with engineering, with targeted fix guidance and retest support.</li>
+          <li>Led mobile assessments on Android and iOS — static/dynamic analysis with MobSF, Jadx, Frida, and Objection; SSL-pinning bypass, runtime analysis, and iOS TestFlight testing.</li>
+          <li>Performed secure code reviews across <b>Java, Python, and JavaScript</b>, identifying logic flaws, insecure data handling, and access-control weaknesses with developer-ready remediation.</li>
+          <li>Facilitated threat modeling during design, identifying attack vectors before code was written and recommending security-first architectural patterns.</li>
+          <li>Ran security operations end to end: AppSec testing, penetration testing, endpoint security, SIEM automation (Graylog, Wazuh), and cloud security assessments on AWS and Azure.</li>
+          <li>Defined security-metrics dashboards tracking severity trends, recurrence, and remediation velocity, giving leadership quantifiable visibility into risk posture.</li>
+          <li>Supported <b>SOC 2 Type II</b> and <b>ISO 27001</b> audits, aligning AppSec controls and vulnerability-management workflows with compliance requirements.</li>
+          <li>Delivered risk-prioritized reports and stakeholder briefings translating technical findings into business impact for engineering leads and C-suite alike.</li>
+        </ul>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">Dec 2021 — Apr 2022</div>
+        <div class="tl-role">Cybersecurity Trainee</div>
+        <div class="tl-co">AccuKnox</div>
+        <p class="tl-desc">Focused on cloud-native runtime security for Kubernetes workloads.</p>
+        <ul class="tl-resp">
+          <li>Deployed runtime security controls on Kubernetes workloads using <b>KubeArmor and Cilium</b>, enforcing least-privilege policy at the kernel level.</li>
+          <li>Analyzed CVEs, misconfigurations, and Kubernetes-specific exposures, then built and deployed preventive policy sets with AccuKnox tooling.</li>
+          <li>Conducted penetration testing, SIEM implementation, and proof-of-concept development for novel threat scenarios.</li>
+        </ul>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">Oct 2021 — Dec 2021</div>
+        <div class="tl-role">Penetration Tester — Intern</div>
+        <div class="tl-co">Virtually Testing Foundation</div>
+        <p class="tl-desc">Web application penetration testing across client engagements using Kali Linux, Burp Suite, and open-source tooling.</p>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">Feb 2021 — Jul 2021</div>
+        <div class="tl-role">Penetration Tester — Intern</div>
+        <div class="tl-co">AAITPRO</div>
+        <p class="tl-desc">Internal/external network and web app pentests with Metasploit and Burp Suite Pro. Built Bash/Python automation and contributed to ISO 27001 compliance auditing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ================= ARSENAL ================= -->
+<section id="arsenal">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">// tooling inventory</span>
+      <h2>The arsenal</h2>
+    </div>
+    <div class="arsenal">
+      <div class="arse reveal">
+        <div class="arse-h">AppSec &amp; Pentesting</div>
+        <div class="arse-tools"><span>Burp Suite Pro</span><span>MobSF</span><span>Jadx</span><span>Frida</span><span>Objection</span><span>APKTool</span><span>ADB</span><span>Nmap</span><span>SQLmap</span><span>Postman</span></div>
+      </div>
+      <div class="arse reveal">
+        <div class="arse-h">SAST / DAST / SCA</div>
+        <div class="arse-tools"><span>Semgrep</span><span>SonarQube</span><span>Checkmarx</span><span>Trend Micro Cloud One</span></div>
+      </div>
+      <div class="arse reveal">
+        <div class="arse-h">SIEM &amp; SecOps</div>
+        <div class="arse-tools"><span>Graylog</span><span>Wazuh</span><span>Shuffle</span><span>WithSecure</span><span>Cloudflare</span><span>Steampipe</span></div>
+      </div>
+      <div class="arse reveal">
+        <div class="arse-h">DevSecOps &amp; Cloud</div>
+        <div class="arse-tools"><span>Docker</span><span>Kubernetes</span><span>Helm</span><span>Jenkins</span><span>Ansible</span><span>AWS</span><span>Azure</span><span>GCP</span></div>
+      </div>
+      <div class="arse reveal">
+        <div class="arse-h">Programming &amp; Scripting</div>
+        <div class="arse-tools"><span>Python</span><span>Bash</span><span>JavaScript</span><span>YAML</span></div>
+      </div>
+      <div class="arse reveal">
+        <div class="arse-h">Frameworks &amp; Standards</div>
+        <div class="arse-tools"><span>OWASP Top 10</span><span>API Top 10</span><span>Mobile Top 10</span><span>SANS Top 25</span><span>ISO 27001</span><span>SOC 2</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top:40px" class="reveal">
+      <div class="arse-h" style="margin-bottom:16px;font-family:var(--mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-2)">› Certifications</div>
+      <div class="certs">
+        <div class="cert"><div class="cert-badge">CEH</div><div><div class="cert-name">Certified Ethical Hacker</div><div class="cert-org">EC-Council</div></div></div>
+        <div class="cert"><div class="cert-badge">CAP</div><div><div class="cert-name">Certified AppSec Practitioner</div><div class="cert-org">The SecOps Group</div></div></div>
+        <div class="cert"><div class="cert-badge">CC</div><div><div class="cert-name">Certified in Cybersecurity</div><div class="cert-org">ISC2</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ================= CONTACT ================= -->
+<section id="contact">
+  <div class="wrap">
+    <div class="contact-card reveal">
+      <span class="eyebrow">// open a connection</span>
+      <h2 style="margin-top:12px">Let's talk security.</h2>
+      <p>Open to senior application security roles, security consulting, and responsible-disclosure collaboration. Fastest response is over email.</p>
+      <div class="contact-links">
+        <a class="clink" href="mailto:nandakumar1998@yahoo.com"><span class="ic">✉</span> nandakumar1998@yahoo.com</a>
+        <a class="clink" href="tel:+918680011306"><span class="ic">☎</span> +91 86800 11306</a>
+        <a class="clink" href="https://www.linkedin.com/in/nandakr/" target="_blank" rel="noopener"><span class="ic">in</span> LinkedIn</a>
+        <a class="clink" href="https://github.com/nandakrr" target="_blank" rel="noopener"><span class="ic">{ }</span> GitHub</a>
+        <a class="clink" href="./Nandakumar_Senior_AppSec_Resume.pdf" download><span class="ic">↓</span> Résumé (PDF)</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-inner">
+    <span>© <span id="year"></span> Nandakumar M</span>
+    <span class="mono">built for <span class="amber">breaking</span> things, responsibly.</span>
+  </div>
+</footer>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* nav border on scroll */
+const nav = document.getElementById('nav');
+addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 20), {passive:true});
+
+/* reveal on scroll */
+const io = new IntersectionObserver((es)=>{
+  es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ---- terminal typing ---- */
+const term = document.getElementById('term');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const lines = [
+  {t:'<span class="cmt"># resolving identity...</span>\n', d:0},
+  {t:'<span class="req">GET</span> /whoami <span class="pun">HTTP/2</span>\n', d:0},
+  {t:'<span class="key">Host</span><span class="pun">:</span> nandakumar.security\n', d:0},
+  {t:'<span class="key">Authorization</span><span class="pun">:</span> Bearer ****************\n\n', d:0},
+  {t:'<span class="ok">HTTP/2 200 OK</span>\n', d:0},
+  {t:'<span class="key">Content-Type</span><span class="pun">:</span> application/json\n\n', d:0},
+  {t:'<span class="pun">{</span>\n', d:0},
+  {t:'  <span class="key">"name"</span><span class="pun">:</span> <span class="str">"Nandakumar M"</span><span class="pun">,</span>\n', d:0},
+  {t:'  <span class="key">"role"</span><span class="pun">:</span> <span class="str">"Senior Application Security Engineer"</span><span class="pun">,</span>\n', d:0},
+  {t:'  <span class="key">"focus"</span><span class="pun">:</span> <span class="pun">[</span><span class="str">"web"</span><span class="pun">,</span> <span class="str">"api"</span><span class="pun">,</span> <span class="str">"mobile"</span><span class="pun">,</span> <span class="str">"cloud"</span><span class="pun">]</span><span class="pun">,</span>\n', d:0},
+  {t:'  <span class="key">"assessments"</span><span class="pun">:</span> <span class="num">60</span><span class="pun">,</span>\n', d:0},
+  {t:'  <span class="key">"critical_findings"</span><span class="pun">:</span> <span class="num">120</span><span class="pun">,</span>\n', d:0},
+  {t:'  <span class="key">"cves"</span><span class="pun">:</span> <span class="pun">[</span><span class="str">"CVE-2023-2240"</span><span class="pun">,</span> <span class="str">"CVE-2023-2014"</span><span class="pun">]</span><span class="pun">,</span>\n', d:0},
+  {t:'  <span class="key">"methodology"</span><span class="pun">:</span> <span class="str">"manual-first"</span>\n', d:0},
+  {t:'<span class="pun">}</span>', d:0},
+];
+
+function renderAll(){
+  term.innerHTML = lines.map(l=>l.t).join('') ;
+}
+
+if(reduce){
+  renderAll();
+} else {
+  // type line-by-line for a believable request/response stream
+  let li = 0;
+  function typeLine(){
+    if(li >= lines.length){
+      term.querySelector('.cursor')?.remove();
+      const c = document.createElement('span'); c.className='cursor'; term.appendChild(c);
+      return;
+    }
+    const raw = lines[li].t;
+    // strip tags to get plain length, but we type by revealing the html chunk progressively
+    const tmp = document.createElement('span');
+    const span = document.createElement('span');
+    term.appendChild(span);
+    // reveal whole formatted line, then a small pause (keeps colours intact)
+    span.innerHTML = raw;
+    li++;
+    term.querySelector('.cursor')?.remove();
+    const c = document.createElement('span'); c.className='cursor'; term.appendChild(c);
+    const pause = raw.includes('200 OK') ? 260 : (raw.includes('#') ? 200 : 90 + Math.random()*70);
+    setTimeout(typeLine, pause);
+  }
+  setTimeout(typeLine, 350);
+}
+</script>
+</body>
+</html>
