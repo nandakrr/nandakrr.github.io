@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>7-Day V-Taper Program</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15171b;
+    --concrete:#1e2126;
+    --concrete-2:#262a31;
+    --line: rgba(237,234,225,0.09);
+    --bone:#edeae1;
+    --ash:#8b8d91;
+    --amber:#f2a93b;
+    --teal:#3fa9a0;
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--bone);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:60px;
+  }
+  ::selection{background:var(--amber);color:var(--ink);}
+  h1,h2,h3,.display{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  /* ===== Header ===== */
+  .masthead{
+    padding:26px 20px 18px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, var(--concrete), var(--ink));
+  }
+  .masthead .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.16em;
+    color:var(--amber);
+    text-transform:uppercase;
+  }
+  .masthead h1{
+    font-size:26px;
+    line-height:1.05;
+    margin:8px 0 6px;
+    color:var(--bone);
+  }
+  .masthead p{
+    color:var(--ash);
+    font-size:13.5px;
+    margin:0;
+    max-width:46ch;
+  }
+
+  /* ===== Rules strip ===== */
+  .rules{
+    margin:16px 20px 0;
+    background:var(--concrete);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px 16px;
+  }
+  .rules-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    cursor:pointer;
+    user-select:none;
+  }
+  .rules-head .label{
+    font-size:11px;
+    letter-spacing:0.14em;
+    color:var(--ash);
+    font-family:'JetBrains Mono',monospace;
+  }
+  .rules-head .chevron{
+    color:var(--amber);
+    transition:transform .25s ease;
+    font-size:14px;
+  }
+  .rules.open .chevron{transform:rotate(180deg);}
+  .rules-body{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:12px;
+    max-height:0;
+    overflow:hidden;
+    opacity:0;
+    transition:max-height .3s ease, opacity .3s ease, margin-top .3s ease;
+  }
+  .rules.open .rules-body{max-height:300px;opacity:1;}
+  .rule-chip{
+    background:var(--concrete-2);
+    border-radius:10px;
+    padding:10px 8px;
+    text-align:center;
+  }
+  .rule-chip .n{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    color:var(--amber);
+    font-size:15px;
+    display:block;
+  }
+  .rule-chip .l{
+    font-size:10.5px;
+    color:var(--ash);
+    margin-top:2px;
+    display:block;
+    line-height:1.3;
+  }
+  .honest{
+    margin:12px 20px 0;
+    background:var(--concrete);
+    border:1px solid var(--teal);
+    border-radius:var(--radius);
+    padding:14px 16px;
+  }
+  .honest .label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    color:var(--teal);
+  }
+  .honest p{
+    font-size:12.5px;
+    color:#cfccc3;
+    line-height:1.55;
+    margin:8px 0 0;
+  }
+  .honest p b{color:var(--bone);}
+
+  /* ===== Day nav ===== */
+  .day-nav{
+    position:sticky;
+    top:0;
+    z-index:20;
+    display:flex;
+    gap:6px;
+    padding:12px 16px;
+    background:rgba(21,23,27,0.92);
+    backdrop-filter:blur(10px);
+    overflow-x:auto;
+    border-bottom:1px solid var(--line);
+    scrollbar-width:none;
+  }
+  .day-nav::-webkit-scrollbar{display:none;}
+  .day-tab{
+    flex:0 0 auto;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    font-weight:700;
+    color:var(--ash);
+    background:var(--concrete);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:8px 14px;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .2s, color .2s, border-color .2s;
+  }
+  .day-tab .d{color:inherit;}
+  .day-tab.active{
+    background:var(--amber);
+    border-color:var(--amber);
+    color:var(--ink);
+  }
+
+  /* ===== Day section ===== */
+  .day{
+    display:none;
+    padding:18px 16px 6px;
+  }
+  .day.active{display:block;}
+  .day-head{
+    margin-bottom:16px;
+  }
+  .day-head .tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--teal);
+    letter-spacing:0.12em;
+  }
+  .day-head h2{
+    font-size:21px;
+    margin:4px 0 6px;
+  }
+  .day-head .goal{
+    font-size:13px;
+    color:var(--ash);
+    line-height:1.5;
+    max-width:52ch;
+  }
+
+  /* ===== Body map ===== */
+  .bodymap-wrap{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    background:var(--concrete);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    margin-bottom:16px;
+  }
+  .bodymap-wrap svg{flex:0 0 auto;width:74px;height:148px;}
+  .bodymap-legend{
+    font-size:12px;
+    color:var(--ash);
+  }
+  .bodymap-legend .view{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--ash);
+    letter-spacing:0.1em;
+    margin-bottom:4px;
+  }
+  .bodymap-legend b{color:var(--bone);font-weight:600;}
+
+  /* ===== Exercise card ===== */
+  .exlist{display:flex;flex-direction:column;gap:10px;}
+  .ex-card{
+    background:var(--concrete);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .ex-top{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:13px 14px;
+    cursor:pointer;
+  }
+  .glyph{
+    flex:0 0 auto;
+    width:38px;height:38px;
+    border-radius:10px;
+    background:var(--concrete-2);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .glyph svg{width:20px;height:20px;stroke:currentColor;}
+  .ex-main{flex:1;min-width:0;}
+  .ex-main .name{
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--bone);
+    margin:0 0 3px;
+  }
+  .ex-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+  }
+  .chip{
+    background:var(--concrete-2);
+    color:var(--ash);
+    border-radius:6px;
+    padding:2px 7px;
+  }
+  .chip.sr{color:var(--amber);}
+  .chip.target{color:var(--teal);}
+  .ex-chevron{
+    flex:0 0 auto;
+    color:var(--ash);
+    font-size:13px;
+    transition:transform .2s ease;
+  }
+  .ex-card.open .ex-chevron{transform:rotate(180deg);}
+  .ex-detail{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .3s ease;
+    border-top:1px solid transparent;
+  }
+  .ex-card.open .ex-detail{
+    max-height:400px;
+    border-top:1px solid var(--line);
+  }
+  .ex-detail-inner{padding:13px 14px 14px;}
+  .ex-detail-inner .cue-line{
+    font-size:12px;
+    color:var(--teal);
+    font-style:italic;
+    margin:0 0 10px;
+  }
+  .ex-detail-inner ul{
+    margin:0 0 12px;
+    padding-left:18px;
+  }
+  .ex-detail-inner li{
+    font-size:12.5px;
+    color:#cfccc3;
+    line-height:1.5;
+    margin-bottom:5px;
+  }
+  .ex-detail-inner li b{color:var(--bone);}
+  .setrow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:8px;
+  }
+  .setrow .label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--ash);
+    letter-spacing:0.1em;
+  }
+  .dot{
+    width:20px;height:20px;
+    border-radius:50%;
+    border:1.5px solid var(--ash);
+    cursor:pointer;
+    transition:background .15s, border-color .15s;
+    flex:0 0 auto;
+  }
+  .dot.done{background:var(--amber);border-color:var(--amber);}
+
+  /* ===== Recovery day tweaks ===== */
+  .day7 .ex-meta .chip.sr{color:var(--teal);}
+
+  footer{
+    text-align:center;
+    color:var(--ash);
+    font-size:11px;
+    padding:24px 20px 10px;
+    font-family:'JetBrains Mono',monospace;
+    letter-spacing:0.05em;
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="eyebrow">Nanda // rebuilt for a 1-month push · 2× frequency</div>
+  <h1>Push / Pull / Legs — V-Taper Build</h1>
+  <p>Each muscle group trained twice a week, with a core or oblique finisher on every single day instead of just one. Built for the waist and V-taper goal specifically — see the honest note below before you start.</p>
+</div>
+
+<div class="rules" id="rules">
+  <div class="rules-head" onclick="document.getElementById('rules').classList.toggle('open')">
+    <span class="label">DAILY STRATEGY &amp; HYDRATION</span>
+    <span class="chevron">▾</span>
+  </div>
+  <div class="rules-body">
+    <div class="rule-chip"><span class="n">3.5–4L</span><span class="l">water every day</span></div>
+    <div class="rule-chip"><span class="n">BRACE</span><span class="l">core on every lift</span></div>
+    <div class="rule-chip"><span class="n">+2.5%</span><span class="l">progressive overload weekly</span></div>
+  </div>
+</div>
+
+<div class="honest">
+  <div class="label">THE HONEST PART — READ ONCE</div>
+  <p>No amount of oblique or ab work spot-reduces belly fat. Fat comes off in the order your body decides, driven by an overall <b>calorie deficit</b> — training a muscle just builds and defines it underneath. The V-taper look is three things stacking: <b>wider lats/shoulders</b>, a <b>tighter waist from fat loss</b>, and a <b>strong core</b>. This plan trains all three hard — the deficit part is on you, outside the gym.</p>
+</div>
+
+<div class="day-nav" id="dayNav"></div>
+<div id="dayContainer"></div>
+
+<footer>7 DAYS · ONE FOCUS EACH · TAP AN EXERCISE TO OPEN FORM CUES</footer>
+
+<script>
+/* ---------------- Body map SVG ---------------- */
+// Two base silhouettes (front / back). Named regions get colored when active for the day.
+function bodymapSVG(view, active, accent){
+  const g = id => active.includes(id) ? accent : '#3a3d43';
+  if(view === 'front'){
+    return `
+    <svg viewBox="0 0 100 200">
+      <circle cx="50" cy="14" r="10" fill="#3a3d43"/>
+      <rect x="46" y="23" width="8" height="7" fill="#3a3d43"/>
+      <circle cx="28" cy="34" r="8" fill="${g('shoulder')}"/>
+      <circle cx="72" cy="34" r="8" fill="${g('shoulder')}"/>
+      <rect x="18" y="40" width="10" height="30" rx="5" fill="${g('arm')}"/>
+      <rect x="72" y="40" width="10" height="30" rx="5" fill="${g('arm')}"/>
+      <rect x="16" y="70" width="9" height="26" rx="4" fill="${g('forearm')}"/>
+      <rect x="75" y="70" width="9" height="26" rx="4" fill="${g('forearm')}"/>
+      <rect x="32" y="30" width="36" height="50" rx="8" fill="#2a2d33"/>
+      <rect x="34" y="32" width="32" height="18" rx="4" fill="${g('chest')}"/>
+      <rect x="32" y="52" width="6" height="22" fill="${g('oblique')}"/>
+      <rect x="62" y="52" width="6" height="22" fill="${g('oblique')}"/>
+      <rect x="39" y="52" width="22" height="12" fill="${g('absU')}"/>
+      <rect x="40" y="65" width="20" height="10" fill="${g('absL')}"/>
+      <rect x="36" y="76" width="28" height="10" rx="4" fill="#2a2d33"/>
+      <rect x="36" y="86" width="12" height="40" rx="5" fill="${g('quad')}"/>
+      <rect x="52" y="86" width="12" height="40" rx="5" fill="${g('quad')}"/>
+      <rect x="37" y="126" width="10" height="34" rx="4" fill="#2a2d33"/>
+      <rect x="53" y="126" width="10" height="34" rx="4" fill="#2a2d33"/>
+    </svg>`;
+  }
+  return `
+    <svg viewBox="0 0 100 200">
+      <circle cx="50" cy="14" r="10" fill="#3a3d43"/>
+      <rect x="46" y="23" width="8" height="7" fill="#3a3d43"/>
+      <circle cx="28" cy="34" r="8" fill="${g('rearDelt')}"/>
+      <circle cx="72" cy="34" r="8" fill="${g('rearDelt')}"/>
+      <rect x="18" y="40" width="10" height="30" rx="5" fill="${g('tricep')}"/>
+      <rect x="72" y="40" width="10" height="30" rx="5" fill="${g('tricep')}"/>
+      <rect x="16" y="70" width="9" height="26" rx="4" fill="${g('forearm')}"/>
+      <rect x="75" y="70" width="9" height="26" rx="4" fill="${g('forearm')}"/>
+      <rect x="32" y="30" width="36" height="50" rx="8" fill="#2a2d33"/>
+      <rect x="40" y="26" width="20" height="10" fill="${g('traps')}"/>
+      <rect x="33" y="36" width="34" height="28" rx="6" fill="${g('lats')}"/>
+      <rect x="48" y="36" width="4" height="48" fill="${g('spine')}"/>
+      <rect x="40" y="66" width="20" height="12" fill="${g('lowerBack')}"/>
+      <rect x="36" y="76" width="28" height="10" rx="4" fill="#2a2d33"/>
+      <rect x="36" y="86" width="12" height="40" rx="5" fill="${g('ham')}"/>
+      <rect x="52" y="86" width="12" height="40" rx="5" fill="${g('ham')}"/>
+      <rect x="37" y="126" width="10" height="34" rx="4" fill="#2a2d33"/>
+      <rect x="53" y="126" width="10" height="34" rx="4" fill="#2a2d33"/>
+    </svg>`;
+}
+
+/* ---------------- Movement glyphs ---------------- */
+function glyph(type){
+  const p = {
+    up:'M12 20V4M6 10l6-6 6 6',
+    down:'M12 4v16M6 14l6 6 6-6',
+    horizontal:'M20 12H4M10 6l-6 6 6 6',
+    out:'M12 12L4 4M12 12l8-8M12 12l-8 8M12 12l8 8',
+    rotate:'M4 12a8 8 0 1 1 3 6.2M4 12v5h5',
+    arcUp:'M4 18c0-7 4-12 8-14M12 4l4 1M12 4l-1 4',
+    arcDown:'M4 6c0 7 4 12 8 14M12 20l4-1M12 20l-1-4',
+    hold:'M12 4v4M12 4a8 8 0 1 0 5.7 2.4M17 4v4h-4',
+    updown:'M12 3v8M12 3l4 4M12 3L8 7M12 21v-8M12 21l4-4M12 21l-4-4',
+    diagDown:'M5 6l14 12M19 18v-6M19 18h-6'
+  }[type] || 'M12 4v16';
+  return `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p.split('M').filter(Boolean).map(seg=>`<path d="M${seg}"/>`).join('')}</svg>`;
+}
+
+/* ---------------- Data ---------------- */
+const DAYS = [
+{
+  n:1, tag:'Push A', title:'Chest & Shoulders', accent:'#f2a93b',
+  goal:'Chest-dominant push day. Heavier compound pressing first, side delts for width, finished with a core burst.',
+  map:{view:'front', active:['chest','shoulder']},
+  ex:[
+    {name:'Incline Dumbbell Press', target:'Upper Chest', sr:'4×8–10', cue:'Keeps upper torso wide & full', icon:'up',
+      steps:['Lie back on an incline bench (30–45°), feet flat, dumbbells held at shoulder height.','Press both dumbbells up and slightly inward until arms are extended over the upper chest.','Squeeze the upper chest hard at lockout; control the descent and don\u2019t let elbows flare past 45°.']},
+    {name:'Seated Dumbbell Overhead Press', target:'Shoulders', sr:'4×8–10', cue:'Keep core tight, push straight up', icon:'up',
+      steps:['Sit with back support, dumbbells at shoulder height, palms facing forward.','Press both dumbbells straight overhead until the arms lock out.','Keep the core tight to protect the lower back and avoid flaring the ribs.']},
+    {name:'Flat Bench Press or Weighted Dips', target:'Mid Chest & Triceps', sr:'3×8–10', cue:'Press straight through, control the negative', icon:'up',
+      steps:['Flat bench with bar/dumbbells at chest level, or dip bars with added weight belt.','Press or press-down until the arms extend fully, keeping the torso stable.','Control the descent and stop just before any shoulder strain at the bottom.']},
+    {name:'Dumbbell Lateral Raises', target:'Side Delts', sr:'3×12–15', cue:'Lead with elbows to widen frame', icon:'out',
+      steps:['Stand tall with dumbbells at your sides and a slight bend in the elbows.','Raise the arms out to the sides until roughly shoulder height.','Lead with the elbows rather than the hands, and avoid swinging or shrugging.']},
+    {name:'Tricep Rope Pushdowns', target:'Triceps', sr:'3×10–12', cue:'Spread rope apart at bottom', icon:'arcDown',
+      steps:['Stand at the cable stack, rope attachment at shoulder height, elbows at the sides.','Push the rope down until the arms are fully extended, spreading the hands apart at the bottom.','Keep elbows pinned to your sides — don\u2019t let them drift forward.']},
+    {name:'Hanging Knee Raises + Plank', target:'Core Finisher', sr:'3×15 / 2×45s', cue:'Quality over fatigue — this is the finisher', icon:'arcUp',
+      steps:['Hang from a bar with a firm grip, then set up a forearm plank straight after.','Curl the knees to the chest for the raises; hold a rigid straight line for the plank.','Control the movement rather than rushing — this is meant to finish the session, not wreck it.']}
+  ]
+},
+{
+  n:2, tag:'Pull A', title:'Back Width', accent:'#3fa9a0',
+  goal:'Width-focused pull day — this is the lever that actually narrows the waist visually by broadening the lats. Oblique finisher on top.',
+  map:{view:'back', active:['lats']},
+  ex:[
+    {name:'Wide-Grip Lat Pulldown', target:'Upper Lats', sr:'4×8–10', cue:'Pull bar down to collarbone', icon:'down',
+      steps:['Sit at the pulldown machine with a wide overhand grip, thighs locked under the pad.','Pull the bar down to the upper chest/collarbone, driving the elbows down and back.','Lead with the elbows rather than the hands, and avoid leaning back excessively.']},
+    {name:'Barbell Bent-Over Row', target:'Mid-Back', sr:'4×8–10', cue:'Flat lower back, drive elbows back', icon:'horizontal',
+      steps:['Hinge at the hips to roughly 45°, flat back, weight hanging below the shoulders.','Row the weight to the lower ribcage by driving the elbows straight back.','Keep the spine neutral throughout — avoid jerking the weight up with momentum.']},
+    {name:'Face Pulls (Rope Cable)', target:'Rear Delt / Upper Back', sr:'3×15', cue:'Pulls rounded shoulders back', icon:'horizontal',
+      steps:['Set the rope at upper-chest to face height and step back for tension.','Pull the rope toward the face, splitting the hands apart with elbows high.','Externally rotate at the end range — this directly counters rounded shoulders.']},
+    {name:'Barbell Curl', target:'Biceps', sr:'3×10–12', cue:'Keep elbows fixed at sides', icon:'arcUp',
+      steps:['Stand tall, grip the bar shoulder-width, elbows tucked at the sides.','Curl the bar up toward the shoulders without moving the elbows.','Keep the elbows pinned at the sides — avoid swinging the torso.']},
+    {name:'Hammer Curl', target:'Biceps / Forearm', sr:'3×10–12', cue:'Neutral grip, controlled tempo', icon:'arcUp',
+      steps:['Stand tall, dumbbells at your sides with a neutral (palms-in) grip.','Curl the dumbbells up keeping the palms facing each other the whole way.','Keep the elbows still and let the stretch at the bottom do the work.']},
+    {name:'Cable Woodchoppers + Side Plank', target:'Oblique Finisher', sr:'3×12/side, 2×30s/side', cue:'Rotate from the core, tight twist', icon:'rotate',
+      steps:['Set the cable high, stand side-on, both hands on the handle for the choppers; forearm-on-floor for the side plank.','Rotate the torso and pull the handle down across the body; hold a straight line for the plank.','Control comes from the core, not momentum — keep the twist tight and the plank hips high.']}
+  ]
+},
+{
+  n:3, tag:'Legs A', title:'Quads & Lower Abs', accent:'#f2a93b',
+  goal:'Quad-dominant leg day. Big lower-body lifts drive the most overall calorie expenditure of any session this week — directly useful for the fat-loss side of the goal.',
+  map:{view:'front', active:['quad','absL']},
+  ex:[
+    {name:'Barbell or Goblet Squat', target:'Quads & Glutes', sr:'4×8–10', cue:'Chest high, brace stomach', icon:'updown',
+      steps:['Hold the weight at chest height (goblet) or on the back (barbell), feet shoulder-width.','Sit the hips back and down until the thighs are at least parallel, then drive up through the heels.','Keep the chest tall and knees tracking over the toes; brace the core like bracing for a punch.']},
+    {name:'Walking Lunges', target:'Quads & Glutes', sr:'3×12/leg', cue:'Long stride, controlled descent', icon:'updown',
+      steps:['Hold dumbbells at your sides or a barbell on your back, standing tall.','Step forward into a long stride, lowering the back knee toward the floor, then drive up and continue forward.','Keep the front knee stacked over the ankle, not drifting past the toes.']},
+    {name:'Leg Extensions', target:'Quads', sr:'3×12–15', cue:'Squeeze knees tight at top', icon:'up',
+      steps:['Sit at the leg extension machine, pad against the shins, knees aligned with the pivot.','Extend the legs until straight, contracting the quads hard.','Pause and squeeze at the top, then lower slowly to control the negative.']},
+    {name:'Seated Calf Raise', target:'Calves', sr:'3×15–20', cue:'Full stretch to full contraction', icon:'up',
+      steps:['Sit at the calf raise machine, balls of the feet on the platform, pad on the thighs.','Lower the heels for a deep stretch, then press up through the balls of the feet.','Pause briefly at the top squeeze — don\u2019t bounce through the reps.']},
+    {name:'Reverse Crunches', target:'Lower Abs', sr:'3×15', cue:'Lift tailbone off floor smoothly', icon:'arcUp',
+      steps:['Lie on your back, knees bent to 90°, hands at your sides for support.','Curl the knees toward the chest, lifting the tailbone slightly off the floor.','Move slowly and with control — avoid swinging the legs for momentum.']}
+  ]
+},
+{
+  n:4, tag:'Push B', title:'Chest Strength', accent:'#3fa9a0',
+  goal:'Heavier, lower-rep push day for strength, plus rear delts for posture. Oblique finisher again to build frequency.',
+  map:{view:'front', active:['chest','shoulder']},
+  ex:[
+    {name:'Flat Barbell Bench Press', target:'Mid Chest', sr:'4×6–8', cue:'Heavier set — press straight through', icon:'up',
+      steps:['Lie flat, feet planted, bar at chest level with shoulder blades pinned together.','Press straight up over the chest until arms lock out, then lower under control back to the chest.','This is the strength set of the week — go heavier here than on Push A, keep reps lower.']},
+    {name:'Arnold Press', target:'Full Shoulder', sr:'3×10–12', cue:'Rotate palms smoothly', icon:'up',
+      steps:['Sit with dumbbells in front of the shoulders, palms facing you.','Press up while rotating the palms to face forward at the top.','Keep the rotation smooth and continuous — don\u2019t rush the twist.']},
+    {name:'Cable Crossovers', target:'Inner / Outer Chest', sr:'3×12–15', cue:'Deep stretch at bottom', icon:'out',
+      steps:['Stand between cable towers with a slight forward lean, arms extended out to the sides.','Sweep the arms down and in, bringing hands together in front of the chest.','Feel a deep stretch at the start and squeeze the inner chest hard at the finish.']},
+    {name:'Rear Delt Cable Flyes', target:'Rear Delts / Posture', sr:'3×12–15', cue:'Essential for upright posture', icon:'out',
+      steps:['Hinge forward at the hips with arms extended, or use a cable at chest height.','Sweep the arms out and back, squeezing the shoulder blades together.','Keep a slight elbow bend and focus on the rear delts, not the upper back.']},
+    {name:'Overhead Rope Tricep Extension', target:'Long Head Tricep', sr:'3×10–12', cue:'Deep stretch behind neck', icon:'arcDown',
+      steps:['Hold the rope overhead with both hands, elbows pointing forward.','Lower the weight behind the head, then extend back to full lockout.','Keep the elbows tucked in — don\u2019t let them flare out to the sides.']},
+    {name:'Russian Twists + Weighted Side Bends', target:'Oblique Finisher', sr:'3×20 total, 3×12/side', cue:'Twist from the torso, not the arms', icon:'rotate',
+      steps:['Sit leaned back slightly with a weight in both hands for twists; stand tall holding a weight at your side for bends.','Rotate the weight side to side tapping the floor for twists; bend directly sideways for the bends.','Keep the movement coming from the core, and squeeze back to center under control.']}
+  ]
+},
+{
+  n:5, tag:'Pull B', title:'Back Thickness', accent:'#f2a93b',
+  goal:'Thickness-focused pull day — rows build the back density that makes the waist look narrower by contrast. Core finisher to close.',
+  map:{view:'back', active:['lats','traps']},
+  ex:[
+    {name:'Seated Cable Row', target:'Mid Back', sr:'4×10–12', cue:'Squeeze shoulder blades together', icon:'horizontal',
+      steps:['Sit at the low-row station with feet braced, handle at arm\u2019s length.','Pull the handle to the torso while squeezing the shoulder blades together.','Pause and squeeze for a second at full contraction, then control the return.']},
+    {name:'Single-Arm Dumbbell Row', target:'Lats', sr:'3×10/side', cue:'Drive the elbow straight back', icon:'horizontal',
+      steps:['One knee and hand on a bench for support, other foot planted, back flat.','Row the dumbbell straight up toward the hip, driving the elbow back.','Keep the torso still — the pull should come from the back, not a twist of the spine.']},
+    {name:'Close-Grip Lat Pulldown', target:'Lower Lats', sr:'3×10–12', cue:'Pull to the upper chest, elbows down', icon:'down',
+      steps:['Sit at the pulldown machine with a close, neutral or underhand grip.','Pull the bar down to the upper chest, driving the elbows down toward the hips.','Lean back only slightly — avoid using body momentum to move the weight.']},
+    {name:'Preacher Curl', target:'Bicep Isolation', sr:'3×12–15', cue:'Strict form, no swinging', icon:'arcUp',
+      steps:['Rest the chest/triceps against the preacher pad, arms extended over the pad.','Curl the weight up while keeping the upper arms pinned to the pad.','Strict form only — avoid any body english to move the weight.']},
+    {name:'Reverse Wrist Curls', target:'Forearms', sr:'3×15–20', cue:'Solid grip strength support', icon:'up',
+      steps:['Rest the forearms on a bench or thigh, palms facing down, bar in hands.','Extend the wrists upward, then lower under control.','Keep the movement slow and controlled — this builds the grip-supporting muscles.']},
+    {name:'Hanging Leg Raise + Cable Crunch', target:'Core Finisher', sr:'3×12, 3×15', cue:'Curl the hips, not just the legs', icon:'arcUp',
+      steps:['Hang from a bar for the leg raise; kneel at the cable stack with rope behind the neck for the crunch.','Curl the hips up toward the chest for the raise; curl the torso down toward the pelvis for the crunch.','Flex and hold briefly at peak contraction on both — avoid using momentum.']}
+  ]
+},
+{
+  n:6, tag:'Legs B', title:'Hamstrings & Obliques', accent:'#3fa9a0',
+  goal:'Posterior-chain leg day — heavier hip-hinge work plus a longer oblique finisher to round out the week\u2019s waist frequency.',
+  map:{view:'back', active:['ham','lowerBack']},
+  ex:[
+    {name:'Romanian Deadlift (Heavier)', target:'Hamstrings & Glutes', sr:'4×8', cue:'Hinge at hips, keep spine neutral', icon:'diagDown',
+      steps:['Stand with the bar/dumbbells at hip level, a slight bend in the knees.','Hinge at the hips, sliding the weight down the thighs while keeping the spine neutral.','This is the heavier set of the week for this lift — feel a deep hamstring stretch, then drive the hips forward to stand.']},
+    {name:'Front or Goblet Squat', target:'Quads', sr:'3×10', cue:'Elbows up, chest tall', icon:'updown',
+      steps:['Hold the weight at chest height, elbows up and pointing forward.','Sit the hips down and back until the thighs are at least parallel, then drive up.','Keep the torso as upright as possible throughout — this variation is more quad-biased.']},
+    {name:'Seated Hamstring Curl', target:'Hamstrings', sr:'3×12–15', cue:'Slow control on lowering', icon:'down',
+      steps:['Sit at the machine with the pad against the back of the ankles, knees at the pivot point.','Curl the pad down/back by bending the knees.','Control the eccentric (lowering) portion — avoid using momentum.']},
+    {name:'Standing Calf Raise', target:'Calves', sr:'3×15', cue:'Full range, controlled tempo', icon:'up',
+      steps:['Stand on the platform with the balls of the feet, shoulders under the pads.','Lower the heels for a deep stretch, then press up onto the toes.','Control both the raise and the lowering — don\u2019t rely on bouncing.']},
+    {name:'Side Plank Reach-Through + Weighted Side Bend', target:'Oblique Finisher', sr:'3×10/side, 3×15/side', cue:'Keep hips high, squeeze to return', icon:'rotate',
+      steps:['Set up a side plank for the reach-through; stand tall holding a weight at your side for the bends.','Thread the top arm under the body and back for the reach; bend directly sideways for the bends.','Keep hips high and stacked throughout the reach; squeeze the opposite oblique to return upright on the bends.']}
+  ]
+},
+{
+  n:7, tag:'Reset', title:'Active Recovery & Mobility', accent:'#3fa9a0',
+  goal:'Release spinal tension, improve flexibility, and let the week\u2019s six sessions actually be absorbed and adapted from.',
+  map:{view:'back', active:['spine','lats']},
+  ex:[
+    {name:'Cat-Cow Stretch', target:'Spinal Vertebra & Posture', sr:'3×10', cue:'Smooth spinal mobilization', icon:'hold',
+      steps:['Start on hands and knees, neutral spine, hands under the shoulders.','Alternate arching the back up (cat) and dropping the belly down (cow).','Move slowly through each vertebra, syncing the movement with your breath.']},
+    {name:'Cobra / Sphinx Stretch', target:'Abdominal Tissue & Waist', sr:'3×30s hold', cue:'Stretches tight front core', icon:'hold',
+      steps:['Lie face down, forearms or palms on the floor under the shoulders.','Press up gently, lifting the chest while keeping the hips on the floor.','Keep the stretch gentle — never force through lower-back pain.']},
+    {name:'Doorway Chest Stretch', target:'Rounded Shoulders', sr:'3×30s hold', cue:'Opens chest & upper posture', icon:'hold',
+      steps:['Stand in a doorway with forearms on the frame at shoulder height.','Step forward gently until you feel a stretch across the chest.','Keep the shoulders down away from the ears, and breathe into the stretch.']},
+    {name:'Lying Hamstring / Hip Flexor Stretch', target:'Pelvic Tilt & Lower Back', sr:'10–15 min', cue:'Relieves pelvic tilt pulling lower spine', icon:'hold',
+      steps:['Lie on your back near a wall or doorway, one leg extended up.','Hold each stretch position, alternating sides as needed.','Relax into the stretch rather than forcing depth — this helps correct anterior pelvic tilt.']},
+    {name:'30-Min Moderate Outdoor Walk', target:'Active Recovery & Fat Burning', sr:'30 min', cue:'Keeps metabolism high', icon:'horizontal',
+      steps:['Wear comfortable footwear and head outdoors.','Maintain a brisk but conversational pace for the full duration.','This is low-intensity — the deficit for fat loss comes mainly from your plate, not this walk.']}
+  ]
+}
+];
+
+/* ---------------- Render ---------------- */
+const nav = document.getElementById('dayNav');
+const container = document.getElementById('dayContainer');
+
+DAYS.forEach((day, i) => {
+  const tab = document.createElement('div');
+  tab.className = 'day-tab' + (i===0?' active':'');
+  tab.innerHTML = `<span class="d">D${day.n}</span> · ${day.tag}`;
+  tab.onclick = () => selectDay(i);
+  nav.appendChild(tab);
+
+  const section = document.createElement('div');
+  section.className = 'day' + (i===0?' active':'') + (day.n===7?' day7':'');
+  section.id = 'day-'+i;
+
+  const setCount = sr => {
+    const m = sr.match(/^(\d+)/);
+    return m ? Math.min(parseInt(m[1]),6) : 3;
+  };
+
+  section.innerHTML = `
+    <div class="day-head">
+      <div class="tag">DAY ${day.n} · ${day.tag.toUpperCase()}</div>
+      <h2>${day.title}</h2>
+      <p class="goal">${day.goal}</p>
+    </div>
+    <div class="bodymap-wrap">
+      ${bodymapSVG(day.map.view, day.map.active, day.accent)}
+      <div class="bodymap-legend">
+        <div class="view">${day.map.view === 'front' ? 'FRONT VIEW' : 'BACK VIEW'}</div>
+        <div>Today's zone: <b>${day.title.split('(')[0].trim()}</b></div>
+      </div>
+    </div>
+    <div class="exlist">
+      ${day.ex.map((e, ei) => `
+        <div class="ex-card" id="ex-${i}-${ei}">
+          <div class="ex-top" onclick="toggleEx(${i},${ei})">
+            <div class="glyph" style="background:${day.accent}22;color:${day.accent}">${glyph(e.icon)}</div>
+            <div class="ex-main">
+              <p class="name">${e.name}</p>
+              <div class="ex-meta">
+                <span class="chip sr">${e.sr}</span>
+                <span class="chip target">${e.target}</span>
+              </div>
+            </div>
+            <span class="ex-chevron">▾</span>
+          </div>
+          <div class="ex-detail">
+            <div class="ex-detail-inner">
+              <p class="cue-line">"${e.cue}"</p>
+              <ul>
+                <li><b>Setup —</b> ${e.steps[0]}</li>
+                <li><b>Execution —</b> ${e.steps[1]}</li>
+                <li><b>Form cue —</b> ${e.steps[2]}</li>
+              </ul>
+              <div class="setrow">
+                <span class="label">SETS</span>
+                ${Array.from({length:setCount(e.sr)}).map((_,si)=>`<div class="dot" onclick="event.stopPropagation();this.classList.toggle('done')"></div>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  container.appendChild(section);
+});
+
+function selectDay(i){
+  document.querySelectorAll('.day-tab').forEach((t,idx)=>t.classList.toggle('active', idx===i));
+  document.querySelectorAll('.day').forEach((d,idx)=>d.classList.toggle('active', idx===i));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function toggleEx(i,ei){
+  document.getElementById(`ex-${i}-${ei}`).classList.toggle('open');
+}
+</script>
+</body>
+</html>
