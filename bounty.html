@@ -1,0 +1,466 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Bounty Target Picker</title>
+<style>
+/* Layout: sticky filter bar over a single scrollable results table; segmented
+   tier control changes which scope records qualify and what command gets copied. */
+:root{
+  --bg:#f2f3f5; --surface:#ffffff; --border:#d7dade; --fg:#1b2026; --fg-muted:#5b6169;
+  --accent:#0f6b66; --accent-fg:#ffffff;
+  --sev-critical:#b3261e; --sev-high:#c1631a; --sev-medium:#8a7310; --sev-low:#4b6b8a; --sev-none:#8a8f96;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:'Manrope',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11151a; --surface:#181d24; --border:#2b323b; --fg:#e8eaed; --fg-muted:#9aa1ab;
+    --accent:#3fb3ab; --accent-fg:#06211f;
+    --sev-critical:#ef6a63; --sev-high:#e3923f; --sev-medium:#d6bb3f; --sev-low:#6fa0c9; --sev-none:#7d838c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11151a; --surface:#181d24; --border:#2b323b; --fg:#e8eaed; --fg-muted:#9aa1ab;
+  --accent:#3fb3ab; --accent-fg:#06211f;
+  --sev-critical:#ef6a63; --sev-high:#e3923f; --sev-medium:#d6bb3f; --sev-low:#6fa0c9; --sev-none:#7d838c;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);margin:0;padding-inline:16px;padding-block:20px;line-height:1.45}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+
+header h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:-0.01em;text-wrap:balance}
+header p{margin:0;color:var(--fg-muted);font-size:0.92rem;max-width:62ch}
+
+.loaders{display:flex;gap:10px;flex-wrap:wrap}
+.loader-card{flex:1 1 220px;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.loader-card label{font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--fg-muted)}
+.loader-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.file-btn{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:0.85rem;cursor:pointer;color:var(--fg);font-family:var(--sans)}
+.file-btn:hover{border-color:var(--accent)}
+.loader-status{font-size:0.8rem;color:var(--fg-muted);font-family:var(--mono)}
+.loader-status.ok{color:var(--accent)}
+input[type=file]{display:none}
+
+.tiers{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content}
+.tier-btn{appearance:none;border:0;background:transparent;color:var(--fg-muted);font-family:var(--sans);font-weight:700;font-size:0.85rem;padding:8px 16px;border-radius:7px;cursor:pointer}
+.tier-btn.active{background:var(--accent);color:var(--accent-fg)}
+.tier-desc{color:var(--fg-muted);font-size:0.85rem;margin-top:-6px}
+
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.filters input[type=search], .filters select{
+  font-family:var(--sans);font-size:0.88rem;background:var(--bg);color:var(--fg);
+  border:1px solid var(--border);border-radius:7px;padding:7px 10px;
+}
+.filters input[type=search]{flex:1 1 200px;min-width:0}
+.chk{display:flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--fg-muted);white-space:nowrap}
+.chk input{accent-color:var(--accent)}
+.result-count{font-size:0.8rem;color:var(--fg-muted);font-family:var(--mono)}
+
+.table-shell{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:720px}
+thead th{text-align:left;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--fg-muted);padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;font-size:0.88rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--bg)}
+.program-name{font-weight:700}
+.program-platform{color:var(--fg-muted);font-size:0.78rem}
+.ident{font-family:var(--mono);font-size:0.82rem;word-break:break-all;max-width:360px;min-width:0}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge.sev-critical{color:var(--sev-critical);background:color-mix(in srgb, var(--sev-critical) 15%, transparent)}
+.badge.sev-high{color:var(--sev-high);background:color-mix(in srgb, var(--sev-high) 15%, transparent)}
+.badge.sev-medium{color:var(--sev-medium);background:color-mix(in srgb, var(--sev-medium) 15%, transparent)}
+.badge.sev-low{color:var(--sev-low);background:color-mix(in srgb, var(--sev-low) 15%, transparent)}
+.badge.sev-none{color:var(--sev-none);background:color-mix(in srgb, var(--sev-none) 12%, transparent)}
+.badge.status-completed{color:var(--sev-low);background:color-mix(in srgb, var(--sev-low) 15%, transparent)}
+.badge.status-in_progress{color:var(--sev-medium);background:color-mix(in srgb, var(--sev-medium) 15%, transparent)}
+.badge.status-error{color:var(--sev-critical);background:color-mix(in srgb, var(--sev-critical) 15%, transparent)}
+.bounty-yes{color:var(--accent);font-weight:700;font-size:0.8rem}
+.bounty-no{color:var(--fg-muted);font-size:0.8rem}
+.copy-btn{font-family:var(--sans);font-size:0.78rem;font-weight:700;border:1px solid var(--border);background:var(--bg);color:var(--fg);border-radius:7px;padding:5px 9px;cursor:pointer}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.empty-state{padding:40px 20px;text-align:center;color:var(--fg-muted)}
+.empty-state strong{color:var(--fg);display:block;margin-bottom:6px;font-size:1rem}
+.example-flag{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--fg-muted);background:var(--bg);border:1px dashed var(--border);border-radius:6px;padding:2px 7px}
+
+footer{color:var(--fg-muted);font-size:0.78rem;text-align:center;padding-top:4px}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);font-family:var(--sans);font-size:0.85rem;font-weight:600;padding:10px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity 0.18s ease, transform 0.18s ease;max-width:90vw;text-align:center;z-index:50}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Bounty Target Picker</h1>
+    <p>Load your scope data once, filter down to something worth hitting, and copy the exact command to run that tier against it. Nothing here leaves your browser.</p>
+  </header>
+
+  <div class="loaders">
+    <div class="loader-card">
+      <label for="scope-file">Scope data <span style="color:var(--sev-critical)">(required)</span></label>
+      <div class="loader-row">
+        <label class="file-btn" for="scope-file">Choose data/latest.json</label>
+        <input type="file" id="scope-file" accept="application/json,.json">
+        <span class="loader-status" id="scope-status">Showing example rows</span>
+      </div>
+    </div>
+    <div class="loader-card">
+      <label for="queue-file">Run history (optional)</label>
+      <div class="loader-row">
+        <label class="file-btn" for="queue-file">Choose state/queue.json</label>
+        <input type="file" id="queue-file" accept="application/json,.json">
+        <span class="loader-status" id="queue-status">Not loaded — status column hidden</span>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="tiers" role="tablist">
+      <button class="tier-btn active" data-tier="tier1" id="tab-tier1">Tier 1 — Source audit</button>
+      <button class="tier-btn" data-tier="tier2" id="tab-tier2">Tier 2 — Passive recon</button>
+    </div>
+    <p class="tier-desc" id="tier-desc"></p>
+  </div>
+
+  <div class="filters">
+    <input type="search" id="search" placeholder="Search program or identifier…">
+    <select id="platform-filter"><option value="">All platforms</option></select>
+    <select id="severity-filter">
+      <option value="">Any severity</option>
+      <option value="critical">Critical</option>
+      <option value="high">High</option>
+      <option value="medium">Medium</option>
+      <option value="low">Low</option>
+      <option value="none">Unrated</option>
+    </select>
+    <label class="chk"><input type="checkbox" id="bounty-only" checked> Bounty-eligible only</label>
+    <label class="chk"><input type="checkbox" id="hide-done" disabled> Hide completed</label>
+    <span class="result-count" id="result-count"></span>
+  </div>
+
+  <div class="table-shell">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Program</th>
+            <th>Severity</th>
+            <th>Bounty</th>
+            <th>Identifier</th>
+            <th id="status-col-header" hidden>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="empty-state" hidden>
+      <strong>Nothing matches these filters</strong>
+      Loosen the search, severity, or bounty filter above.
+    </div>
+  </div>
+
+  <footer>Click any row to copy the <code>gh workflow run</code> command for it. The command still has to be run yourself — this page never calls GitHub.</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var SEV_ORDER = {critical:0, high:1, medium:2, low:3};
+  function sevRank(s){ s = (s||"").toLowerCase(); return SEV_ORDER.hasOwnProperty(s) ? SEV_ORDER[s] : 4; }
+  function sevKey(s){ s = (s||"").toLowerCase(); return SEV_ORDER.hasOwnProperty(s) ? s : "none"; }
+  function sevLabel(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : "Unrated"; }
+
+  function slugify(){
+    var s = Array.prototype.slice.call(arguments).join("_");
+    s = s.replace(/[^A-Za-z0-9_.-]+/g, "-");
+    s = s.replace(/^-+|-+$/g, "");
+    return s.slice(0, 140);
+  }
+
+  function isGithubRepo(id){
+    if (!id || id.indexOf("*") !== -1) return false;
+    return /^https?:\/\/github\.com\/[^\/\s?#]+\/[^\/\s?#]+\/?$/i.test(id);
+  }
+  function isConcreteWeb(id){
+    if (!id || id.indexOf("*") !== -1) return false;
+    var withScheme = id.indexOf("://") !== -1 ? id : "https://" + id;
+    try { var u = new URL(withScheme); return u.hostname.indexOf(".") !== -1; }
+    catch (e) { return false; }
+  }
+
+  var EXAMPLE_RECORDS = [
+    {platform:"hackerone", program_handle:"example-corp", program_name:"Example Corp (sample)", asset_type:"SOURCE_CODE", identifier:"https://github.com/example-corp/api-gateway", eligible_for_bounty:true, max_severity:"critical"},
+    {platform:"bugcrowd", program_handle:"sample-bank", program_name:"Sample Bank (sample)", asset_type:"URL", identifier:"https://app.samplebank.example/", eligible_for_bounty:true, max_severity:"high"},
+    {platform:"self-hosted", program_handle:"sample-vdp", program_name:"Sample VDP Program (sample)", asset_type:"API", identifier:"https://api.samplevdp.example/", eligible_for_bounty:false, max_severity:null}
+  ];
+
+  var state = {
+    records: EXAMPLE_RECORDS,
+    isExample: true,
+    queue: null,
+    tier: "tier1"
+  };
+
+  var TIER_CONFIG = {
+    tier1: {
+      label: "Tier 1 — Source audit",
+      desc: "White-box clone + read-only audit. Needs a concrete github.com/<owner>/<repo> URL — wildcards and npm-only scope entries can't be cloned.",
+      queueKey: "tier1_source_audit",
+      workflow: "hackbot-tier1-source-audit.yml",
+      matches: function(r){ return r.asset_type === "SOURCE_CODE" && isGithubRepo(r.identifier); }
+    },
+    tier2: {
+      label: "Tier 2 — Passive recon",
+      desc: "Capped at 20 plain GETs against a concrete host. Needs a real URL or API endpoint — wildcard scope entries (*.example.com) can't be targeted directly.",
+      queueKey: "tier2_recon",
+      workflow: "hackbot-tier2-recon.yml",
+      matches: function(r){ return (r.asset_type === "URL" || r.asset_type === "API") && isConcreteWeb(r.identifier); }
+    }
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+  var searchEl = $("search"), platformEl = $("platform-filter"), severityEl = $("severity-filter"),
+      bountyEl = $("bounty-only"), hideDoneEl = $("hide-done"), rowsEl = $("rows"),
+      resultCountEl = $("result-count"), emptyStateEl = $("empty-state"), statusColHeader = $("status-col-header"),
+      tierDescEl = $("tier-desc"), toastEl = $("toast");
+
+  var toastTimer = null;
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2200);
+  }
+
+  function copyText(text, successMsg){
+    function fallback(){
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); showToast(successMsg); }
+      catch (e) { showToast("Couldn't copy — select and copy manually."); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function(){ showToast(successMsg); }, fallback);
+    } else { fallback(); }
+  }
+
+  // Always offered, regardless of what's in the currently-loaded file — these are the
+  // platforms the scope monitor itself pulls from (see config.yaml's sources.bounty_targets).
+  var KNOWN_PLATFORMS = ["hackerone", "bugcrowd", "intigriti", "yeswehack", "self-hosted"];
+
+  function buildPlatformOptions(){
+    var platforms = {};
+    KNOWN_PLATFORMS.forEach(function(p){ platforms[p] = true; });
+    state.records.forEach(function(r){ if (r.platform) platforms[r.platform] = true; });
+    var extras = Object.keys(platforms).filter(function(p){ return KNOWN_PLATFORMS.indexOf(p) === -1; }).sort();
+    var ordered = KNOWN_PLATFORMS.concat(extras);
+
+    var current = platformEl.value;
+    platformEl.innerHTML = '<option value="">All platforms</option>';
+    ordered.forEach(function(p){
+      var opt = document.createElement("option");
+      opt.value = p; opt.textContent = p;
+      platformEl.appendChild(opt);
+    });
+    platformEl.value = current && platforms[current] ? current : "";
+  }
+
+  function queueStatusFor(record){
+    if (!state.queue) return null;
+    var cfg = TIER_CONFIG[state.tier];
+    var tierQueue = state.queue[cfg.queueKey];
+    if (!tierQueue) return null;
+    var tid = slugify(record.platform, record.program_handle, record.identifier);
+    return tierQueue[tid] ? tierQueue[tid].status : null;
+  }
+
+  function render(){
+    var cfg = TIER_CONFIG[state.tier];
+    tierDescEl.textContent = cfg.desc;
+    statusColHeader.hidden = !state.queue;
+    hideDoneEl.disabled = !state.queue;
+    if (!state.queue) hideDoneEl.checked = false;
+
+    var q = searchEl.value.trim().toLowerCase();
+    var platform = platformEl.value;
+    var severity = severityEl.value;
+    var bountyOnly = bountyEl.checked;
+    var hideDone = hideDoneEl.checked && !!state.queue;
+
+    var pool = state.records.filter(cfg.matches);
+
+    var filtered = pool.filter(function(r){
+      if (platform && r.platform !== platform) return false;
+      if (severity && sevKey(r.max_severity) !== severity) return false;
+      if (bountyOnly && !r.eligible_for_bounty) return false;
+      if (q) {
+        var hay = ((r.program_name||"") + " " + (r.identifier||"")).toLowerCase();
+        if (hay.indexOf(q) === -1) return false;
+      }
+      if (hideDone) {
+        var st = queueStatusFor(r);
+        if (st === "completed") return false;
+      }
+      return true;
+    });
+
+    filtered.sort(function(a, b){
+      var d = sevRank(a.max_severity) - sevRank(b.max_severity);
+      if (d !== 0) return d;
+      return (a.program_name||"").localeCompare(b.program_name||"");
+    });
+
+    resultCountEl.textContent = filtered.length + " of " + pool.length + " eligible " + (pool.length === 1 ? "target" : "targets");
+    rowsEl.innerHTML = "";
+    emptyStateEl.hidden = filtered.length > 0;
+
+    filtered.forEach(function(r){
+      var tr = document.createElement("tr");
+
+      var tdProgram = document.createElement("td");
+      var nameDiv = document.createElement("div");
+      nameDiv.className = "program-name";
+      nameDiv.textContent = r.program_name || r.program_handle || "Unnamed program";
+      if (state.isExample) {
+        var flag = document.createElement("span");
+        flag.className = "example-flag"; flag.textContent = "Example";
+        flag.style.marginLeft = "6px";
+        nameDiv.appendChild(flag);
+      }
+      var platDiv = document.createElement("div");
+      platDiv.className = "program-platform";
+      platDiv.textContent = r.platform || "";
+      tdProgram.appendChild(nameDiv); tdProgram.appendChild(platDiv);
+
+      var tdSev = document.createElement("td");
+      var sevBadge = document.createElement("span");
+      sevBadge.className = "badge sev-" + sevKey(r.max_severity);
+      sevBadge.textContent = sevLabel(r.max_severity);
+      tdSev.appendChild(sevBadge);
+
+      var tdBounty = document.createElement("td");
+      var bountySpan = document.createElement("span");
+      bountySpan.className = r.eligible_for_bounty ? "bounty-yes" : "bounty-no";
+      bountySpan.textContent = r.eligible_for_bounty ? "Paid" : "VDP only";
+      tdBounty.appendChild(bountySpan);
+
+      var tdIdent = document.createElement("td");
+      tdIdent.className = "ident";
+      tdIdent.textContent = r.identifier || "";
+
+      var tdStatus = document.createElement("td");
+      tdStatus.hidden = !state.queue;
+      if (state.queue) {
+        var st = queueStatusFor(r);
+        if (st) {
+          var stBadge = document.createElement("span");
+          stBadge.className = "badge status-" + st;
+          stBadge.textContent = st.replace("_", " ");
+          tdStatus.appendChild(stBadge);
+        } else {
+          tdStatus.innerHTML = '<span style="color:var(--fg-muted);font-size:0.8rem">Not run</span>';
+        }
+      }
+
+      var tdAction = document.createElement("td");
+      var copyBtn = document.createElement("button");
+      copyBtn.className = "copy-btn";
+      copyBtn.textContent = "Copy command";
+      tdAction.appendChild(copyBtn);
+
+      var command = 'gh workflow run ' + cfg.workflow + ' -f target="' + r.identifier + '"';
+      function doCopy(e){ e.stopPropagation(); copyText(command, "Copied command for " + (r.program_name || r.identifier)); }
+      copyBtn.addEventListener("click", doCopy);
+      tr.addEventListener("click", function(e){ doCopy(e); });
+
+      tr.appendChild(tdProgram); tr.appendChild(tdSev); tr.appendChild(tdBounty);
+      tr.appendChild(tdIdent); tr.appendChild(tdStatus); tr.appendChild(tdAction);
+      rowsEl.appendChild(tr);
+    });
+  }
+
+  function flattenScope(json){
+    if (Array.isArray(json)) return json;
+    if (json && typeof json === "object") return Object.keys(json).map(function(k){ return json[k]; });
+    return [];
+  }
+
+  function handleScopeFile(file){
+    var reader = new FileReader();
+    var statusEl = $("scope-status");
+    reader.onload = function(){
+      try {
+        var json = JSON.parse(reader.result);
+        var records = flattenScope(json);
+        if (!records.length) throw new Error("empty");
+        state.records = records;
+        state.isExample = false;
+        statusEl.textContent = records.length.toLocaleString() + " records loaded";
+        statusEl.classList.add("ok");
+        buildPlatformOptions();
+        render();
+      } catch (e) {
+        statusEl.textContent = "Couldn't read that file — expecting data/latest.json";
+        statusEl.classList.remove("ok");
+      }
+    };
+    reader.onerror = function(){ statusEl.textContent = "Couldn't read that file."; };
+    reader.readAsText(file);
+  }
+
+  function handleQueueFile(file){
+    var reader = new FileReader();
+    var statusEl = $("queue-status");
+    reader.onload = function(){
+      try {
+        var json = JSON.parse(reader.result);
+        state.queue = json;
+        statusEl.textContent = "Loaded — status column enabled";
+        statusEl.classList.add("ok");
+        render();
+      } catch (e) {
+        statusEl.textContent = "Couldn't read that file — expecting state/queue.json";
+        statusEl.classList.remove("ok");
+      }
+    };
+    reader.onerror = function(){ statusEl.textContent = "Couldn't read that file."; };
+    reader.readAsText(file);
+  }
+
+  $("scope-file").addEventListener("change", function(e){
+    if (e.target.files[0]) handleScopeFile(e.target.files[0]);
+  });
+  $("queue-file").addEventListener("change", function(e){
+    if (e.target.files[0]) handleQueueFile(e.target.files[0]);
+  });
+
+  [searchEl, platformEl, severityEl].forEach(function(el){
+    el.addEventListener("input", render);
+    el.addEventListener("change", render);
+  });
+  [bountyEl, hideDoneEl].forEach(function(el){ el.addEventListener("change", render); });
+
+  document.querySelectorAll(".tier-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".tier-btn").forEach(function(b){ b.classList.remove("active"); });
+      btn.classList.add("active");
+      state.tier = btn.getAttribute("data-tier");
+      render();
+    });
+  });
+
+  buildPlatformOptions();
+  render();
+})();
+</script>
+
+</body></html>
