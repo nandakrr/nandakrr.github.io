@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
 <title>ProdSec Interview Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -372,17 +372,18 @@ tbody tr:last-child td{border-bottom:0}
 <script src="d-v4.js"></script>
 <script src="d-v5.js"></script>
 <script src="d-v6.js"></script>
+<script src="d-v7.js"></script>
 <script>
 // ---------- state ----------
 const KEY="prodsec-lab-v1";
 let S={};
 try{S=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){S={}}
-["r","k","dr","tm","tr","ir","cc","code","st","plan","ds","lv","ln","sb","ia","fl","pd","jd"].forEach(k=>{if(!S[k]||typeof S[k]!=="object")S[k]={}});
+["r","k","dr","tm","tr","ir","cc","code","st","plan","ds","lv","ln","sb","ia","fl","pd","jd","hq","hx"].forEach(k=>{if(!S[k]||typeof S[k]!=="object")S[k]={}});
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}updateMeter();renderRail()}
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 function hash(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return "q"+(h>>>0).toString(36)}
-QB.push(...QB2,...QB3,...QB4,...QB5);IR.push(...IR2);DESIGNS.push(...DESIGNS2);DRILLS.push(...DRILLS2);TM.push(...TM2);BEH.push(...BEH2);CONFLICTS.push(...CONFLICTS2.slice(0,2));QB.forEach(q=>q.id=hash(q.q));
+QB.push(...QB2,...QB3,...QB4,...QB5,...QB6);IR.push(...IR2);DESIGNS.push(...DESIGNS2);DRILLS.push(...DRILLS2);TM.push(...TM2);BEH.push(...BEH2);CONFLICTS.push(...CONFLICTS2.slice(0,2));QB.forEach(q=>q.id=hash(q.q));
 window.__LOGS=()=>["t FAIL user=a ip=1.1.1.1","t FAIL user=a ip=1.1.1.1","t FAIL user=a ip=1.1.1.1","t FAIL user=b ip=2.2.2.2","t FAIL user=b ip=2.2.2.2","t FAIL user=b ip=2.2.2.2","t FAIL user=b ip=2.2.2.2","t FAIL user=b ip=2.2.2.2","t OK user=a ip=1.1.1.1","garbage line","t FAIL user=c ip=3.3.3.3"];
 const b64u=s=>btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 window.__JWT=(h,p)=>b64u(JSON.stringify(h))+"."+b64u(JSON.stringify(p))+".sig";
@@ -410,8 +411,8 @@ function updateMeter(){const p=prog();const v=Object.values(p);const pct=Math.ro
 // ---------- routing ----------
 const ROUTES=[
  ["Plan",[["home","Start here"],["loops","How loops work"],["pdf","Your PDF questions"],["mock","Mock interview"]]],
- ["Learn",[["map","Domain map"],["system","SaaS system"],["flows","Protocol walkthroughs"],["ai","AI at every layer"],["metrics","Metrics & MTTR"]]],
- ["Do",[["design","Architecture deep dives"],["cloud","Cloud IAM lab"],["code","Code review drills"],["threat","Threat model lab"],["triage","Triage & CVSS"],["incident","Incident sims"],["coding","Coding lab"]]],
+ ["Learn",[["map","Domain map"],["system","SaaS system"],["headers","Headers & CSP lab","Every security header and CSP value, a live CSP analyzer, a response-header grader and a quiz"],["flows","Protocol walkthroughs"],["ai","AI at every layer"],["metrics","Metrics & MTTR"]]],
+ ["Do",[["design","Architecture deep dives"],["cloud","Cloud IAM lab"],["headers","Headers & CSP lab"],["code","Code review drills"],["threat","Threat model lab"],["triage","Triage & CVSS"],["incident","Incident sims"],["coding","Coding lab"]]],
  ["Recall",[["questions","Question bank"]]],
  ["Tell",[["stories","Your story bank"],["behavioral","Behavioral stories"]]]
 ];
@@ -440,7 +441,7 @@ R.home=v=>{
   ["Day 9","Threat model: payments + LLM agent"],["Day 10","Cloud IAM lab: predict + write policies + CloudTrail case"],
   ["Day 11","Coding lab: all 5 challenges"],["Day 12","Code review drills 13-19 (IaC, CI, containers)"],
   ["Day 13","Architecture deep dives: authZ, secrets, ASPM; Metrics lab"],["Day 14","Two 45-minute mock interviews, recorded; redo anything you scored 1–2"]];
- const MODS=[["map","Domain map","See the whole field: 31 domains, how they fit, how a programme is built"],["system","SaaS system","Click through a real architecture and follow a request hop by hop"],["ai","AI at every layer","Where AI speeds up each stage, the guardrails, and the metric it moves"],["metrics","Metrics & MTTR","Compute MTTR and SLA compliance yourself; pull levers and watch MTTR fall"],["design","Architecture deep dives","10 senior design prompts: plan your answer, then compare"],["cloud","Cloud IAM lab","Predict decisions, write least-privilege policies against tests, find escalation paths, investigate CloudTrail"],["flows","Protocol walkthroughs","Step through OAuth+PKCE, TLS 1.3, CORS, CSRF, SSRF→IMDS, GitHub OIDC, SAML, Kerberos"],["mock","Mock interview","A timed loop built from the whole lab, with self-scoring and history"],["pdf","Your PDF questions","All 161 questions from your three PDFs, mapped and answerable inline"],["stories","Your story bank","Your real stories from your PDFs, framed senior, with number conflicts flagged"],["code","Code review drills","Click the vulnerable lines in 19 real-looking snippets across 9 stacks"],["threat","Threat model lab","Write your own threat model, then compare with a ranked model answer"],["triage","Triage & CVSS","Judge bug bounty reports and score them with a live CVSS 3.1 calculator"],["incident","Incident sims","Make decisions under pressure in three realistic incidents"],["coding","Coding lab","Write and run security scripts against tests, right in the page"],["questions","Question bank",QB.length+" questions with 30-second answers, follow-ups and flashcards"],["behavioral","Behavioral stories","Build STAR stories with live feedback on numbers, ownership and length"]];
+ const MODS=[["map","Domain map","See the whole field: 31 domains, how they fit, how a programme is built"],["system","SaaS system","Click through a real architecture and follow a request hop by hop"],["ai","AI at every layer","Where AI speeds up each stage, the guardrails, and the metric it moves"],["metrics","Metrics & MTTR","Compute MTTR and SLA compliance yourself; pull levers and watch MTTR fall"],["design","Architecture deep dives","10 senior design prompts: plan your answer, then compare"],["cloud","Cloud IAM lab","Predict decisions, write least-privilege policies against tests, find escalation paths, investigate CloudTrail"],["headers","Headers & CSP lab","Every security header and CSP value, a live CSP analyzer, a response-header grader and a quiz"],["flows","Protocol walkthroughs","Step through OAuth+PKCE, TLS 1.3, CORS, CSRF, SSRF→IMDS, GitHub OIDC, SAML, Kerberos"],["mock","Mock interview","A timed loop built from the whole lab, with self-scoring and history"],["pdf","Your PDF questions","All 161 questions from your three PDFs, mapped and answerable inline"],["stories","Your story bank","Your real stories from your PDFs, framed senior, with number conflicts flagged"],["code","Code review drills","Click the vulnerable lines in 19 real-looking snippets across 9 stacks"],["threat","Threat model lab","Write your own threat model, then compare with a ranked model answer"],["triage","Triage & CVSS","Judge bug bounty reports and score them with a live CVSS 3.1 calculator"],["incident","Incident sims","Make decisions under pressure in three realistic incidents"],["coding","Coding lab","Write and run security scripts against tests, right in the page"],["questions","Question bank",QB.length+" questions with 30-second answers, follow-ups and flashcards"],["behavioral","Behavioral stories","Build STAR stories with live feedback on numbers, ownership and length"]];
  v.innerHTML=`
  <section class="hero">
   <div style="display:grid;gap:16px">
@@ -555,7 +556,7 @@ R.map=v=>{
 };
 function relCat(c){return {WEB:"Web",IAM:"AuthN & AuthZ",CRY:"Cryptography",NET:"Networking",CODE:"SDLC & Tooling",MOB:"Mobile",CLD:"Cloud",K8S:"Containers & K8s",AI:"AI & LLM",TM:"Threat modeling",SDL:"SDLC & Tooling",CI:"SDLC & Tooling",SUP:"Supply chain",VM:"Programme",DET:"Detection & IR",RISK:"Programme",GRC:"Programme",MET:"Programme",MAT:"Programme"}[c]}
 function practice(c){
- const L={WEB:[["#code","Code review drills"],["#questions-Web","Web questions"]],IAM:[["#design-authz","Multi-tenant authZ design"],["#code-jwt","JWT drill"],["#questions-AuthN & AuthZ","Auth questions"]],CRY:[["#design-keys","Key management design"],["#questions-Cryptography","Crypto questions"]],NET:[["#questions-Networking","Network questions"]],CODE:[["#code","All code drills"]],MOB:[["#code-android","Android manifest drill"],["#questions-Mobile","Mobile questions"]],CLD:[["#cloud","Cloud IAM lab"],["#code-iam","IAM drill"],["#questions-Cloud","Cloud questions"]],K8S:[["#code-k8s","Pod spec drill"],["#code-istio","Istio drill"],["#code-docker","Dockerfile drill"]],AI:[["#ai","AI at every layer"],["#design-llmgw","LLM gateway design"],["#threat-agent","LLM agent threat model"]],TM:[["#threat","Threat model lab"]],SDL:[["#questions-SDLC & Tooling","SDLC questions"]],CI:[["#code-gha","GitHub Actions drill"]],SUP:[["#design-supply","Supply chain design"],["#code-gha","CI drill"]],PT:[["#triage","Triage lab"]],BB:[["#triage","Triage lab"]],VM:[["#metrics","MTTR lab"],["#design-aspm","ASPM design"],["#triage","CVSS calculator"]],EDGE:[["#system","SaaS system: edge"]],CSPM:[["#code-tf","Terraform drill"]],SEC:[["#design-secrets","Secrets platform design"],["#coding-secrets","Secret detector"],["#incident-key","Leaked key sim"]],DET:[["#design-detect","Detection pipeline design"],["#incident","Incident sims"],["#coding-brute","Brute-force detector"]],RISK:[["#questions-Programme","Programme questions"]],COM:[["#stories","Your story bank"],["#behavioral","Behavioral stories"]],CUL:[["#behavioral-scale","Scaling story"]],MET:[["#metrics","Metrics & MTTR lab"]],TOOL:[["#coding","Coding lab"]]}[c];
+ const L={WEB:[["#headers","Headers & CSP lab"],["#code","Code review drills"],["#questions-Web","Web questions"]],IAM:[["#design-authz","Multi-tenant authZ design"],["#code-jwt","JWT drill"],["#questions-AuthN & AuthZ","Auth questions"]],CRY:[["#design-keys","Key management design"],["#questions-Cryptography","Crypto questions"]],NET:[["#questions-Networking","Network questions"]],CODE:[["#code","All code drills"]],MOB:[["#code-android","Android manifest drill"],["#questions-Mobile","Mobile questions"]],CLD:[["#cloud","Cloud IAM lab"],["#code-iam","IAM drill"],["#questions-Cloud","Cloud questions"]],K8S:[["#code-k8s","Pod spec drill"],["#code-istio","Istio drill"],["#code-docker","Dockerfile drill"]],AI:[["#ai","AI at every layer"],["#design-llmgw","LLM gateway design"],["#threat-agent","LLM agent threat model"]],TM:[["#threat","Threat model lab"]],SDL:[["#questions-SDLC & Tooling","SDLC questions"]],CI:[["#code-gha","GitHub Actions drill"]],SUP:[["#design-supply","Supply chain design"],["#code-gha","CI drill"]],PT:[["#triage","Triage lab"]],BB:[["#triage","Triage lab"]],VM:[["#metrics","MTTR lab"],["#design-aspm","ASPM design"],["#triage","CVSS calculator"]],EDGE:[["#system","SaaS system: edge"]],CSPM:[["#code-tf","Terraform drill"]],SEC:[["#design-secrets","Secrets platform design"],["#coding-secrets","Secret detector"],["#incident-key","Leaked key sim"]],DET:[["#design-detect","Detection pipeline design"],["#incident","Incident sims"],["#coding-brute","Brute-force detector"]],RISK:[["#questions-Programme","Programme questions"]],COM:[["#stories","Your story bank"],["#behavioral","Behavioral stories"]],CUL:[["#behavioral-scale","Scaling story"]],MET:[["#metrics","Metrics & MTTR lab"]],TOOL:[["#coding","Coding lab"]]}[c];
  return L?`<div><div class="lbl">Practise this</div><div class="row" style="gap:6px">${L.map(([h,t])=>`<a class="chip" href="${h}">${t} →</a>`).join("")}</div></div>`:"";
 }
 function drawFlow(svg){
@@ -917,6 +918,33 @@ R.stories=v=>{
 };
 
 // ================= CLOUD IAM LAB =================
+
+let hdTab="ref";
+R.headers=v=>{
+ const want=location.hash.split("-")[1];if(want&&["ref","csp","resp","quiz"].includes(want))hdTab=want;
+ const TABS=[["ref","Header reference"],["csp","CSP analyzer"],["resp","Response grader"],["quiz","Quiz ("+HDR_QUIZ.length+")"]];
+ v.innerHTML=`<div class="head"><div class="eyebrow">Do · web hardening</div><h2>Headers &amp; CSP lab</h2><p class="muted">Interviewers ask three things about headers: what each one stops, which values are right, and how a "secure-looking" policy is bypassed. Learn the reference, then paste real policies and responses into the analyzers. Grade a missing header by what it would let an attacker do, not by the scanner's label.</p></div>
+ <div class="seg" role="group" aria-label="Section" id="hdtabs">${TABS.map(([id,n])=>`<button type="button" data-t="${id}" aria-pressed="${id===hdTab}">${n}</button>`).join("")}</div>
+ <div id="hdout" style="display:grid;gap:14px"></div>`;
+ $$("#hdtabs button").forEach(b=>b.onclick=()=>{hdTab=b.dataset.t;history.replaceState(null,"","#headers-"+hdTab);$$("#hdtabs button").forEach(x=>x.setAttribute("aria-pressed",x===b));tab()});
+ const SEVC={High:"bad",Medium:"warn",Low:"warn",Info:"",Good:"ok"};
+ const fbs=list=>list.length?list.map(f=>`<div class="fb ${SEVC[f.sev]||""}"><b><span class="tag">${esc(f.sev)}</span> ${esc(f.t)}</b>${esc(f.why||"")}${f.fix?`<div class="small" style="margin-top:6px"><b style="display:inline">Fix:</b> <code>${esc(f.fix)}</code></div>`:""}</div>`).join(""):`<p class="muted">Nothing to report.</p>`;
+ function tab(){const o=$("#hdout");
+  if(hdTab==="ref"){o.innerHTML=HDR_REF.map(h=>`<details class="fold"><summary><h3>${esc(h.h)}${h.short&&h.short!==h.h?` <span class="muted small">${esc(h.short)}</span>`:""}</h3></summary><div class="inner" style="display:grid;gap:10px"><p><b style="display:inline">Stops:</b> ${esc(h.prevents||"")}</p>${h.good?`<div><div class="lbl">Good value</div><pre class="blk">${esc(h.good)}</pre></div>`:""}${h.values&&h.values.length?`<div class="tablebox"><table><thead><tr><th>Directive / value</th><th>What it means</th></tr></thead><tbody>${h.values.map(([n,d])=>`<tr><td class="mono small">${esc(n)}</td><td class="small">${esc(d)}</td></tr>`).join("")}</tbody></table></div>`:""}</div></details>`).join("")}
+  if(hdTab==="csp"){const cur=S.hx.csp!=null?S.hx.csp:CSP_SAMPLES[0][1];
+   o.innerHTML=`<div class="card" style="display:grid;gap:10px"><div class="row" style="gap:6px">${CSP_SAMPLES.map(([n],i)=>`<button type="button" class="chip" data-s="${i}">${esc(n)}</button>`).join("")}</div><label class="lbl" for="cspin">Content-Security-Policy value</label><textarea class="codebox" id="cspin" spellcheck="false" style="min-height:110px">${esc(cur)}</textarea><label class="small"><input type="checkbox" id="csprt" ${S.hx.ro?"checked":""}> Sent as Content-Security-Policy-Report-Only</label><p class="muted small">Before reading the findings, say out loud what you'd flag. Then compare.</p></div><div id="cspres" style="display:grid;gap:10px"></div>`;
+   const run=()=>{const val=$("#cspin").value;S.hx.csp=val;S.hx.ro=$("#csprt").checked;save();$("#cspres").innerHTML=fbs(analyzeCSP(val,S.hx.ro))};
+   $$("[data-s]").forEach(b=>b.onclick=()=>{$("#cspin").value=CSP_SAMPLES[+b.dataset.s][1];run()});$("#cspin").oninput=run;$("#csprt").onchange=run;run()}
+  if(hdTab==="resp"){const cur=S.hx.resp!=null?S.hx.resp:HDR_SAMPLES[0].raw;
+   o.innerHTML=`<div class="card" style="display:grid;gap:10px"><div class="row" style="gap:6px">${HDR_SAMPLES.map((x,i)=>`<button type="button" class="chip" data-s="${i}">${esc(x.n)}</button>`).join("")}</div><label class="lbl" for="rspin">Raw response headers (paste from Burp or curl -I)</label><textarea class="codebox" id="rspin" spellcheck="false" style="min-height:200px">${esc(cur)}</textarea></div><div id="rspres" style="display:grid;gap:10px"></div>`;
+   const run=()=>{const val=$("#rspin").value;S.hx.resp=val;save();const r=analyzeHeaders(val);const n=k=>r.filter(f=>f.sev===k).length;$("#rspres").innerHTML=`<p class="mono small muted">${n("High")} high · ${n("Medium")} medium · ${n("Low")} low · ${n("Good")} good</p>`+fbs(r)};
+   $$("[data-s]").forEach(b=>b.onclick=()=>{$("#rspin").value=HDR_SAMPLES[+b.dataset.s].raw;run()});$("#rspin").oninput=run;run()}
+  if(hdTab==="quiz"){const done=HDR_QUIZ.filter((q,i)=>S.hq[i]!=null).length,sc=HDR_QUIZ.filter((q,i)=>S.hq[i]===q.a).length;
+   o.innerHTML=`<p class="mono small muted">${done} of ${HDR_QUIZ.length} answered · ${sc} correct</p>`+HDR_QUIZ.map((q,i)=>{const pick=S.hq[i];return `<div class="card" style="display:grid;gap:10px" data-hq="${i}"><b>${i+1}. ${esc(q.q)}</b><div class="opts">${q.o.map((x,j)=>`<button type="button" class="opt${pick!=null?(j===q.a?" g2":j===pick?" g0":""):""}" data-j="${j}" ${pick!=null?"disabled":""}>${esc(x)}</button>`).join("")}</div>${pick!=null?`<div class="fb ${pick===q.a?"ok":"bad"}"><b>${pick===q.a?"Correct":"See the highlighted answer"}</b>${esc(q.why)}</div>`:""}</div>`}).join("")+`<div class="row"><button class="btn ghost" id="hqreset" type="button">Reset quiz</button></div>`;
+   $$("[data-hq]").forEach(c=>c.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{S.hq[c.dataset.hq]=+b.dataset.j;save();tab()}));$("#hqreset").onclick=()=>{S.hq={};save();tab()}}
+ }
+ tab();
+};
 let ciTab="predict",ciW=null;
 R.cloud=v=>{
  const want=location.hash.split("-")[1];if(want&&["predict","write","privesc","trust","trail","sandbox"].includes(want))ciTab=want;
@@ -1044,5 +1072,3 @@ R.pdf=v=>{
 // ---------- boot ----------
 updateMeter();go();if(S.mock&&S.mock.endsAt)startTick();
 </script>
-
-</body></html>

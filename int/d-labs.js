@@ -424,7 +424,7 @@ app.use((req, res, next) => {
 
 // ============ THREAT MODEL LAB ============
 window.TM = [
-{id:"upload",title:"Profile picture upload",asked:"Common at Meta, Google and SaaS companies",
+{id:"upload",title:"Profile picture upload",asked:"Classic design-round prompt at product companies",
  brief:"Users upload a profile picture from web and mobile. Images are resized by a worker and shown on profiles, in comments and in emails.",
  comps:["Browser / app","API service","Upload bucket (S3)","Resize worker","Public CDN","Email service"],
  flows:[["User","API","multipart upload",true],["API","Upload bucket","store original",false],["Bucket","Resize worker","event + read",false],["Worker","CDN bucket","resized images",false],["CDN","Every viewer","serve image",true]],
@@ -438,7 +438,7 @@ window.TM = [
  first:["Re-encode every image and serve from a separate sandboxed domain (kills XSS and polyglots)","Private storage with signed URLs plus a sandboxed, patched worker"],
  fu:["What if the image library itself has a CVE?","How do you handle GIF animations or HEIC?","How would you moderate illegal content?"],
  check:["Drew trust boundaries before listing threats","Mentioned stored XSS via SVG/HTML","Mentioned storage exposure (bucket access)","Mentioned the image parser as attack surface","Mentioned size/decompression DoS","Mentioned EXIF/privacy","Ranked threats and named the top two"]},
-{id:"payments",title:"Payment-token microservice",asked:"Reported at Amazon and fintech companies",
+{id:"payments",title:"Payment-token microservice",asked:"Common in fintech and e-commerce loops",
  brief:"A Payments service stores card tokens from a payment provider and charges customers. Orders service calls it; the provider calls back with webhooks.",
  comps:["Orders service","Payments service","Token vault DB","Payment provider","Webhook endpoint","Admin console"],
  flows:[["Orders","Payments","charge(amount, token)",true],["Payments","Provider","API call",true],["Provider","Webhook endpoint","payment events",true],["Payments","Token vault","read/write tokens",false],["Support agent","Admin console","refunds",true]],
@@ -452,7 +452,7 @@ window.TM = [
  first:["Verify every webhook and re-confirm status with the provider","Idempotency plus server-side amounts so money can't be duplicated or altered"],
  fu:["How do you keep PCI scope small?","How would you rotate the provider API key without downtime?","What changes if you expand to multiple regions?"]
  ,check:["Mentioned tokenisation / PCI scope","Mentioned webhook authenticity","Mentioned idempotency and double-charge","Mentioned service-to-service authentication","Mentioned insider/refund abuse","Mentioned audit logging"]},
-{id:"messaging",title:"End-to-end encrypted messaging",asked:"Reported at Meta (Signal-like app)",
+{id:"messaging",title:"End-to-end encrypted messaging",asked:"Common for consumer and messaging products",
  brief:"A mobile messaging app with one-to-one and group chats, end-to-end encryption, attachments, and multi-device support.",
  comps:["Mobile clients","Key distribution server","Message relay","Attachment storage","Push notification service","Contact discovery"],
  flows:[["Client","Key server","publish/fetch public keys",true],["Client","Relay","encrypted messages",true],["Client","Attachment store","encrypted blobs",true],["Relay","Push service","notification",true],["Client","Contact discovery","hashed phone numbers",true]],
@@ -466,7 +466,7 @@ window.TM = [
  first:["Key verification and key transparency to stop server-side MITM","Device-linking controls plus forward secrecy (Double Ratchet) to limit compromise"],
  fu:["How does the Double Ratchet give forward secrecy?","How would you handle backups without breaking E2EE?","What can law enforcement still get?"],
  check:["Identified the key server as the critical trust point","Discussed metadata, not just content","Mentioned forward secrecy","Mentioned multi-device risk","Mentioned client-side parsing attack surface","Mentioned abuse and spam trade-off"]},
-{id:"agent",title:"LLM support agent with tools",asked:"Increasingly common everywhere (and fits Tenarai-style AI work)",
+{id:"agent",title:"LLM support agent with tools",asked:"Increasingly common everywhere AI features ship",
  brief:"A customer support chatbot uses RAG over help articles and past tickets, can look up orders, and can issue refunds up to $200.",
  comps:["Chat UI","Agent orchestrator","LLM","Vector store (tickets + docs)","Orders API tool","Refund API tool"],
  flows:[["Customer","Agent","chat messages",true],["Agent","Vector store","retrieve context",false],["Agent","LLM","prompt + context",true],["LLM","Agent","tool calls",true],["Agent","Refund API","issue refund",false]],
@@ -480,7 +480,7 @@ window.TM = [
  first:["Authorization in the tools, not the prompt: user-scoped, server-enforced refund limits and approvals","Per-customer retrieval filtering so data can't leak across users"],
  fu:["The prompt says 'never refund more than $200'. Is that a control?","How would you red-team this before launch?","How do you test indirect injection?"],
  check:["Treated model output as untrusted","Put limits in tool code, not the prompt","Covered indirect prompt injection","Covered cross-customer data leakage in RAG","Covered insecure output handling","Covered logging/observability"]},
-{id:"webhooks",title:"Customer-configured webhooks",asked:"Common at SaaS and developer-platform companies (Stripe, GitHub style)",
+{id:"webhooks",title:"Customer-configured webhooks",asked:"Common at SaaS and developer-platform companies",
  brief:"Customers register a URL; your platform sends signed JSON events to it when things change, with retries.",
  comps:["Customer dashboard","Webhook config API","Event queue","Delivery workers","Customer endpoints (internet)"],
  flows:[["Customer","Config API","register URL",true],["Platform","Event queue","events",false],["Workers","Customer URL","HTTP POST",true],["Workers","Logs/dashboard","delivery results",false]],
@@ -815,9 +815,9 @@ window.BEH = [
 ];
 
 window.LOOPS = [
- ["Big tech (Google, Meta, Amazon, Microsoft)","Recruiter → tech screen (coding + security) → 4-6 onsite rounds: coding, security design/threat model, domain deep dive (web, cloud, detection), code review, behavioral (Amazon: Leadership Principles in every round)","Fundamentals depth, coding bar, structured design thinking, behavioral evidence"],
- ["Product/SaaS companies (Stripe, Atlassian, Datadog, Cloudflare)","Screen → 4-5 rounds: threat model a feature, cloud IAM or infra, code review or coding (practical: parse logs, spot bug in a diff), incident scenario, behavioral","Prioritisation under ambiguity, pragmatic fixes, partnering with engineers"],
- ["Fintech / payments (Razorpay, banks)","Screen → code review, threat model of payment flows, PCI and API security, triage exercise, managerial round","Payment flow risks, compliance, gateway and API security"],
- ["Security vendors / bug bounty platforms (HackerOne, Bugcrowd, SentinelOne)","Screen → live triage with CVSS scoring, vuln explanation (XSS, SQLi, CSRF, CORS), report writing, customer-facing scenario","Clear severity reasoning, writing quality, customer handling"],
- ["Consulting / services (Tenarai, Big 4)","Technical (AWS, DevSecOps, appsec) → client-communication round → HR","Explaining risk to clients, negotiating fixes, breadth across stacks"]
+ ["Large tech companies","Recruiter → tech screen (coding + security) → 4-6 onsite rounds: coding, security design/threat model, domain deep dive (web, cloud, detection), code review, behavioral; leadership behaviours probed in every round","Fundamentals depth, coding bar, structured design thinking, behavioral evidence"],
+ ["Product / SaaS companies","Screen → 4-5 rounds: threat model a feature, cloud IAM or infra, code review or coding (practical: parse logs, spot bug in a diff), incident scenario, behavioral","Prioritisation under ambiguity, pragmatic fixes, partnering with engineers"],
+ ["Fintech / payments","Screen → code review, threat model of payment flows, PCI and API security, triage exercise, managerial round","Payment flow risks, compliance, gateway and API security"],
+ ["Security vendors / bug bounty platforms","Screen → live triage with CVSS scoring, vuln explanation (XSS, SQLi, CSRF, CORS), report writing, customer-facing scenario","Clear severity reasoning, writing quality, customer handling"],
+ ["Consulting / services firms","Technical (cloud, DevSecOps, AppSec) → client-communication round → HR","Explaining risk to clients, negotiating fixes, breadth across stacks"]
 ];
