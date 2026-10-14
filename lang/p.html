@@ -1,0 +1,1151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polski Coach</title>
+<style>
+/* dark is the default; light only when chosen with the toggle */
+:root{
+  --bg:#0f1218; --card:#181c25; --text:#e6e8ee; --muted:#98a2b3; --line:#2a303d;
+  --accent:#ff6b81; --accent-ink:#1a0005; --accent-soft:#3a1a22; --good:#51cf66; --warn:#ffa94d; --bad:#ff6b6b;
+  --good-soft:#1c3124; --bad-soft:#3a2124; --warn-soft:#382b1a;
+  --ten:#74a8ff; --ta:#ff9ad5; --to:#5fd38a;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#f6f7f9; --card:#ffffff; --text:#1d2330; --muted:#667085; --line:#e4e7ec;
+  --accent:#c8102e; --accent-ink:#ffffff; --accent-soft:#ffe3e8; --good:#2f9e44; --warn:#e67700; --bad:#e03131;
+  --good-soft:#e6f6ea; --bad-soft:#fdeaea; --warn-soft:#fff3e0;
+  --ten:#1c62d6; --ta:#b0328a; --to:#1f8a4c;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 0;gap:12px;flex-wrap:wrap}
+h1{font-size:20px;margin:0}
+.streak{font-weight:600;color:var(--warn)}
+nav{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px}
+nav button{border:0;background:none;color:var(--muted);padding:8px 14px;border-radius:8px;font:inherit;cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+main{padding:20px 0 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+h2{font-size:18px;margin:0 0 10px}
+h3{font-size:15px;margin:14px 0 6px}
+.muted{color:var(--muted);font-size:14px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:9px 16px;border-radius:8px;font:inherit;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.rec{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.prompt{font-size:20px;font-weight:600;margin:6px 0 4px}
+.tip{background:var(--accent-soft);border-radius:8px;padding:10px 12px;font-size:14px;margin-top:10px}
+textarea,select,input[type=text]{width:100%;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+textarea{min-height:90px;resize:vertical}
+.transcript{background:var(--bg);border-radius:8px;padding:12px;min-height:48px;margin-top:12px;white-space:pre-wrap}
+.miss{background:var(--bad-soft);color:var(--bad);border-radius:4px;padding:0 3px;text-decoration:line-through}
+.hit{color:var(--good)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px}
+.stat{background:var(--bg);border-radius:8px;padding:10px 12px}
+.stat b{display:block;font-size:22px}
+.stat span{font-size:13px;color:var(--muted)}
+.ok{color:var(--good)} .mid{color:var(--warn)} .low{color:var(--bad)}
+ul.fb{padding-left:20px;margin:8px 0}
+ul.fb li{margin:4px 0}
+.task{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.task:last-child{border:0}
+.check{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-size:13px}
+.check.done{background:var(--good);border-color:var(--good);color:#fff}
+.phrase{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.phrase:last-child{border:0}
+.phrase .row{flex:none}
+.sm{padding:5px 10px;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600}
+.hidden{display:none}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:13px;margin:2px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;background:var(--good)}
+.locked{opacity:.45}
+.lvl{font-size:13px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em}
+.step{border-top:1px solid var(--line);padding-top:12px;margin-top:14px}
+.pass{background:var(--good-soft);padding:12px;border-radius:8px;margin-bottom:12px}
+.fail{background:var(--bad-soft);padding:12px;border-radius:8px;margin-bottom:12px}
+.warnbox{background:var(--warn-soft);color:var(--warn);padding:10px 12px;border-radius:8px;font-size:14px;margin-bottom:12px}
+.de{font-weight:600}
+.en{color:var(--muted);font-size:14px}
+.a-ten{color:var(--ten);font-weight:700} .a-ta{color:var(--ta);font-weight:700} .a-to{color:var(--to);font-weight:700}
+.vocab{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin-top:8px}
+.vocab div{background:var(--bg);border-radius:8px;padding:8px 10px;cursor:pointer}
+.flash{text-align:center;padding:30px 16px;background:var(--bg);border-radius:12px;margin:12px 0}
+.flash .big{font-size:30px;font-weight:700}
+.chat{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.bubble{max-width:85%;padding:10px 14px;border-radius:14px;line-height:1.45}
+.bubble.them{background:var(--bg);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px}
+.bubble.me{background:var(--accent-soft);align-self:flex-end;border-bottom-right-radius:4px}
+.bubble .who{font-size:12px;color:var(--muted);display:block;margin-bottom:2px}
+.opt{display:block;width:100%;text-align:left;margin:6px 0}
+.opt.correct{border-color:var(--good);background:var(--good-soft);color:var(--good)}
+.opt.wrongpick{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.gbtn{flex:1;font-size:20px;font-weight:700;padding:14px}
+.counter{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.counter:last-child{border:0}
+.counter .bar{flex:1;min-width:80px;margin:0}
+.days{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.days span{width:22px;height:22px;border-radius:4px;background:var(--line)}
+.days span.on{background:var(--good)}
+details summary{cursor:pointer;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <h1>🥟 Polski Coach</h1>
+      <div class="row"><span class="streak" id="streak"></span>
+        <button class="btn sm" id="themeBtn" title="Switch light/dark">☀️</button></div>
+    </div>
+    <nav id="nav">
+      <button data-tab="course" class="on">🎓 Course</button>
+      <button data-tab="today">Today</button>
+      <button data-tab="words">🃏 Words</button>
+      <button data-tab="talk">💬 Conversations</button>
+      <button data-tab="listen">🎧 Listening</button>
+      <button data-tab="exam">🎯 Speaking Test</button>
+      <button data-tab="phrases">Phrases</button>
+      <button data-tab="progress">Progress</button>
+      <button data-tab="guide">Tips</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="noSpeech" class="warnbox hidden">Your browser can't recognise speech. Open this file in <b>Google Chrome</b> or <b>Microsoft Edge</b> and allow the microphone. You can still type your answers.</div>
+  <div id="noVoice" class="warnbox hidden">No Polish voice found, so the app can't read Polish aloud. <b>Microsoft Edge</b> has good Polish voices built in. In Chrome or Windows, go to <i>Settings → Time &amp; language → Speech → Add voices → Polski</i>, then restart the browser.</div>
+
+  <!-- COURSE -->
+  <section id="tab-course">
+    <div id="courseMap"></div>
+    <div id="lessonView" class="hidden"></div>
+  </section>
+
+  <!-- TODAY -->
+  <section id="tab-today" class="hidden">
+    <div class="card">
+      <h2>Today's 25-minute plan</h2>
+      <p class="muted">Every day. Languages are learned in small daily doses, not big weekend sessions.</p>
+      <div id="tasks"></div>
+    </div>
+    <div class="card">
+      <h2>Real-world Polish this week</h2>
+      <p class="muted">Log every time you use Polish outside the app. That's where it becomes real.</p>
+      <div id="realLog"></div>
+    </div>
+  </section>
+
+  <!-- WORDS -->
+  <section id="tab-words" class="hidden">
+    <div class="card">
+      <h2>🃏 Vocabulary cards</h2>
+      <p class="muted">Spaced repetition: words you know come back less often, words you forget come back soon. New words unlock as you progress in the course. Nouns are shown with <span class="a-ten">ten</span> (masculine) · <span class="a-ta">ta</span> (feminine) · <span class="a-to">to</span> (neuter).</p>
+      <div class="row">
+        <button class="btn primary" id="wStart">Start review</button>
+        <button class="btn" id="wDir">Direction: Polish → English</button>
+      </div>
+      <div class="stats" id="wStats"></div>
+      <div id="wBox"></div>
+    </div>
+    <div class="card">
+      <h2>ten, ta or to? (the gender game)</h2>
+      <p class="muted">Every Polish noun is masculine (<b>ten</b>), feminine (<b>ta</b>) or neuter (<b>to</b>). Adjectives and past-tense verbs change with it, so it matters. Usually the ending tells you, and this game trains that instinct.</p>
+      <button class="btn primary" id="gStart">Play</button>
+      <div id="gBox"></div>
+    </div>
+  </section>
+
+  <!-- TALK -->
+  <section id="tab-talk" class="hidden">
+    <div id="talkMenu">
+      <div class="card">
+        <h2>💬 Real-life conversations in Polish</h2>
+        <p class="muted">Situations you'll face in your first weeks in Poland. The other person speaks Polish; you reply out loud. English translations are shown (hide them when you get better). After each reply you get feedback and a model answer.</p>
+      </div>
+      <div id="talkList"></div>
+    </div>
+    <div id="talkRun" class="hidden"></div>
+  </section>
+
+  <!-- LISTEN -->
+  <section id="tab-listen" class="hidden">
+    <div class="card">
+      <h2>🎧 Listening practice</h2>
+      <p class="muted">Train your ears with real-life Polish messages and dictation.</p>
+      <div class="row">
+        <label class="muted" style="flex:1;min-width:200px">Voice<select id="voiceSel"></select></label>
+        <label class="muted">Speed<select id="listenRate" style="width:auto">
+          <option value="0.7">Very slow</option><option value="0.85" selected>Slow</option><option value="1">Normal</option></select></label>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn primary" id="modeComp">📻 Understand a message</button>
+        <button class="btn" id="modeDict">✍️ Dictation</button>
+      </div>
+    </div>
+    <div class="card" id="listenBox"></div>
+  </section>
+
+  <!-- EXAM -->
+  <section id="tab-exam" class="hidden">
+    <div class="card">
+      <h2>🎯 Speaking test practice</h2>
+      <p class="muted">Poland has official state exams in Polish (<b>egzamin certyfikatowy</b>, levels A1–C2). <b>B1 is required for Polish citizenship</b>, and a certificate also helps with jobs and residence. Speaking tests always include introducing yourself, asking questions and polite requests. Practise those here.</p>
+      <div class="row">
+        <button class="btn primary" data-ex="intro">Part 1: Introduce yourself</button>
+        <button class="btn" data-ex="ask">Part 2: Ask questions</button>
+        <button class="btn" data-ex="request">Part 3: Make requests</button>
+      </div>
+    </div>
+    <div class="card" id="exBox"></div>
+  </section>
+
+  <!-- PHRASES -->
+  <section id="tab-phrases" class="hidden">
+    <div class="card">
+      <h2>Survival phrases</h2>
+      <p class="muted">Learn these by heart before you land. Tap 🔊 to hear one.</p>
+      <div id="phraseList"></div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section id="tab-progress" class="hidden">
+    <div class="card">
+      <h2>Your progress</h2>
+      <div class="stats" id="progStats"></div>
+      <h3>Last 28 days</h3>
+      <div class="days" id="dayGrid"></div>
+    </div>
+    <div class="card">
+      <h2>Backup</h2>
+      <div class="row">
+        <button class="btn" id="exportBtn">Download backup</button>
+        <label class="btn">Restore backup <input type="file" id="importFile" accept=".json" hidden></label>
+        <button class="btn" id="resetBtn">Clear all data</button>
+      </div>
+      <p class="muted">Progress is saved in this browser only. Download a backup now and then.</p>
+    </div>
+  </section>
+
+  <!-- GUIDE -->
+  <section id="tab-guide" class="hidden">
+    <div class="card">
+      <h2>How much Polish do you need?</h2>
+      <table>
+        <tr><th>Level</th><th>What you can do</th><th>Why it matters</th><th>Time*</th></tr>
+        <tr><td><b>A1</b></td><td>Greet, introduce yourself, shop, simple questions</td><td>People are much warmer when you try</td><td>2–3 months</td></tr>
+        <tr><td><b>A2</b></td><td>Daily life: doctor, landlord, offices</td><td>Many officials and older people don't speak English</td><td>+3–4 months</td></tr>
+        <tr><td><b>B1</b></td><td>Talk about most things, work small talk</td><td>Required for Polish citizenship (state certificate)</td><td>+6 months</td></tr>
+        <tr><td><b>B2</b></td><td>Work in Polish</td><td>Opens jobs outside international teams</td><td>+6–9 months</td></tr>
+      </table>
+      <p class="muted">*At about 1 hour a day. Polish is harder than German for English speakers, so be patient with yourself. Many IT jobs in Warsaw, Kraków, Wrocław and Gdańsk are in English, but offices, doctors and landlords often aren't. Rules change, so always check the current official requirements.</p>
+    </div>
+    <div class="card">
+      <h2>🆓 Free resources</h2>
+      <ul class="fb">
+        <li><b>Easy Polish</b> (YouTube): real Poles on the street, with Polish and English subtitles.</li>
+        <li><b>Polish with John</b> (YouTube): clear beginner explanations by a native speaker.</li>
+        <li><b>Duolingo / Memrise</b>: fine as a daily vocabulary habit on top of this app.</li>
+        <li><b>Tandem / HelloTalk</b>: free language exchange. Many Poles want to practise English with you.</li>
+        <li><b>Once you're in Poland</b>: many cities, universities and NGOs offer free or cheap Polish courses for foreigners. Ask at your city office (urząd miasta) or search "darmowy kurs polskiego dla cudzoziemców".</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>How to actually learn Polish</h2>
+      <h3>1. Don't panic about the cases</h3>
+      <p>Polish nouns change their endings (7 "cases"). Don't learn tables at the start. Learn <b>whole phrases</b>: "do pracy" (to work), "w pracy" (at work), "z kolegą" (with a colleague). The patterns will come.</p>
+      <h3>2. The ending tells you the gender</h3>
+      <p>Consonant → <span class="a-ten">ten</span> (masculine) · <b>-a</b> → <span class="a-ta">ta</span> (feminine) · <b>-o, -e, -ę</b> → <span class="a-to">to</span> (neuter). Exceptions are mostly male people: mężczyzna (man), kolega (colleague).</p>
+      <h3>3. Pronunciation that helps you a lot</h3>
+      <ul class="fb">
+        <li><b>w</b> = v · <b>ł</b> = w · <b>c</b> = ts · <b>j</b> = y</li>
+        <li><b>sz</b> = sh · <b>cz</b> = ch · <b>rz</b> / <b>ż</b> = the "s" in measure · <b>ch</b> = throaty h</li>
+        <li><b>ś ć ź ń</b> (or si, ci, zi, ni) = softer versions: say them with your tongue pressed up behind your teeth</li>
+        <li><b>ą</b> = nasal "on", <b>ę</b> = nasal "en", <b>ó</b> = u, <b>y</b> = the "i" in bit</li>
+        <li>Stress: almost always the <b>second-to-last syllable</b>.</li>
+      </ul>
+      <h3>4. Verbs come in pairs</h3>
+      <p><b>robić / zrobić</b> (to do / to get it done), <b>kupować / kupić</b> (to buy / to buy once). The second one is used for finished actions and the future. Learn them together.</p>
+      <h3>5. Pan / Pani = formal "you"</h3>
+      <p>With strangers, officials and older people, use <b>pan</b> (man) / <b>pani</b> (woman) with the "he/she" verb form: "Czy może pan mi pomóc?" Using "ty" too early can sound rude.</p>
+      <h3>6. Speak from day one</h3>
+      <p>Poles really appreciate foreigners speaking Polish, even badly. If they switch to English, say: "Uczę się polskiego, proszę mówić po polsku." (I'm learning Polish, please speak Polish.)</p>
+    </div>
+  </section>
+</main>
+
+<script>
+// ================= DATA =================
+const LEVELS = [
+  {name:"A1.1", goal:"First steps (Pierwsze kroki)"},
+  {name:"A1.2", goal:"Everyday life (Codzienność)"},
+  {name:"A2.1", goal:"Living in Poland (Życie w Polsce)"},
+  {name:"A2.2", goal:"At work (Praca)"},
+  {name:"B1", goal:"Independent (Samodzielność)"},
+];
+// Each lesson: t (Polish title), en, learn (html), v (vocab [pl,en]; nouns shown with ten/ta/to), say (repeat), tr ([English, [accepted Polish answers]])
+const COURSE = [
+  {t:"Powitania", en:"Greetings", learn:"<b>Dzień dobry</b> = hello / good morning (formal, used all day until evening). <b>Dobry wieczór</b> = good evening. <b>Cześć</b> = hi / bye (informal, with friends). Goodbye: <b>Do widzenia</b> (formal) or <b>Na razie</b> (informal).<br><b>Jak się masz?</b> = How are you? (informal) → <b>Dobrze, dziękuję!</b><br>⚠️ <b>Proszę</b> means \"please\", \"you're welcome\" AND \"here you go\". You'll hear it all day.",
+   v:[["dzień dobry","hello / good morning (formal)"],["cześć","hi / bye (informal)"],["dobry wieczór","good evening"],["do widzenia","goodbye (formal)"],["dziękuję","thank you"],["proszę","please / you're welcome"],["przepraszam","excuse me / sorry"]],
+   say:["Dzień dobry!","Jak się masz?","Dobrze, dziękuję."],
+   tr:[["Good evening!",["Dobry wieczór"]],["Thank you very much.",["Dziękuję bardzo","Bardzo dziękuję"]],["Goodbye! (formal)",["Do widzenia"]]]},
+  {t:"Przedstawianie się", en:"Introducing yourself", learn:"<b>Mam na imię ...</b> (My first name is) · <b>Nazywam się ...</b> (My name is, often your full name) · <b>Jestem z Indii.</b> (I'm from India) · <b>Mieszkam w Warszawie.</b> (I live in Warsaw)<br><b>Ty</b> = you (informal: friends, young colleagues). For a formal \"you\", Polish uses <b>pan</b> (to a man) and <b>pani</b> (to a woman), like \"sir\" / \"madam\": <b>Jak się pan nazywa?</b> (What's your name, sir?)<br>Asking informally: <b>Jak masz na imię?</b>",
+   v:[["to imię","first name"],["to nazwisko","surname"],["ten kraj","country"],["to miasto","city"],["ta praca","work / job"],["mieszkać","to live (reside)"],["pan / pani","you (formal, to a man / woman)"]],
+   say:["Mam na imię Anna.","Jestem z Indii.","Mieszkam w Warszawie."],
+   tr:[["I am from India.",["Jestem z Indii","Pochodzę z Indii"]],["What is your name? (informal)",["Jak masz na imię","Jak się nazywasz"]],["I live in Kraków.",["Mieszkam w Krakowie"]]]},
+  {t:"Wymowa", en:"Pronunciation", learn:"Polish looks scary but is very regular. Learn these once and you can read anything:<br><b>w</b> = v (woda) · <b>ł</b> = w (łóżko) · <b>c</b> = ts (co) · <b>j</b> = y (jak)<br><b>sz</b> = sh · <b>cz</b> = ch · <b>rz</b> and <b>ż</b> = like the s in \"measure\" · <b>ch</b> / <b>h</b> = throaty h<br><b>ś ć ź ń</b> = soft s, ch, zh, ny (also written si, ci, zi, ni)<br><b>ą</b> = nasal \"on\" · <b>ę</b> = nasal \"en\" · <b>ó</b> = u · <b>y</b> = short i, as in \"bit\"<br>Stress is almost always on the <b>second-to-last syllable</b>: war-SZA-wa.",
+   v:[["mówić","to speak"],["rozumieć","to understand"],["ta ulica","street"],["to słowo","word"],["powoli","slowly"],["powtórzyć","to repeat"]],
+   say:["Mówię trochę po polsku.","Ta ulica jest bardzo ładna.","Ile to kosztuje?"],
+   tr:[["I speak a little Polish.",["Mówię trochę po polsku","Trochę mówię po polsku"]],["Excuse me!",["Przepraszam"]],["I don't understand.",["Nie rozumiem"]]]},
+  {t:"Liczby", en:"Numbers", learn:"1 jeden · 2 dwa · 3 trzy · 4 cztery · 5 pięć · 6 sześć · 7 siedem · 8 osiem · 9 dziewięć · 10 dziesięć · 11 jedenaście · 12 dwanaście · 20 dwadzieścia · 30 trzydzieści · 100 sto<br>21 = <b>dwadzieścia jeden</b> (same order as English). 🙂<br>⚠️ Money changes with the number: <b>1 złoty</b>, <b>2–4 złote</b>, <b>5+ złotych</b>.<br>Age: <b>Mam 30 lat</b> (literally \"I have 30 years\").",
+   v:[["ta liczba","number"],["ten rok","year"],["ten złoty","zloty (Polish money)"],["ten numer","number (phone, house)"],["lat","years (of age)"],["kosztować","to cost"],["ile","how much / how many"]],
+   say:["Mam trzydzieści lat.","To kosztuje dwanaście złotych.","Mój numer to pięć, zero, jeden."],
+   tr:[["I am 25 years old.",["Mam dwadzieścia pięć lat","Mam 25 lat"]],["How much does it cost?",["Ile to kosztuje","Ile kosztuje"]],["That costs 3 zloty.",["To kosztuje trzy złote","To kosztuje 3 złote","To kosztuje 3 zł"]]]},
+  {t:"Rodzaj: ten, ta, to", en:"Noun genders", learn:"Polish has <b>no words for \"the\" or \"a\"</b>! But every noun has a gender, and you can usually tell it from the <b>ending</b>:<br><span class='a-ten'>ten</span> (masculine): ends in a consonant → ten stół, ten dom<br><span class='a-ta'>ta</span> (feminine): ends in <b>-a</b> → ta kawa, ta lampa<br><span class='a-to'>to</span> (neuter): ends in <b>-o, -e, -ę</b> → to okno, to mieszkanie<br>Ten / ta / to means \"this\", and it's a great way to remember the gender. Adjectives follow it: duż<b>y</b> dom, duż<b>a</b> kawa, duż<b>e</b> okno.",
+   v:[["ten stół","table"],["ta lampa","lamp"],["to okno","window"],["to mieszkanie","apartment"],["ten dom","house / home"],["ta kobieta","woman"],["ten mężczyzna","man (ends in -a, but masculine!)"]],
+   say:["Ten stół, ta lampa, to okno.","To mieszkanie jest duże.","Ta kawa jest dobra."],
+   tr:[["The apartment is small.",["Mieszkanie jest małe","To mieszkanie jest małe"]],["The house is big.",["Dom jest duży","Ten dom jest duży"]],["The coffee is good.",["Kawa jest dobra","Ta kawa jest dobra"]]]},
+  {t:"Być i mieć", en:"To be & to have", learn:"<b>być</b> (to be): ja <b>jestem</b>, ty <b>jesteś</b>, on/ona <b>jest</b>, my <b>jesteśmy</b>, wy <b>jesteście</b>, oni <b>są</b><br><b>mieć</b> (to have): ja <b>mam</b>, ty <b>masz</b>, on/ona <b>ma</b>, my <b>mamy</b>, wy <b>macie</b>, oni <b>mają</b><br>Polish usually drops \"I / you\": <b>Jestem zmęczony</b> = I'm tired (no need for \"ja\").<br>To say no, put <b>nie</b> before the verb: <b>Nie mam czasu</b> (I don't have time).",
+   v:[["być","to be"],["mieć","to have"],["zmęczony","tired (man)"],["ten brat","brother"],["ta siostra","sister"],["to pytanie","question"],["ten czas","time"]],
+   say:["Jestem zmęczony.","Mam brata.","Jesteśmy kolegami."],
+   tr:[["I have a question.",["Mam pytanie"]],["We have time.",["Mamy czas"]],["I don't have time.",["Nie mam czasu"]]]},
+  // A1.2
+  {t:"Czasowniki", en:"Present-tense verbs", learn:"Verbs change their ending for each person. Three common patterns:<br><b>-am, -asz, -a</b>: czytać → czyt<b>am</b>, czyt<b>asz</b>, czyt<b>a</b> (read)<br><b>-ę, -isz, -i</b>: robić → robi<b>ę</b>, robi<b>sz</b>, robi (do)<br><b>-uję, -ujesz, -uje</b>: pracować → prac<b>uję</b>, prac<b>ujesz</b>, prac<b>uje</b> (work)<br>There's no \"-ing\" form: <b>Uczę się</b> = I learn / I am learning.",
+   v:[["pracować","to work"],["uczyć się","to learn"],["robić","to do / make"],["ta firma","company"],["dzisiaj","today"],["jutro","tomorrow"],["lubić","to like"]],
+   say:["Pracuję w firmie IT.","Co dzisiaj robisz?","Dzisiaj uczę się polskiego."],
+   tr:[["I work in Warsaw.",["Pracuję w Warszawie"]],["What are you doing? (informal)",["Co robisz"]],["I am learning Polish.",["Uczę się polskiego","Uczę się języka polskiego"]]]},
+  {t:"Pytania", en:"Asking questions", learn:"Question words: <b>gdzie</b> (where) · <b>kiedy</b> (when) · <b>co</b> (what) · <b>kto</b> (who) · <b>jak</b> (how) · <b>dlaczego</b> (why) · <b>skąd</b> (where from) · <b>ile</b> (how much)<br><b>Yes/no questions</b>: just start with <b>Czy</b>: <b>Czy</b> mówi pan po angielsku? (Do you speak English?) In speech you can also just raise your voice at the end.<br>Answers: <b>tak</b> (yes) · <b>nie</b> (no).",
+   v:[["gdzie","where"],["kiedy","when"],["dlaczego","why"],["skąd","where from"],["ten dworzec","train station"],["ten pociąg","train"],["ta toaleta","toilet"]],
+   say:["Gdzie jest dworzec?","Kiedy zaczyna się kurs?","Czy mówi pan po angielsku?"],
+   tr:[["Where is the toilet?",["Gdzie jest toaleta"]],["Do you speak English? (to a woman, formal)",["Czy mówi pani po angielsku","Mówi pani po angielsku"]],["When does the train leave?",["Kiedy odjeżdża pociąg","O której odjeżdża pociąg"]]]},
+  {t:"Jedzenie i picie", en:"Food & ordering", learn:"The easiest and most useful word for ordering: <b>Poproszę ...</b> (I'll have..., please). Or: <b>Chciałbym</b> (man) / <b>Chciałabym</b> (woman) = I would like.<br>After poproszę, words ending in -a change to <b>-ę</b>: kawa → <b>Poproszę kawę</b>, woda → <b>wodę</b>.<br>At the end: <b>Poproszę rachunek.</b> (The bill, please.) To pay: <b>Czy mogę zapłacić kartą?</b><br>Tip: about 10% in restaurants.",
+   v:[["ta bułka","bread roll"],["ta kawa","coffee"],["ta woda","water"],["ten rachunek","bill"],["ta karta","card"],["płacić","to pay"],["poproszę","I'll have... please"]],
+   say:["Poproszę dwie bułki.","Poproszę kawę z mlekiem.","Poproszę rachunek."],
+   tr:[["A water, please.",["Poproszę wodę"]],["The bill, please.",["Poproszę rachunek","Rachunek proszę"]],["Can I pay by card?",["Czy mogę zapłacić kartą","Mogę zapłacić kartą","Czy mogę płacić kartą"]]]},
+  {t:"Biernik", en:"Objects (the accusative)", learn:"When a noun is the <b>object</b> (what you have, like, buy, see), feminine words change: <b>-a → -ę</b>: kawa → Lubię <b>kawę</b>, książka → Kupuję <b>książkę</b>. Masculine things and neuter words usually stay the same: Mam samochód. Mam mieszkanie.<br>⚠️ After <b>nie</b>, the object changes again: Mam czas → <b>Nie mam czasu</b>. Mam samochód → <b>Nie mam samochodu</b>. For now, just learn these as phrases.",
+   v:[["ten samochód","car"],["kupować","to buy"],["widzieć","to see"],["lubić","to like"],["ta książka","book"],["ta herbata","tea"]],
+   say:["Mam pytanie.","Kupuję kawę.","Nie mam samochodu."],
+   tr:[["I like coffee.",["Lubię kawę"]],["I'm buying a book.",["Kupuję książkę"]],["I don't have a car.",["Nie mam samochodu"]]]},
+  {t:"Godziny i dni", en:"Time & days", learn:"<b>Która jest godzina?</b> (What time is it?) → <b>Jest ósma.</b> (It's eight.) Hours use \"first, second, third...\": pierwsza, druga, trzecia... ósma, dziewiąta, dziesiąta.<br><b>o</b> + hour = at: <b>o ósmej</b> (at eight), <b>o dziesiątej</b> (at ten). In daily life people often just say \"o 10\".<br>Days: poniedziałek, wtorek, środa, czwartek, piątek, sobota, niedziela. On Monday = <b>w poniedziałek</b>.",
+   v:[["ta godzina","hour"],["ten poniedziałek","Monday"],["ten piątek","Friday"],["ten weekend","weekend"],["późno","late"],["wcześnie","early"],["ta wizyta","appointment (visit)"]],
+   say:["Jest ósma.","Wizyta jest w poniedziałek o dziesiątej.","Czy ma pan czas w piątek?"],
+   tr:[["What time is it?",["Która jest godzina","Która godzina"]],["Do you have time on Monday? (informal)",["Masz czas w poniedziałek","Czy masz czas w poniedziałek"]],["The meeting is at ten.",["Spotkanie jest o dziesiątej","Spotkanie jest o 10"]]]},
+  {t:"Móc, musieć, chcieć", en:"can, must, want", learn:"<b>móc</b> (can): mogę, możesz, może · <b>musieć</b> (must): muszę, musisz, musi · <b>chcieć</b> (want): chcę, chcesz, chce<br>Then the main verb in its dictionary form: <b>Muszę dzisiaj pracować.</b> (I have to work today.) <b>Czy możesz mi pomóc?</b> (Can you help me?) <b>Chcę mówić po polsku.</b> (I want to speak Polish.)",
+   v:[["móc","can"],["musieć","must / have to"],["chcieć","to want"],["pomóc","to help"],["można","it's allowed / one can"],["powinienem","I should (man)"]],
+   say:["Muszę dzisiaj pracować.","Czy możesz mi pomóc?","Chcę mówić po polsku."],
+   tr:[["Can you help me? (formal, to a man)",["Czy może mi pan pomóc","Może mi pan pomóc","Czy może pan mi pomóc"]],["I must work today.",["Muszę dzisiaj pracować","Dzisiaj muszę pracować","Muszę dziś pracować"]],["I want to learn Polish.",["Chcę uczyć się polskiego","Chcę się uczyć polskiego"]]]},
+  // A2.1
+  {t:"Mieszkanie", en:"Finding an apartment", learn:"Key words in Polish flat ads (Otodom, OLX): <b>czynsz</b> (rent, but careful: it can also mean the extra building fee) · <b>opłaty / media</b> (bills: electricity, gas, water) · <b>kaucja</b> (deposit, usually 1–2 months) · <b>kawalerka</b> (studio flat) · <b>2 pokoje</b> (2 rooms).<br>Always ask: <b>Czy opłaty są wliczone?</b> (Are the bills included?)",
+   v:[["ten pokój","room"],["ten czynsz","rent / building fee"],["ta kaucja","deposit"],["opłaty","bills / utilities"],["wprowadzić się","to move in"],["ten właściciel","owner / landlord"],["ta kuchnia","kitchen"]],
+   say:["Mieszkanie ma dwa pokoje.","Ile wynosi czynsz?","Czy opłaty są wliczone?"],
+   tr:[["How much is the rent?",["Ile wynosi czynsz","Ile kosztuje czynsz","Jaki jest czynsz"]],["The apartment has three rooms.",["Mieszkanie ma trzy pokoje","Mieszkanie ma 3 pokoje"]],["When can I move in?",["Kiedy mogę się wprowadzić"]]]},
+  {t:"U lekarza", en:"At the doctor", learn:"<b>Boli mnie głowa / brzuch / gardło.</b> (My head / stomach / throat hurts) · <b>Mam gorączkę.</b> (I have a fever) · <b>Źle się czuję.</b> (I feel unwell)<br><b>od</b> + time = for/since: <b>od trzech dni</b> (for three days).<br>A sick note for your employer is a <b>zwolnienie lekarskie</b>, usually called <b>L4</b>. Doctors send it electronically.",
+   v:[["ten lekarz","doctor"],["ta głowa","head"],["ten ból","pain"],["ta gorączka","fever"],["chory","sick (man)"],["to zwolnienie","sick note (L4)"],["ta apteka","pharmacy"]],
+   say:["Boli mnie głowa.","Źle się czuję.","Mam gorączkę od trzech dni."],
+   tr:[["I have a headache.",["Boli mnie głowa","Mam ból głowy"]],["I have a fever.",["Mam gorączkę"]],["I need a sick note.",["Potrzebuję zwolnienia lekarskiego","Potrzebuję zwolnienia","Potrzebuję L4"]]]},
+  {t:"Czas przeszły", en:"Talking about the past", learn:"Past tense = verb stem + <b>-łem</b> (if you're a man) / <b>-łam</b> (if you're a woman) for \"I\":<br>robić → <b>robiłem / robiłam</b> (I did) · pracować → <b>pracowałem / pracowałam</b> · być → <b>byłem / byłam</b> (I was)<br>He: <b>robił</b> · She: <b>robiła</b> · We: <b>robiliśmy</b><br>⚠️ The form depends on whether you're a man or a woman. This course uses the male form (-łem) in examples; women use -łam.",
+   v:[["wczoraj","yesterday"],["robiłem","I did (man)"],["pracowałem","I worked (man)"],["byłem","I was (man)"],["pojechałem","I went, by transport (man)"],["widziałem","I saw (man)"],["w zeszłym tygodniu","last week"]],
+   say:["Wczoraj długo pracowałem.","Pojechaliśmy do Krakowa.","Co robiłeś w weekend?"],
+   tr:[["I worked yesterday. (man)",["Wczoraj pracowałem","Pracowałem wczoraj"]],["What did you do at the weekend? (to a man)",["Co robiłeś w weekend"]],["I was in Warsaw. (man)",["Byłem w Warszawie"]]]},
+  {t:"Przyimki", en:"Prepositions", learn:"<b>w</b> (in) · <b>na</b> (on / at) · <b>do</b> (to) · <b>z</b> (with / from) · <b>u</b> (at someone's place) · <b>po</b> (after)<br>Nouns change after them, so learn whole phrases: <b>w pracy</b> (at work), <b>do pracy</b> (to work), <b>do lekarza</b> (to the doctor), <b>autobusem</b> (by bus), <b>z kolegą</b> (with a colleague).<br>⚠️ Some places use <b>na</b>: na poczcie (at the post office), na dworcu (at the station).",
+   v:[["ten autobus","bus"],["ten bank","bank"],["z","with / from"],["do","to"],["w","in"],["na","on / at"],["ta poczta","post office"]],
+   say:["Jadę do pracy autobusem.","Pracuję w banku.","Idę do lekarza."],
+   tr:[["I work at a bank.",["Pracuję w banku"]],["I'm going to the doctor.",["Idę do lekarza"]],["I go to work by train.",["Jadę do pracy pociągiem","Jeżdżę do pracy pociągiem"]]]},
+  {t:"Urzędy", en:"Offices & paperwork", learn:"Your first Polish offices:<br><b>Urząd miasta / gminy</b> (city office): get your <b>PESEL</b> (ID number, needed for almost everything) and register your address (<b>zameldowanie</b>).<br><b>Urząd wojewódzki</b> (regional office): residence permit (<b>karta pobytu</b>).<br><b>Urząd skarbowy</b>: the tax office.<br>Book a <b>wizyta</b> online when you can, and bring copies of everything!",
+   v:[["ten urząd","(government) office"],["ten wniosek","application (form)"],["dokumenty","documents"],["ten paszport","passport"],["ta karta pobytu","residence card"],["podpisać","to sign"],["to zameldowanie","address registration"]],
+   say:["Chciałbym się zameldować.","Mam wizytę o dziewiątej.","Jakie dokumenty są potrzebne?"],
+   tr:[["Where do I sign?",["Gdzie mam podpisać","Gdzie podpisać"]],["Which documents do I need?",["Jakie dokumenty są potrzebne","Jakie dokumenty potrzebuję","Jakich dokumentów potrzebuję"]],["I have an appointment.",["Mam wizytę","Jestem umówiony"]]]},
+  {t:"Zakupy", en:"Shopping", learn:"<b>Gdzie jest ...?</b> / <b>Gdzie znajdę ...?</b> (Where can I find...?) · <b>Tylko się rozglądam.</b> (I'm just looking)<br>At the checkout (<b>kasa</b>) you'll hear: <b>Reklamówka?</b> (A bag?) and <b>Kartą czy gotówką?</b> (Card or cash?). If asked about a loyalty card or app, just say <b>Nie, dziękuję.</b><br>Most shops in Poland are closed on most <b>Sundays</b>.",
+   v:[["to mleko","milk"],["ten chleb","bread"],["ta torba","bag"],["ta kasa","checkout"],["ta gotówka","cash"],["ten rozmiar","size"],["tani","cheap"]],
+   say:["Gdzie jest mleko?","Czy potrzebuje pan torbę?","Nie, dziękuję, mam torbę."],
+   tr:[["Where can I find bread?",["Gdzie znajdę chleb","Gdzie jest chleb"]],["I'm just looking.",["Tylko się rozglądam","Tylko oglądam"]],["Do you have a bigger size?",["Czy jest większy rozmiar","Jest większy rozmiar","Czy ma pan większy rozmiar","Czy ma pani większy rozmiar"]]]},
+  // A2.2
+  {t:"W biurze", en:"At the office", learn:"Polish offices are getting more informal, especially in IT: colleagues use first names and <b>ty</b>. With managers and clients, start with <b>pan / pani</b> until they suggest otherwise (\"Mów mi Kasia\" = call me Kasia).<br>Useful: <b>Mam zaraz spotkanie</b> (I have a meeting in a moment) · <b>Możesz mi wysłać plik?</b> · <b>Miłego weekendu!</b> · <b>Do jutra!</b> (See you tomorrow!)",
+   v:[["ten kolega","colleague (m)"],["ta koleżanka","colleague (f)"],["to spotkanie","meeting"],["ten plik","file"],["ten szef","boss"],["wysłać","to send"],["ten urlop","holiday / leave"]],
+   say:["Mam zaraz spotkanie.","Miłego weekendu!","Możesz mi wysłać ten plik?"],
+   tr:[["See you tomorrow!",["Do jutra"]],["Can you send me the file? (informal)",["Możesz mi wysłać plik","Czy możesz mi wysłać plik","Możesz mi wysłać ten plik"]],["I have a meeting at two.",["Mam spotkanie o drugiej","Mam spotkanie o 14","Mam spotkanie o czternastej"]]]},
+  {t:"Bo, że, jeśli", en:"Because, that, if", learn:"Joining sentences in Polish is easy: the word order doesn't change!<br><b>bo / ponieważ</b> (because): Uczę się polskiego, <b>bo</b> mieszkam w Polsce.<br><b>że</b> (that): Myślę, <b>że</b> to dobry pomysł.<br><b>jeśli / jeżeli</b> (if): <b>Jeśli</b> będę miał czas, przyjdę.<br>⚠️ Polish always puts a comma before bo, że and jeśli.",
+   v:[["bo","because"],["że","that"],["jeśli","if"],["myśleć","to think"],["dobry","good"],["zły","bad / wrong"],["ten pomysł","idea"]],
+   say:["Uczę się polskiego, bo mieszkam w Polsce.","Myślę, że to dobry pomysł.","Jeśli będę miał czas, przyjdę."],
+   tr:[["I'm learning Polish because I work in Poland.",["Uczę się polskiego bo pracuję w Polsce","Uczę się polskiego ponieważ pracuję w Polsce"]],["I think it's a good idea.",["Myślę że to dobry pomysł","Myślę że to jest dobry pomysł"]],["If I have time, I'll come. (man)",["Jeśli będę miał czas przyjdę","Jeżeli będę miał czas przyjdę"]]]},
+  {t:"Telefon", en:"Phone calls", learn:"Poles answer the phone with <b>Halo?</b> or <b>Słucham?</b> (literally \"I'm listening\"). Start your call with: <b>Dzień dobry, mówi ...</b> (Hello, this is ... speaking).<br>Life-savers: <b>Czy może pan mówić wolniej?</b> (Could you speak more slowly?) · <b>Czy może pani powtórzyć?</b> (Could you repeat?) · <b>Czy może pan przeliterować?</b> (Could you spell it?)<br>To a man: <b>pan</b> · to a woman: <b>pani</b>.",
+   v:[["dzwonić","to call"],["ta komórka","mobile phone"],["przeliterować","to spell"],["oddzwonić","to call back"],["ta wiadomość","message"],["zajęty","busy (line)"],["słucham","hello? (on the phone) / pardon?"]],
+   say:["Dzień dobry, mówi Kumar.","Czy może pan mówić wolniej?","Czy może pani przeliterować?"],
+   tr:[["Could you speak more slowly? (to a woman)",["Czy może pani mówić wolniej","Może pani mówić wolniej"]],["Can you repeat that? (to a man)",["Czy może pan powtórzyć","Może pan powtórzyć"]],["I'll call back later.",["Oddzwonię później","Zadzwonię później"]]]},
+  {t:"Wyrażanie opinii", en:"Giving your opinion", learn:"<b>Myślę, że ...</b> (I think that) · <b>Moim zdaniem ...</b> (In my opinion) · <b>Według mnie ...</b> (According to me; this one is fine in Polish!)<br>Agreeing: <b>Zgadzam się.</b> · <b>Masz rację.</b> (You're right) · <b>No właśnie!</b> (Exactly!)<br>Disagreeing: <b>Nie zgadzam się.</b> · <b>Nie jestem pewien.</b> (I'm not sure, man) · <b>Mam inne zdanie.</b> (I have a different opinion)",
+   v:[["to zdanie","opinion / sentence"],["ta propozycja","proposal"],["drogi","expensive"],["zgadzać się","to agree"],["mieć rację","to be right"],["ważny","important"],["pewien","sure (man)"]],
+   say:["Ten pomysł mi się podoba.","Moim zdaniem to za drogie.","Nie zgadzam się."],
+   tr:[["In my opinion it's too expensive.",["Moim zdaniem to za drogie","Moim zdaniem to jest za drogie"]],["I agree.",["Zgadzam się"]],["You're right. (informal)",["Masz rację"]]]},
+  {t:"Się", en:"Reflexive verbs (się)", learn:"Many Polish verbs come with <b>się</b> (\"oneself\"): <b>uczyć się</b> (to learn), <b>nazywać się</b> (to be called), <b>spotkać się</b> (to meet), <b>cieszyć się</b> (to be glad), <b>podobać się</b> (to be liked).<br><b>Się</b> likes to stand early in the sentence: <b>Jak się masz?</b><br>\"I like it\" = <b>Podoba mi się</b> (literally \"it pleases me\").",
+   v:[["wstawać","to get up"],["spotkać się","to meet"],["cieszyć się","to be glad"],["podobać się","to be liked"],["zaczynać","to start"],["kończyć","to finish"],["robić zakupy","to go shopping"]],
+   say:["Wstaję o siódmej.","Spotkamy się jutro?","Bardzo mi się tu podoba."],
+   tr:[["I get up at six.",["Wstaję o szóstej","Wstaję o 6"]],["I like Poland.",["Podoba mi się Polska","Polska mi się podoba","Lubię Polskę"]],["Let's meet tomorrow.",["Spotkajmy się jutro","Spotkamy się jutro"]]]},
+  {t:"Rozmowa o pracę", en:"Job interview basics", learn:"Even if the job is in English, a few Polish sentences make a great impression:<br><b>Mam pięć lat doświadczenia.</b> (I have 5 years of experience) · <b>Lubię pracować w zespole.</b> (I like working in a team) · <b>Mogę zacząć za miesiąc.</b> (I can start in a month)<br>Contract types matter in Poland: <b>umowa o pracę</b> (employment contract with full protection) vs <b>B2B</b> (you invoice as your own business).",
+   v:[["to doświadczenie","experience"],["ten zespół","team"],["to stanowisko","position / job"],["ta pensja","salary"],["ta umowa","contract"],["to CV","CV"],["ta zaleta","strength / advantage"]],
+   say:["Mam pięć lat doświadczenia.","Lubię pracować w zespole.","Mogę zacząć za trzy miesiące."],
+   tr:[["I have five years of experience.",["Mam pięć lat doświadczenia","Mam 5 lat doświadczenia"]],["I like working in a team.",["Lubię pracować w zespole"]],["I can start in two months.",["Mogę zacząć za dwa miesiące","Mogę zacząć za 2 miesiące"]]]},
+  // B1
+  {t:"Czas przyszły", en:"Talking about the future", learn:"Two ways to talk about the future:<br>1. <b>będę</b> + verb: <b>Będę pracować</b> (I will be working) · będziesz, będzie, będziemy...<br>2. \"Completed-action\" verbs in present form already mean the future: <b>zrobię</b> (I'll do it), <b>zadzwonię</b> (I'll call), <b>przyjdę</b> (I'll come).<br>Polish verbs come in <b>pairs</b>: <b>robić</b> (doing, ongoing) / <b>zrobić</b> (getting it done). Learn them as pairs!",
+   v:[["będę","I will be"],["zrobić","to do (and finish)"],["zadzwonić","to call (once)"],["przyjść","to come"],["kupić","to buy (once)"],["jutro","tomorrow"],["za tydzień","in a week"]],
+   say:["Jutro będę pracować w domu.","Zadzwonię do ciebie wieczorem.","Zrobię to za tydzień."],
+   tr:[["I'll call you tomorrow.",["Zadzwonię do ciebie jutro","Jutro do ciebie zadzwonię","Zadzwonię jutro"]],["I'll do it.",["Zrobię to"]],["I will be at home.",["Będę w domu"]]]},
+  {t:"Grzeczne prośby", en:"Polite requests", learn:"To be extra polite, use <b>-by</b> forms (would / could):<br><b>Czy mógłby pan ...?</b> (Could you..., to a man) · <b>Czy mogłaby pani ...?</b> (to a woman)<br><b>Chciałbym / Chciałabym ...</b> (I would like, man / woman)<br>Use <b>proszę</b> and <b>dziękuję</b> generously. This is the best way to talk to officials, landlords and older people.",
+   v:[["mógłby pan","could you (to a man)"],["mogłaby pani","could you (to a woman)"],["chciałbym","I would like (man)"],["chciałabym","I would like (woman)"],["umówić się","to make an appointment"],["ta pomoc","help"]],
+   say:["Czy mógłby pan mi pomóc?","Chciałbym umówić się na wizytę.","Czy miałaby pani jutro czas?"],
+   tr:[["I would like to make an appointment. (man)",["Chciałbym umówić się na wizytę","Chciałbym się umówić na wizytę"]],["Could you help me? (to a woman)",["Czy mogłaby pani mi pomóc","Czy mogłaby mi pani pomóc","Mogłaby pani mi pomóc"]],["I would like a coffee. (man)",["Chciałbym kawę","Chciałbym kawę proszę"]]]},
+  {t:"Problemy", en:"Problems & complaints", learn:"<b>... nie działa.</b> (... doesn't work) · <b>... jest zepsuty / zepsuta / zepsute.</b> (is broken; the ending matches the gender!) · <b>Niestety ...</b> (Unfortunately)<br>For problems in your flat, contact the <b>właściciel</b> (owner) or the <b>administracja</b> (building management). To return or complain about a product: <b>Chciałbym złożyć reklamację.</b>",
+   v:[["to ogrzewanie","heating"],["zepsuty","broken"],["działać","to work / function"],["niestety","unfortunately"],["ta paczka","parcel"],["ta reklamacja","complaint / return"],["ta administracja","building management"]],
+   say:["Ogrzewanie nie działa.","Niestety paczka nie przyszła.","Chciałbym złożyć reklamację."],
+   tr:[["The internet doesn't work.",["Internet nie działa"]],["Unfortunately I'm sick. (man)",["Niestety jestem chory"]],["The heating doesn't work.",["Ogrzewanie nie działa"]]]},
+  {t:"Opowiadanie", en:"Telling a story", learn:"Connect events with: <b>najpierw</b> (first) · <b>potem</b> (then) · <b>następnie</b> (next) · <b>później</b> (later) · <b>w końcu</b> (finally / in the end).<br>Useful: <b>Wszystko się udało.</b> (Everything worked out.) · <b>To było trudne.</b> (It was difficult.)<br>Remember: past tense ends in -łem (man) / -łam (woman).",
+   v:[["najpierw","first"],["potem","then"],["później","later"],["w końcu","finally"],["udać się","to work out / succeed"],["trudny","difficult"],["znaleźć","to find"]],
+   say:["Najpierw zrobiłem kurs polskiego.","Potem znalazłem mieszkanie.","W końcu wszystko się udało."],
+   tr:[["First I looked for an apartment. (man)",["Najpierw szukałem mieszkania"]],["Then I found a job. (man)",["Potem znalazłem pracę"]],["Everything worked out.",["Wszystko się udało"]]]},
+  {t:"Kultura i small talk", en:"Culture & small talk", learn:"Things that help in Poland:<br><b>Name days (imieniny)</b> are celebrated like birthdays. Say <b>Wszystkiego najlepszego!</b> (All the best!)<br><b>Pan / pani</b>: being formal is polite, not cold. Wait until someone offers \"ty\" (\"Mów mi Tomek\").<br><b>Shoes off</b> when you enter someone's home. Bring flowers (an odd number!) or something sweet when you're invited.<br>Say <b>Smacznego!</b> (Enjoy your meal!) before eating. Try pierogi, żurek and bigos.<br>Small talk: weekend, weather, food, travel. Avoid politics and history at first.",
+   v:[["imieniny","name day"],["smacznego","enjoy your meal"],["ta pogoda","weather"],["inaczej","differently"],["ciekawy","interesting"],["to jedzenie","food"],["zapraszać","to invite"]],
+   say:["Jak minął weekend?","U nas w Indiach jest inaczej.","Smacznego!"],
+   tr:[["How was your weekend?",["Jak minął weekend","Jak minął ci weekend","Jak ci minął weekend"]],["In India it's different.",["W Indiach jest inaczej"]],["That's interesting.",["To ciekawe","To jest ciekawe"]]]},
+  {t:"Egzamin B1", en:"Final: exam skills", learn:"Poland's official Polish exam (<b>egzamin certyfikatowy</b>) at level B1 is required for Polish citizenship. The speaking part usually includes:<br>1. <b>Talking about yourself</b> and everyday topics.<br>2. A <b>role-play</b> of a real situation (office, shop, doctor).<br>3. <b>Describing a picture or topic</b> and giving your opinion: <b>Na zdjęciu widzę ...</b> (In the picture I see) · <b>Moim zdaniem ...</b> · <b>Dziękuję za uwagę</b> (Thank you for your attention).<br>🏆 Finish this lesson and you've completed the course. <b>Powodzenia!</b> (Good luck!)",
+   v:[["ten egzamin","exam"],["ten temat","topic"],["to zdjęcie","picture / photo"],["ta wada","disadvantage"],["ten przykład","example"],["zdać","to pass (an exam)"],["ta uwaga","attention"]],
+   say:["Na zdjęciu widzę rodzinę w parku.","Chciałbym opowiedzieć o moim życiu w Polsce.","Dziękuję za uwagę."],
+   tr:[["In my opinion it's a good idea.",["Moim zdaniem to dobry pomysł","Moim zdaniem to jest dobry pomysł"]],["In the picture I see a man.",["Na zdjęciu widzę mężczyznę"]],["Thank you for your attention.",["Dziękuję za uwagę","Dziękuję bardzo za uwagę"]]]},
+];
+
+// English meaning of every practice sentence
+const SAY_EN = {
+  "Dzień dobry!":"Hello! / Good morning!","Jak się masz?":"How are you? (informal)","Dobrze, dziękuję.":"Fine, thank you.",
+  "Mam na imię Anna.":"My name is Anna.","Jestem z Indii.":"I'm from India.","Mieszkam w Warszawie.":"I live in Warsaw.",
+  "Mówię trochę po polsku.":"I speak a little Polish.","Ta ulica jest bardzo ładna.":"This street is very nice.","Ile to kosztuje?":"How much does it cost?",
+  "Mam trzydzieści lat.":"I'm thirty years old.","To kosztuje dwanaście złotych.":"That costs twelve zloty.","Mój numer to pięć, zero, jeden.":"My number is five, zero, one.",
+  "Ten stół, ta lampa, to okno.":"This table, this lamp, this window.","To mieszkanie jest duże.":"This apartment is big.","Ta kawa jest dobra.":"This coffee is good.",
+  "Jestem zmęczony.":"I'm tired. (man)","Mam brata.":"I have a brother.","Jesteśmy kolegami.":"We are colleagues.",
+  "Pracuję w firmie IT.":"I work at an IT company.","Co dzisiaj robisz?":"What are you doing today?","Dzisiaj uczę się polskiego.":"Today I'm learning Polish.",
+  "Gdzie jest dworzec?":"Where is the train station?","Kiedy zaczyna się kurs?":"When does the course start?","Czy mówi pan po angielsku?":"Do you speak English? (to a man, formal)",
+  "Poproszę dwie bułki.":"Two bread rolls, please.","Poproszę kawę z mlekiem.":"A coffee with milk, please.","Poproszę rachunek.":"The bill, please.",
+  "Mam pytanie.":"I have a question.","Kupuję kawę.":"I'm buying a coffee.","Nie mam samochodu.":"I don't have a car.",
+  "Jest ósma.":"It's eight o'clock.","Wizyta jest w poniedziałek o dziesiątej.":"The appointment is on Monday at ten.","Czy ma pan czas w piątek?":"Do you have time on Friday? (to a man, formal)",
+  "Muszę dzisiaj pracować.":"I have to work today.","Czy możesz mi pomóc?":"Can you help me?","Chcę mówić po polsku.":"I want to speak Polish.",
+  "Mieszkanie ma dwa pokoje.":"The apartment has two rooms.","Ile wynosi czynsz?":"How much is the rent?","Czy opłaty są wliczone?":"Are the bills included?",
+  "Boli mnie głowa.":"I have a headache.","Źle się czuję.":"I feel unwell.","Mam gorączkę od trzech dni.":"I've had a fever for three days.",
+  "Wczoraj długo pracowałem.":"Yesterday I worked late. (man)","Pojechaliśmy do Krakowa.":"We went to Kraków.","Co robiłeś w weekend?":"What did you do at the weekend? (to a man)",
+  "Jadę do pracy autobusem.":"I go to work by bus.","Pracuję w banku.":"I work at a bank.","Idę do lekarza.":"I'm going to the doctor.",
+  "Chciałbym się zameldować.":"I would like to register my address. (man)","Mam wizytę o dziewiątej.":"I have an appointment at nine.","Jakie dokumenty są potrzebne?":"Which documents are needed?",
+  "Gdzie jest mleko?":"Where is the milk?","Czy potrzebuje pan torbę?":"Do you need a bag? (to a man)","Nie, dziękuję, mam torbę.":"No thanks, I have a bag.",
+  "Mam zaraz spotkanie.":"I have a meeting in a moment.","Miłego weekendu!":"Have a nice weekend!","Możesz mi wysłać ten plik?":"Can you send me this file?",
+  "Uczę się polskiego, bo mieszkam w Polsce.":"I'm learning Polish because I live in Poland.","Myślę, że to dobry pomysł.":"I think it's a good idea.","Jeśli będę miał czas, przyjdę.":"If I have time, I'll come. (man)",
+  "Dzień dobry, mówi Kumar.":"Hello, this is Kumar speaking.","Czy może pan mówić wolniej?":"Could you speak more slowly? (to a man)","Czy może pani przeliterować?":"Could you spell that? (to a woman)",
+  "Ten pomysł mi się podoba.":"I like this idea.","Moim zdaniem to za drogie.":"In my opinion it's too expensive.","Nie zgadzam się.":"I don't agree.",
+  "Wstaję o siódmej.":"I get up at seven.","Spotkamy się jutro?":"Shall we meet tomorrow?","Bardzo mi się tu podoba.":"I really like it here.",
+  "Mam pięć lat doświadczenia.":"I have five years of experience.","Lubię pracować w zespole.":"I like working in a team.","Mogę zacząć za trzy miesiące.":"I can start in three months.",
+  "Jutro będę pracować w domu.":"Tomorrow I'll be working from home.","Zadzwonię do ciebie wieczorem.":"I'll call you in the evening.","Zrobię to za tydzień.":"I'll do it in a week.",
+  "Czy mógłby pan mi pomóc?":"Could you help me? (to a man)","Chciałbym umówić się na wizytę.":"I would like to make an appointment. (man)","Czy miałaby pani jutro czas?":"Would you have time tomorrow? (to a woman)",
+  "Ogrzewanie nie działa.":"The heating doesn't work.","Niestety paczka nie przyszła.":"Unfortunately the parcel hasn't arrived.","Chciałbym złożyć reklamację.":"I would like to make a complaint. (man)",
+  "Najpierw zrobiłem kurs polskiego.":"First I did a Polish course. (man)","Potem znalazłem mieszkanie.":"Then I found an apartment. (man)","W końcu wszystko się udało.":"In the end everything worked out.",
+  "Jak minął weekend?":"How was the weekend?","U nas w Indiach jest inaczej.":"Back home in India it's different.","Smacznego!":"Enjoy your meal!",
+  "Na zdjęciu widzę rodzinę w parku.":"In the picture I see a family in a park.","Chciałbym opowiedzieć o moim życiu w Polsce.":"I'd like to talk about my life in Poland. (man)","Dziękuję za uwagę.":"Thank you for your attention.",
+};
+
+const TALK = [
+  {id:"baker", icon:"🥐", title:"W piekarni", en:"At the bakery", who:"Sprzedawczyni", lvl:1, turns:[
+    {they:"Dzień dobry! Co podać?", tEn:"Hello! What can I get you?", you:"Greet her and ask for two bread rolls.", keys:["bułki","poproszę","dwie","proszę"], model:"Dzień dobry! Poproszę dwie bułki.", mEn:"Hello! Two bread rolls, please."},
+    {they:"Coś jeszcze?", tEn:"Anything else?", you:"Ask for a coffee to take away (na wynos).", keys:["kawę","kawa","wynos"], model:"Tak, poproszę kawę na wynos.", mEn:"Yes, a coffee to take away, please."},
+    {they:"Z mlekiem?", tEn:"With milk?", you:"Say yes, with milk, but no sugar.", keys:["tak","mlekiem","bez","cukru","nie"], model:"Tak, z mlekiem, ale bez cukru.", mEn:"Yes, with milk, but no sugar."},
+    {they:"Razem czternaście złotych.", tEn:"That's fourteen zloty altogether.", you:"Ask if you can pay by card.", keys:["kartą","karta","zapłacić","mogę"], model:"Czy mogę zapłacić kartą?", mEn:"Can I pay by card?"},
+    {they:"Oczywiście. Miłego dnia!", tEn:"Of course. Have a nice day!", you:"Thank her and say goodbye.", keys:["dziękuję","widzenia","nawzajem","wzajemnie"], model:"Dziękuję, nawzajem! Do widzenia!", mEn:"Thank you, you too! Goodbye!"},
+  ]},
+  {id:"colleague", icon:"☕", title:"Przerwa na kawę", en:"Coffee break with a colleague", who:"Kasia", lvl:1, turns:[
+    {they:"Cześć! Jesteś tu nowy, prawda? Jestem Kasia.", tEn:"Hi! You're new here, right? I'm Kasia.", you:"Say hi, that you're new, and your name.", keys:["cześć","nowy","jestem","imię"], model:"Cześć Kasia! Tak, jestem nowy. Mam na imię Ravi.", mEn:"Hi Kasia! Yes, I'm new. My name is Ravi."},
+    {they:"Skąd jesteś?", tEn:"Where are you from?", you:"Say you're from India.", keys:["jestem","indii","pochodzę"], model:"Jestem z Indii, z Bangalore.", mEn:"I'm from India, from Bangalore."},
+    {they:"Super! I jak ci się podoba Polska?", tEn:"Great! And how do you like Poland?", you:"Say you like it a lot, but it's cold.", keys:["podoba","bardzo","zimno","fajnie","dobrze","super"], model:"Bardzo mi się podoba! Ale jest zimno.", mEn:"I like it a lot! But it's cold."},
+    {they:"Haha, tak. Co robisz w weekend?", tEn:"Haha, yes. What are you doing at the weekend?", you:"Say your plan, then ask her back (A ty?).", keys:["?"], model:"Idę do muzeum. A ty?", mEn:"I'm going to a museum. And you?"},
+    {they:"Jadę w góry. Chcesz jechać z nami?", tEn:"I'm going to the mountains. Do you want to come with us?", you:"Accept the invitation happily.", keys:["tak","chętnie","super","jasne","pewnie","bardzo"], model:"Tak, chętnie! Brzmi super.", mEn:"Yes, gladly! Sounds great."},
+  ]},
+  {id:"office", icon:"🏛️", title:"PESEL w urzędzie", en:"Getting your PESEL at the city office", who:"Urzędniczka", lvl:2, turns:[
+    {they:"Dzień dobry. W czym mogę pomóc?", tEn:"Hello. How can I help?", you:"Say you would like to get a PESEL number.", keys:["pesel","numer","chciałbym","chciałabym","poproszę"], model:"Dzień dobry. Chciałbym dostać numer PESEL.", mEn:"Hello. I would like to get a PESEL number."},
+    {they:"Czy ma pan paszport?", tEn:"Do you have a passport?", you:"Say yes, here it is.", keys:["tak","proszę","paszport","oto"], model:"Tak, proszę, oto mój paszport.", mEn:"Yes, here you go, here's my passport."},
+    {they:"Proszę wypełnić ten wniosek.", tEn:"Please fill in this form.", you:"Ask if the form is also in English.", keys:["?","angielsku"], model:"Czy ten wniosek jest też po angielsku?", mEn:"Is this form also in English?"},
+    {they:"Niestety nie, ale pomogę panu. Proszę podpisać tutaj.", tEn:"Unfortunately not, but I'll help you. Please sign here.", you:"Thank her and ask if it's here at the bottom.", keys:["?","dziękuję","gdzie","tutaj"], model:"Dziękuję bardzo. Tutaj na dole?", mEn:"Thank you very much. Here at the bottom?"},
+    {they:"Tak. Numer PESEL dostanie pan od razu. Coś jeszcze?", tEn:"Yes. You'll get your PESEL number straight away. Anything else?", you:"Say no, that's all, thank you, goodbye.", keys:["nie","dziękuję","wszystko","widzenia"], model:"Nie, to wszystko. Dziękuję, do widzenia!", mEn:"No, that's all. Thank you, goodbye!"},
+  ]},
+  {id:"flat", icon:"🏠", title:"Oglądanie mieszkania", en:"Apartment viewing", who:"Właściciel", lvl:3, turns:[
+    {they:"Dzień dobry! Pan w sprawie mieszkania?", tEn:"Hello! You're here about the apartment?", you:"Confirm and greet him.", keys:["tak","dzień","dobry","zgadza","właśnie"], model:"Tak, dzień dobry!", mEn:"Yes, hello!"},
+    {they:"Mieszkanie ma dwa pokoje, kuchnię i łazienkę. Czynsz to dwa tysiące pięćset złotych.", tEn:"The apartment has two rooms, a kitchen and a bathroom. The rent is 2,500 zloty.", you:"Ask if the bills (opłaty) are included.", keys:["opłaty","media","wliczone","rachunki"], model:"Czy opłaty są wliczone w czynsz?", mEn:"Are the bills included in the rent?"},
+    {they:"Nie, opłaty to około czterystu złotych miesięcznie.", tEn:"No, the bills are about 400 zloty a month.", you:"Ask when you can move in.", keys:["kiedy","wprowadzić","wolne"], model:"Kiedy mogę się wprowadzić?", mEn:"When can I move in?"},
+    {they:"Od pierwszego marca. Gdzie pan pracuje?", tEn:"From March 1st. Where do you work?", you:"Say your job and where you work.", keys:["pracuję","jestem","firmie","inżynier","programistą"], model:"Pracuję jako inżynier w firmie IT.", mEn:"I work as an engineer at an IT company."},
+    {they:"Dobrze. Kaucja to jeden miesiąc. Kiedy może pan podpisać umowę?", tEn:"Good. The deposit is one month's rent. When can you sign the contract?", you:"Say you can sign it tomorrow.", keys:["jutro","mogę","podpisać","dzisiaj"], model:"Mogę podpisać umowę jutro.", mEn:"I can sign the contract tomorrow."},
+  ]},
+  {id:"doctor", icon:"🩺", title:"U lekarza", en:"At the doctor", who:"Lekarka", lvl:3, turns:[
+    {they:"Dzień dobry. Co panu dolega?", tEn:"Hello. What's wrong?", you:"Say you have a headache and a fever.", keys:["boli","głowa","gorączkę","ból","chory"], model:"Boli mnie głowa i mam gorączkę.", mEn:"I have a headache and a fever."},
+    {they:"Od kiedy ma pan te objawy?", tEn:"Since when have you had these symptoms?", you:"For three days (od trzech dni).", keys:["od","dni","wczoraj","poniedziałku","tygodnia"], model:"Od trzech dni.", mEn:"For three days."},
+    {they:"Czy bierze pan jakieś leki?", tEn:"Are you taking any medication?", you:"Say no, you aren't taking any medication.", keys:["nie","biorę","żadnych","tak","paracetamol","ibuprofen"], model:"Nie, nie biorę żadnych leków.", mEn:"No, I'm not taking any medication."},
+    {they:"Dam panu zwolnienie na trzy dni.", tEn:"I'll give you a sick note for three days.", you:"Thank her and ask if you need to come again.", keys:["?","dziękuję","muszę","przyjść"], model:"Dziękuję. Czy muszę przyjść jeszcze raz?", mEn:"Thank you. Do I need to come again?"},
+    {they:"Tylko jeśli nie będzie lepiej. Zdrowia życzę!", tEn:"Only if it doesn't get better. Get well soon!", you:"Thank her and say goodbye.", keys:["dziękuję","widzenia","bardzo"], model:"Dziękuję bardzo. Do widzenia!", mEn:"Thank you very much. Goodbye!"},
+  ]},
+  {id:"market", icon:"🛒", title:"W sklepie", en:"At the supermarket", who:"Pracownik", lvl:2, turns:[
+    {they:"Mogę w czymś pomóc?", tEn:"Can I help you with something?", you:"Ask where the milk is.", keys:["gdzie","mleko","znajdę"], model:"Tak, proszę. Gdzie jest mleko?", mEn:"Yes, please. Where is the milk?"},
+    {they:"Mleko jest w alejce numer trzy, na końcu po lewej.", tEn:"The milk is in aisle three, at the end on the left.", you:"Thank him.", keys:["dziękuję","bardzo"], model:"Dziękuję bardzo!", mEn:"Thank you very much!"},
+    {they:"(przy kasie) Reklamówka?", tEn:"(at the checkout) A bag?", you:"No thanks, you have your own bag.", keys:["nie","dziękuję","mam","torbę","swoją"], model:"Nie, dziękuję, mam swoją torbę.", mEn:"No thanks, I have my own bag."},
+    {they:"Ma pan naszą aplikację?", tEn:"Do you have our app?", you:"Say no, thank you.", keys:["nie","dziękuję"], model:"Nie, dziękuję.", mEn:"No, thank you."},
+    {they:"Czterdzieści dwa złote. Kartą czy gotówką?", tEn:"42 zloty. Card or cash?", you:"Say: by card, please.", keys:["kartą","karta","gotówką"], model:"Kartą, proszę.", mEn:"By card, please."},
+  ]},
+];
+
+// questions: English; the first option is correct (shuffled on screen)
+const PASSAGES = [
+  {title:"Komunikat na dworcu", en:"Train station announcement", text:"Uwaga! Pociąg do Krakowa, planowy odjazd godzina dziesiąta piętnaście, jest opóźniony o około dwadzieścia minut. Pociąg odjedzie z peronu trzeciego. Przepraszamy za utrudnienia.", textEn:"Attention! The train to Kraków, scheduled to depart at 10:15, is delayed by about twenty minutes. The train will depart from platform three. We apologise for the inconvenience.",
+   qs:[["Where is the train going?","To Kraków","To Warsaw","To Gdańsk","To Wrocław"],["Which platform?","Platform 3","Platform 10","Platform 15","Platform 20"],["What is the problem?","About 20 minutes late","About 15 minutes late","It is cancelled","It leaves earlier"]]},
+  {title:"Wiadomość z przychodni", en:"Message from the clinic", text:"Dzień dobry, tu przychodnia Zdrowie. Niestety pana wizyta w czwartek o dziewiątej jest odwołana. Możemy zaproponować nowy termin w piątek o czternastej. Proszę o kontakt telefoniczny.", textEn:"Hello, this is the Zdrowie clinic. Unfortunately your appointment on Thursday at nine is cancelled. We can offer a new appointment on Friday at 2 pm. Please contact us by phone.",
+   qs:[["What happened?","The Thursday appointment is cancelled","The doctor is on holiday","The clinic has moved","The appointment is earlier on Thursday"],["What is the new appointment?","Friday at 2 pm","Friday at 9 am","Thursday at 2 pm","Monday at 9 am"],["What should you do?","Call them","Send an email","Come at 9","Nothing"]]},
+  {title:"Wiadomość od właściciela", en:"Message from your landlord", text:"Dzień dobry, tu pan Nowak, właściciel mieszkania. W środę przyjdzie hydraulik, żeby naprawić prysznic. Będzie między ósmą a dwunastą. Proszę być w domu. Dziękuję i miłego dnia!", textEn:"Hello, this is Mr Nowak, the owner of the apartment. On Wednesday a plumber is coming to repair the shower. He'll be there between eight and twelve. Please be at home. Thank you, and have a nice day!",
+   qs:[["What will be repaired?","The shower","The heating","The window","The door"],["When?","Wednesday, 8 to 12","Monday, 8 to 12","Wednesday afternoon","Friday morning"],["What should you do?","Be at home","Leave the key outside","Call the plumber","Pay the rent"]]},
+  {title:"Zaproszenie od Tomka", en:"Invitation from a colleague", text:"Cześć, tu Tomek. W sobotę mam urodziny i robię małą imprezę u siebie w domu. Zaczynamy o ósmej wieczorem. Możesz przynieść sałatkę? Daj znać do czwartku, czy przyjdziesz!", textEn:"Hi, it's Tomek. It's my birthday on Saturday and I'm having a small party at my place. We start at eight in the evening. Can you bring a salad? Let me know by Thursday if you're coming!",
+   qs:[["What is the occasion?","His birthday","A work party","A wedding","A farewell party"],["When is it?","Saturday, 8 pm","Saturday, 8 am","Sunday, 8 pm","Thursday, 8 pm"],["What should you bring?","A salad","Drinks","A cake","Nothing"]]},
+  {title:"Prognoza pogody", en:"Weather forecast", text:"A teraz pogoda na jutro. Na północy przez cały dzień będzie padać deszcz. Na południu będzie słonecznie, a temperatura wyniesie do osiemnastu stopni. W weekend będzie zimniej.", textEn:"And now the weather for tomorrow. In the north it will rain all day. In the south it will be sunny, with temperatures up to eighteen degrees. At the weekend it will be colder.",
+   qs:[["What will the weather be like in the north?","Rain all day","Sunny","Snow","Windy but dry"],["Temperature in the south?","Up to 18 degrees","Up to 8 degrees","Up to 28 degrees","Up to 13 degrees"],["And at the weekend?","It gets colder","It gets warmer","It rains everywhere","No change"]]},
+  {title:"Komunikat w sklepie", en:"Supermarket announcement", text:"Drodzy klienci, dzisiaj w promocji: jabłka, tylko cztery złote dziewięćdziesiąt dziewięć groszy za kilogram. Uwaga: dzisiaj nasz sklep jest czynny tylko do osiemnastej.", textEn:"Dear customers, on special offer today: apples, only 4.99 zloty per kilo. Please note: today our shop is only open until 6 pm.",
+   qs:[["What is on offer?","Apples","Bananas","Bread","Milk"],["How much?","4.99 zł per kilo","4.90 zł per kilo","9.99 zł per kilo","1.99 zł per kilo"],["When does the shop close today?","At 6 pm","At 8 pm","At 10 pm","It's closed all day"]]},
+];
+
+const PHRASES = {
+  "Basics":[["Tak / Nie","Yes / No"],["Proszę","Please / You're welcome / Here you go"],["Dziękuję bardzo","Thank you very much"],["Przepraszam","Excuse me / Sorry"],["Nie ma problemu","No problem"],["Nie wiem","I don't know"]],
+  "When you don't understand":[["Nie rozumiem.","I don't understand."],["Może pan powtórzyć?","Could you repeat that? (to a man; to a woman: pani)"],["Wolniej, proszę.","Slower, please."],["Co to znaczy?","What does that mean?"],["Czy mówi pan po angielsku?","Do you speak English? (to a man; to a woman: pani)"],["Uczę się polskiego.","I'm learning Polish."]],
+  "Shopping & eating":[["Poproszę ...","I'll have ..., please"],["Ile to kosztuje?","How much is it?"],["Czy mogę zapłacić kartą?","Can I pay by card?"],["Poproszę rachunek.","The bill, please."],["Na wynos, proszę.","To take away, please."],["Smacznego!","Enjoy your meal!"]],
+  "Getting around":[["Gdzie jest dworzec?","Where is the train station?"],["Jak dojechać na lotnisko?","How do I get to the airport?"],["Jeden bilet do Krakowa, proszę.","One ticket to Kraków, please."],["Czy to miejsce jest wolne?","Is this seat free?"],["O której jest następny pociąg?","What time is the next train?"]],
+  "At work":[["Dzień dobry wszystkim!","Good morning, everyone!"],["Masz chwilę?","Do you have a moment?"],["Odezwę się później.","I'll get back to you later."],["Miłego weekendu!","Have a nice weekend!"],["Do jutra!","See you tomorrow!"]],
+  "Emergencies":[["Pomocy!","Help!"],["Proszę wezwać karetkę!","Please call an ambulance!"],["Potrzebuję lekarza.","I need a doctor."],["Gdzie jest najbliższa apteka?","Where is the nearest pharmacy?"],["Numer alarmowy: 112","Emergency number: 112"]],
+};
+
+// Speaking test practice
+const INTRO = [
+  ["Name", /mam na imię|nazywam się|imię/],
+  ["Age", /\blat\b|mam \d+/],
+  ["Country", /jestem z|pochodzę|z indii/],
+  ["Where you live", /mieszkam/],
+  ["Languages", /mówię|język|po angielsku|po polsku/],
+  ["Job", /pracuję|inżynier|programist|student|lekarz|nauczyciel|informatyk|menedżer|zawód/],
+  ["Hobby", /hobby|lubię|interesuję|wolnym czasie/],
+];
+// [topic, word, example question, word in English, question in English]
+const ASK = [
+  ["Food & drink","śniadanie","Co jesz na śniadanie?","breakfast","What do you eat for breakfast?"],["Food & drink","kawa","Czy lubisz kawę?","coffee","Do you like coffee?"],["Food & drink","ulubione danie","Jakie jest twoje ulubione danie?","favourite dish","What is your favourite dish?"],["Food & drink","restauracja","Czy często chodzisz do restauracji?","restaurant","Do you often go to restaurants?"],
+  ["Free time","weekend","Co robisz w weekend?","weekend","What do you do at the weekend?"],["Free time","sport","Czy uprawiasz sport?","sport","Do you do any sport?"],["Free time","kino","Czy lubisz chodzić do kina?","cinema","Do you like going to the cinema?"],["Free time","wakacje","Gdzie jedziesz na wakacje?","holidays","Where are you going on holiday?"],
+  ["Work","praca","Gdzie pracujesz?","work","Where do you work?"],["Work","biuro","Gdzie jest twoje biuro?","office","Where is your office?"],["Work","koledzy","Czy masz miłych kolegów?","colleagues","Do you have nice colleagues?"],["Work","szef","Czy twój szef jest miły?","boss","Is your boss nice?"],
+  ["Home","mieszkanie","Jak duże jest twoje mieszkanie?","apartment","How big is your apartment?"],["Home","czynsz","Ile płacisz czynszu?","rent","How much rent do you pay?"],["Home","rodzina","Czy masz dużą rodzinę?","family","Do you have a big family?"],["Home","zakupy","Gdzie robisz zakupy?","shopping","Where do you go shopping?"],
+];
+// [icon, word, word in English, example request, example in English]
+const REQUEST = [
+  ["🪟","okno","the window","Czy może pan otworzyć okno?","Could you open the window? (to a man)"],["🖊️","długopis","a pen","Czy możesz mi dać długopis?","Can you give me a pen?"],["💧","woda","water","Poproszę wodę.","Water, please."],["🚪","drzwi","the door","Czy może pani zamknąć drzwi?","Could you close the door? (to a woman)"],
+  ["📱","telefon","phone","Czy mogę skorzystać z telefonu?","May I use the phone?"],["🧂","sól","salt","Czy możesz podać mi sól?","Can you pass me the salt?"],["🎫","bilet","ticket","Poproszę jeden bilet.","One ticket, please."],["☕","kawa","coffee","Poproszę kawę.","A coffee, please."],
+];
+
+// ================= CORE =================
+const KEY = "polskicoach.v1";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; // local date
+const today = () => ymd(new Date());
+const shuffle = a => a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+let DB = load();
+function initDB(){ for(const k of ["course","cards","real"]) DB[k] = DB[k] || {}; for(const k of ["log","talks","listens"]) DB[k] = DB[k] || []; }
+initDB();
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){} renderAll(); }
+function logAct(type, extra){ DB.log.push(Object.assign({date:today(), ts:Date.now(), type}, extra||{})); }
+
+// Polish-aware tokenising; comparison ignores Polish accents so typed answers without them still match
+function words(t){ return t.toLowerCase().replace(/€/g," euro ").replace(/[^a-ząćęłńóśźż0-9'\s-]/g," ").split(/\s+/).filter(Boolean); }
+const PL_FOLD = {"ą":"a","ć":"c","ę":"e","ł":"l","ń":"n","ó":"o","ś":"s","ź":"z","ż":"z"};
+const fold = w => w.replace(/[ąćęłńóśźż]/g, c=>PL_FOLD[c]);
+function compareWords(target, said){
+  const a = words(target), b = words(said), fa = a.map(fold), fb = b.map(fold);
+  const dp = Array.from({length:a.length+1},()=>Array(b.length+1).fill(0));
+  for(let i=a.length-1;i>=0;i--) for(let j=b.length-1;j>=0;j--)
+    dp[i][j] = fa[i]===fb[j] ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j],dp[i][j+1]);
+  const matched = new Set(); let i=0,j=0;
+  while(i<a.length && j<b.length){ if(fa[i]===fb[j]){matched.add(i);i++;j++;} else if(dp[i+1][j]>=dp[i][j+1]) i++; else j++; }
+  // penalise extra words too, so "ich ich ich" doesn't pass
+  const acc = a.length ? Math.round(matched.size / Math.max(a.length, b.length) * 100) : 0;
+  return {acc, html: a.map((x,k)=>matched.has(k)?`<span class="hit">${esc(x)}</span>`:`<span class="miss">${esc(x)}</span>`).join(" ")};
+}
+function bestMatch(answers, said){
+  return answers.map(ans=>({ans, ...compareWords(ans, said)})).sort((x,y)=>y.acc-x.acc)[0];
+}
+// Polish words change their endings, so a key word matches any word that starts with its stem
+const stem = w => { const f = fold(w.toLowerCase()); return f.length <= 3 ? f : f.slice(0, Math.min(f.length-1, Math.max(4, f.length-2))); };
+const hasWord = (said, list) => { const ws = words(said).map(fold); return list.some(k=>k.split(" ").every(part=>{ const st = stem(part); return ws.some(w=>part.length<=3 ? w===st : w.startsWith(st)); })); };
+const QSTART = ["czy","gdzie","kiedy","co","kto","jak","jaki","jaka","jakie","dlaczego","skąd","ile","która","który","dokąd","czemu","mogę","możesz","może","masz","ma","jesteś"];
+function isQuestion(said){
+  if(/\?/.test(said)) return true;
+  const w = words(said);
+  return w.length>0 && (QSTART.map(fold).includes(fold(w[0])) || /\ba (ty|pan|pani|wy)\b/.test(w.join(" ")));
+}
+
+// ---------- speech ----------
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(!SR) $("noSpeech").classList.remove("hidden");
+function makeRec(onText, onEnd, continuous){
+  const r = new SR();
+  r.lang = "pl-PL"; r.continuous = !!continuous; r.interimResults = true;
+  let finalText = "";
+  r.onresult = ev=>{
+    let interim = "";
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      const t = ev.results[i][0].transcript;
+      if(ev.results[i].isFinal) finalText += t + " "; else interim += t;
+    }
+    onText(finalText, interim);
+  };
+  r.onend = ()=>onEnd(finalText.trim());
+  r.onerror = ev=>{ if(ev.error==="not-allowed") alert("Microphone blocked. Please allow microphone access in your browser."); };
+  return r;
+}
+let activeRec = null;
+function stopRec(silent){ if(activeRec){ const r = activeRec; activeRec = null; if(silent) r.onend = null; r.stop(); } }
+// one helper for every mic button: toggles recording and restores the button afterwards
+function micButton(btn, out, onDone, opts){
+  opts = opts || {};
+  if(!SR){ const t = prompt("No speech recognition here. Type your answer in Polish:"); if(t) onDone(t.trim()); return; }
+  if(activeRec){ stopRec(); return; }
+  speechSynthesis.cancel();
+  const label = btn.innerHTML;
+  btn.innerHTML = "⏹ Stop"; btn.classList.add("rec");
+  if(out) out.textContent = "Listening... speak now, then press Stop.";
+  activeRec = makeRec((f,i)=>{ if(out) out.textContent = f+i; }, said=>{
+    activeRec = null; btn.innerHTML = label; btn.classList.remove("rec");
+    onDone(said);
+  }, opts.continuous);
+  activeRec.start();
+}
+function deVoices(){ return speechSynthesis.getVoices().filter(v=>/^pl[-_]/i.test(v.lang)); }
+function sayDE(text, rate, voiceName){
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "pl-PL"; u.rate = rate || 0.85;
+  const vs = deVoices();
+  const v = (voiceName && vs.find(x=>x.name===voiceName)) || vs.find(x=>/Natural|Online|Google/i.test(x.name)) || vs[0];
+  if(v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+function checkVoices(){
+  const all = speechSynthesis.getVoices();
+  $("noVoice").classList.toggle("hidden", !all.length || deVoices().length>0);
+  fillVoices();
+}
+speechSynthesis.onvoiceschanged = checkVoices;
+setTimeout(checkVoices, 800);
+
+// ---------- tabs ----------
+$("nav").addEventListener("click", e=>{ const b = e.target.closest("button"); if(b) showTab(b.dataset.tab); });
+function showTab(t){
+  stopRec(true);
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on", x.dataset.tab===t));
+  document.querySelectorAll("main > section").forEach(s=>s.classList.toggle("hidden", s.id!=="tab-"+t));
+  window.scrollTo(0,0);
+}
+// article colouring for display
+function artHTML(de){
+  const m = de.match(/^(ten|ta|to) (.+)$/);
+  return m ? `<span class="a-${m[1]}">${m[1]}</span> ${esc(m[2])}` : esc(de);
+}
+
+// ================= COURSE =================
+let openLesson = null;
+function lp(i){ return DB.course[i] = DB.course[i] || {rep:{}, rt:{}, tr:{}, tt:{}}; }
+const okRep = (p,k) => (p.rep[k]||0) >= 80 || (p.rt[k]||0) >= 3;
+const okTr = (p,k) => (p.tr[k]||0) >= 75 || (p.tt[k]||0) >= 3;
+function checkDone(i){
+  const p = lp(i), L = COURSE[i];
+  if(!p.done && L.say.every((_,k)=>okRep(p,k)) && L.tr.every((_,k)=>okTr(p,k))){ p.done = true; p.doneDate = today(); }
+}
+const isDone = i => !!(DB.course[i] && DB.course[i].done);
+const unlocked = i => i===0 || isDone(i-1);
+function currentLesson(){ const i = COURSE.findIndex((_,k)=>!isDone(k)); return i<0 ? COURSE.length : i; }
+function renderCourse(){
+  const map = $("courseMap"), view = $("lessonView");
+  if(openLesson!=null){ map.classList.add("hidden"); view.classList.remove("hidden"); renderLesson(openLesson); return; }
+  map.classList.remove("hidden"); view.classList.add("hidden");
+  const cur = currentLesson(), total = COURSE.filter((_,i)=>isDone(i)).length;
+  let html = `<div class="card"><h2>Zero to B1: Polish in 30 lessons</h2>
+    <p class="muted">One lesson a day. Each lesson: <b>learn</b> one topic and its words → <b>repeat</b> 3 sentences → <b>say it in Polish</b> (translate out loud). Passing unlocks the next lesson. New words go into your vocabulary cards.</p>
+    ${total ? "" : `<div class="tip"><b>👋 Never learned Polish before? That's exactly who this is for.</b>
+      <ul class="fb">
+        <li>Everything is explained in <b>English</b>. Every Polish word and sentence has its English meaning next to it.</li>
+        <li>Press <b>🔊</b> to hear any Polish word, as often as you like. Copy the sound and don't worry about spelling yet.</li>
+        <li>Polish looks hard but is spelled exactly the way it sounds. After Lesson 3 (pronunciation) you'll be able to read anything out loud.</li>
+        <li>Mistakes are normal. If the app doesn't understand you after 3 tries, it lets you move on.</li>
+        <li>Lesson 1 takes about 15 minutes. You'll learn to say hello, thank you and goodbye. (Polish has some difficult grammar, but this course gives it to you one small step at a time.)</li>
+      </ul></div>`}
+    <div class="bar"><i style="width:${total/COURSE.length*100}%"></i></div><div class="muted">${total} of ${COURSE.length} lessons done</div>
+    ${cur<COURSE.length ? `<button class="btn primary" style="margin-top:12px" data-openlesson="${cur}">${total?"Continue":"Start"}: Lesson ${cur+1} — ${esc(COURSE[cur].en)} →</button>` : `<p class="pass" style="margin-top:12px">🏆 Course complete! You finished the whole course. Now book a real B1 exam!</p>`}</div>`;
+  LEVELS.forEach((Lv,li)=>{
+    const ids = [0,1,2,3,4,5].map(k=>li*6+k), done = ids.filter(isDone).length;
+    html += `<div class="card ${unlocked(ids[0])?"":"locked"}"><div class="lvl">Level ${Lv.name}</div><h2>${Lv.goal}</h2>
+      <div class="bar"><i style="width:${done/6*100}%"></i></div>
+      ${ids.map(i=>{
+        const d = isDone(i), u = unlocked(i);
+        return `<div class="task"><div class="check ${d?"done":""}">${d?"✓":u?"":"🔒"}</div>
+          <div style="flex:1"><span class="muted">${i+1}</span> · <b>${esc(COURSE[i].en)}</b> <span class="muted">· ${esc(COURSE[i].t)}</span></div>
+          ${u?`<button class="btn sm ${i===cur?"primary":""}" data-openlesson="${i}">${d?"Review":i===cur?"Start":"Open"}</button>`:""}</div>`;
+      }).join("")}</div>`;
+  });
+  map.innerHTML = html;
+}
+function renderLesson(i){
+  const L = COURSE[i], p = lp(i);
+  const rd = L.say.filter((_,k)=>okRep(p,k)).length, td = L.tr.filter((_,k)=>okTr(p,k)).length;
+  $("lessonView").innerHTML = `<div class="card">
+    <button class="btn sm" data-closelesson>← All lessons</button>
+    <div class="lvl" style="margin-top:14px">Level ${LEVELS[Math.floor(i/6)].name} · Lesson ${i+1}</div>
+    <h2 style="font-size:24px;margin-bottom:0">${esc(L.en)}</h2><div class="muted">In Polish: <span class="de">${esc(L.t)}</span></div>
+    ${p.done?`<div class="pass" style="margin-top:12px">✅ Lesson complete! ${i<COURSE.length-1?`<a href="#" data-openlesson="${i+1}">Next: ${esc(COURSE[i+1].en)} →</a>`:"You finished the course! 🏆"}</div>`:""}
+    <div class="step"><h3>Step 1 · Learn</h3><p>${L.learn}</p>
+      <h3>New words <span class="muted">(tap a word to hear it)</span></h3>
+      <div class="vocab">${L.v.map(([de,en])=>`<div data-sayde="${esc(de)}"><div class="de">${artHTML(de)}</div><div class="en">${esc(en)}</div></div>`).join("")}</div></div>
+    <div class="step"><h3>Step 2 · Listen and repeat <span class="muted">(${rd}/${L.say.length})</span></h3>
+      <p class="muted">Listen 🔊, then repeat 🎤. You need 80%. (If the app keeps mishearing you, it counts after 3 tries.)</p>
+      ${L.say.map((s,k)=>`<div class="phrase" style="flex-wrap:wrap"><span style="flex:1;min-width:200px"><span class="de">${okRep(p,k)?"✅ ":""}${esc(s)}</span><br><span class="en">${esc(SAY_EN[s]||"")}</span></span>
+        <span class="row"><button class="btn sm" data-sayde="${esc(s)}">🔊</button><button class="btn sm primary" data-rep="${k}">🎤</button></span>
+        <div id="rep-${k}" style="width:100%;font-size:14px"></div></div>`).join("")}
+    </div>
+    <div class="step"><h3>Step 3 · Say it in Polish <span class="muted">(${td}/${L.tr.length})</span></h3>
+      <p class="muted">Read the English, then say it in Polish. Try before you look at the answer! (Typing? Letters like ą, ł, ż can be typed as a, l, z.)</p>
+      ${L.tr.map(([en],k)=>`<div class="phrase" style="flex-wrap:wrap"><span style="flex:1;min-width:200px">${okTr(p,k)?"✅ ":""}🇬🇧 ${esc(en)}</span>
+        <span class="row"><button class="btn sm primary" data-tr="${k}">🎤 Say it</button><button class="btn sm" data-trshow="${k}">👁</button></span>
+        <div id="tr-${k}" style="width:100%;font-size:14px"></div></div>`).join("")}
+    </div></div>`;
+}
+function lessonRepeat(k, btn){
+  const i = openLesson, target = COURSE[i].say[k], out = $("rep-"+k);
+  micButton(btn, out, said=>{
+    const p = lp(i), r = compareWords(target, said);
+    p.rt[k] = (p.rt[k]||0)+1; p.rep[k] = Math.max(p.rep[k]||0, r.acc);
+    logAct("rep", {acc:r.acc}); checkDone(i); save();
+    $("rep-"+k).innerHTML = `<b class="${r.acc>=80?"ok":r.acc>=60?"mid":"low"}">${r.acc}%</b> ${r.html}<br><span class="muted">Heard: ${esc(said||"(nothing)")}</span>`;
+  });
+}
+function lessonTranslate(k, btn){
+  const i = openLesson, [en, answers] = COURSE[i].tr[k], out = $("tr-"+k);
+  micButton(btn, out, said=>{
+    const p = lp(i), b = bestMatch(answers, said);
+    p.tt[k] = (p.tt[k]||0)+1; p.tr[k] = Math.max(p.tr[k]||0, b.acc);
+    logAct("tr", {acc:b.acc}); checkDone(i); save();
+    $("tr-"+k).innerHTML = `<b class="${b.acc>=75?"ok":b.acc>=50?"mid":"low"}">${b.acc>=75?"✅ Correct!":b.acc>=50?"Almost!":"Not yet"} ${b.acc}%</b> — ${b.html}
+      <br><span class="muted">Heard: ${esc(said||"(nothing)")}</span>${b.acc<75 && (p.tt[k]||0)>=3?`<br><span class="muted">This now counts as done. The correct answer is shown above in green.</span>`:""}`;
+  });
+}
+document.addEventListener("click", e=>{
+  const t = e.target.closest("[data-openlesson],[data-closelesson],[data-sayde],[data-rep],[data-tr],[data-trshow]");
+  if(!t) return;
+  if(t.dataset.openlesson!=null){ e.preventDefault(); openLesson = +t.dataset.openlesson; showTab("course"); renderCourse(); }
+  else if(t.hasAttribute("data-closelesson")){ openLesson = null; renderCourse(); window.scrollTo(0,0); }
+  else if(t.dataset.sayde!=null) sayDE(t.dataset.sayde);
+  else if(t.dataset.rep!=null) lessonRepeat(+t.dataset.rep, t);
+  else if(t.dataset.tr!=null) lessonTranslate(+t.dataset.tr, t);
+  else if(t.dataset.trshow!=null){ const ans = COURSE[openLesson].tr[+t.dataset.trshow][1][0]; $("tr-"+t.dataset.trshow).innerHTML = `<span class="de">${esc(ans)}</span> <a href="#" data-sayde="${esc(ans)}">🔊</a>`; }
+});
+
+// ================= WORDS: spaced repetition =================
+const BOX_DAYS = [0, 1, 3, 7, 14, 30]; // box n -> review again after n days
+function allCards(){
+  // words unlock with the course: lessons done plus the current one
+  const upto = Math.min(COURSE.length-1, currentLesson());
+  const list = [];
+  for(let i=0;i<=upto;i++) COURSE[i].v.forEach(([de,en],k)=>list.push({id:`${i}.${k}`, de, en}));
+  return list;
+}
+function addDays(n){ const d = new Date(); d.setDate(d.getDate()+n); return ymd(d); }
+function dueCards(){
+  const t = today(), all = allCards();
+  const due = all.filter(c=>DB.cards[c.id] && DB.cards[c.id].due <= t);
+  const fresh = all.filter(c=>!DB.cards[c.id]);
+  const newToday = (DB.log||[]).filter(x=>x.type==="newcard" && x.date===t).length;
+  return [...shuffle(due), ...fresh.slice(0, Math.max(0, 10-newToday))];
+}
+let W = {dir:"de", queue:[], cur:null, shown:false, done:0};
+function renderWordStats(){
+  const all = allCards(), learned = all.filter(c=>DB.cards[c.id] && DB.cards[c.id].box>=3).length;
+  const seen = all.filter(c=>DB.cards[c.id]).length;
+  $("wStats").innerHTML = `<div class="stat"><b>${dueCards().length}</b><span>To review now</span></div>
+    <div class="stat"><b>${seen}</b><span>Words seen</span></div>
+    <div class="stat"><b class="ok">${learned}</b><span>Words learned (box 3+)</span></div>
+    <div class="stat"><b>${all.length}</b><span>Unlocked words</span></div>`;
+}
+function startWords(){ W.queue = dueCards(); W.done = 0; nextCard(); }
+function nextCard(){
+  W.cur = W.queue.shift(); W.shown = false;
+  if(!W.cur){ $("wBox").innerHTML = `<div class="pass" style="margin-top:12px">✅ Done! No more cards for now${W.done?` (${W.done} reviewed)`:""}. Come back tomorrow, or finish the next lesson to unlock new words.</div>`; renderWordStats(); return; }
+  drawCard();
+}
+function drawCard(){
+  const c = W.cur, front = W.dir==="de" ? `<div class="big">${artHTML(c.de)}</div>` : `<div class="big">${esc(c.en)}</div>`;
+  const back = W.dir==="de" ? `<div class="prompt">${esc(c.en)}</div>` : `<div class="big">${artHTML(c.de)}</div>`;
+  $("wBox").innerHTML = `<div class="flash">${front}${W.shown?`<hr style="border:0;border-top:1px solid var(--line);margin:16px 0">${back}`:""}</div>
+    <div class="row" style="justify-content:center">
+      <button class="btn" id="wHear">🔊</button>
+      ${W.shown ? `<button class="btn" id="wNo">❌ Didn't know</button><button class="btn primary" id="wYes">✅ Knew it</button>` : `<button class="btn primary" id="wShow">Show answer</button>`}
+    </div><p class="muted" style="text-align:center">${W.queue.length} left · Say the answer out loud before you flip!</p>`;
+  $("wHear").onclick = ()=>sayDE(c.de);
+  if(W.dir==="de" && !W.shown) sayDE(c.de);
+  if(!W.shown){ $("wShow").onclick = ()=>{ W.shown = true; drawCard(); if(W.dir==="en") sayDE(c.de); }; return; }
+  const rate = knew=>{
+    const st = DB.cards[c.id];
+    if(!st) logAct("newcard");
+    const box = knew ? Math.min(5, (st?st.box:0)+1) : 1;
+    DB.cards[c.id] = {box, due: knew ? addDays(BOX_DAYS[box]) : today()};
+    if(!knew) W.queue.splice(Math.min(3, W.queue.length), 0, c); // see it again soon
+    W.done++; logAct("card", {knew}); save(); nextCard();
+  };
+  $("wNo").onclick = ()=>rate(false); $("wYes").onclick = ()=>rate(true);
+}
+$("wStart").onclick = startWords;
+$("wDir").onclick = ()=>{ W.dir = W.dir==="de" ? "en" : "de"; $("wDir").textContent = `Direction: ${W.dir==="de"?"Polish → English":"English → Polish"}`; if(W.cur) drawCard(); };
+
+// ten/ta/to game
+function genderHint(noun, art){
+  const n = noun.toLowerCase().split(" ").pop();
+  if(art==="ten" && /a$/.test(n)) return "Exception: it ends in -a but it's a man, so it's masculine (ten). The same goes for kolega and mężczyzna.";
+  if(/ość$/.test(n)) return "Words ending in -ość are feminine (ta).";
+  if(/a$/.test(n)) return "Ends in -a → usually feminine (ta).";
+  if(/(o|e|ę|um)$/.test(n)) return "Ends in -o, -e, -ę or -um → neuter (to).";
+  if(art==="ten") return "Ends in a consonant → usually masculine (ten).";
+  return "This one breaks the usual pattern, so learn it by heart.";
+}
+let G = null;
+function gNouns(){ return allCards().filter(c=>/^(ten|ta|to) /.test(c.de)); }
+function startGender(){ G = {n:0, right:0, streak:0}; nextGender(); }
+function nextGender(){
+  const pool = gNouns();
+  if(!pool.length){ $("gBox").innerHTML = `<p class="muted">Finish lesson 1 to unlock nouns.</p>`; return; }
+  const c = pool[Math.floor(Math.random()*pool.length)], [art, ...rest] = c.de.split(" "), noun = rest.join(" ");
+  $("gBox").innerHTML = `<div class="flash"><div class="big">___ ${esc(noun)}</div><div class="en">${esc(c.en)}</div></div>
+    <div class="row">${[["ten","masc."],["ta","fem."],["to","neut."]].map(([a,l])=>`<button class="btn gbtn" data-g="${a}"><span class="a-${a}">${a}</span> <span class="muted" style="font-size:13px">${l}</span></button>`).join("")}</div>
+    <div id="gOut" style="margin-top:10px"></div><p class="muted">${G.right}/${G.n} right · streak ${G.streak} 🔥</p>`;
+  $("gBox").querySelectorAll("[data-g]").forEach(b=>b.onclick = ()=>{
+    if(G.answered) return; G.answered = true;
+    const ok = b.dataset.g===art; G.n++; if(ok){ G.right++; G.streak++; } else G.streak = 0;
+    logAct("gender", {ok}); save();
+    $("gOut").innerHTML = `<div class="${ok?"pass":"fail"}"><b class="${ok?"ok":"low"}">${ok?"✅ Correct!":"❌ Wrong"}</b> — ${artHTML(c.de)}<div class="muted">${esc(genderHint(noun, art))}</div>
+      <button class="btn primary" id="gNext" style="margin-top:8px">Next →</button></div>`;
+    sayDE(c.de);
+    $("gNext").onclick = ()=>{ G.answered = false; nextGender(); };
+  });
+}
+$("gStart").onclick = startGender;
+
+// ================= TALK =================
+let TK = null;
+function renderTalkList(){
+  $("talkList").innerHTML = TALK.map(s=>{
+    const runs = DB.talks.filter(d=>d.id===s.id), best = runs.length ? Math.max(...runs.map(r=>r.pct)) : null;
+    return `<div class="card"><div class="row" style="justify-content:space-between">
+      <div><h2 style="margin:0">${s.icon} ${esc(s.en)}</h2><div class="muted">${esc(s.title)} · good from level ${LEVELS[s.lvl-1].name}${best!=null?` · best ${best}%`:""}</div></div>
+      <button class="btn ${runs.length?"":"primary"}" data-talk="${s.id}">${runs.length?"Practise again":"Start"}</button></div></div>`;
+  }).join("");
+}
+function startTalk(id){
+  TK = {s: TALK.find(x=>x.id===id), i:0, log:[], ok:0, en:true};
+  $("talkMenu").classList.add("hidden"); $("talkRun").classList.remove("hidden");
+  renderTalk(); sayDE(TK.s.turns[0].they.replace(/^\(.*?\)\s*/,""));
+}
+function renderTalk(after){
+  const s = TK.s, t = s.turns[TK.i];
+  const hist = TK.log.map(l=>`<div class="bubble them"><span class="who">${esc(s.who)}</span>${esc(l.they)}${TK.en?`<div class="en">${esc(l.tEn)}</div>`:""}</div><div class="bubble me"><span class="who">You</span>${esc(l.said||"(skipped)")}</div>`).join("");
+  $("talkRun").innerHTML = `<div class="card">
+    <div class="row" style="justify-content:space-between"><span class="lvl">${s.icon} ${esc(s.en)} · ${TK.i+1} / ${s.turns.length}</span>
+      <span class="row"><button class="btn sm" id="tkEn">${TK.en?"Hide English":"Show English"}</button><button class="btn sm" id="tkQuit">✕ End</button></span></div>
+    <div class="bar"><i style="width:${TK.i/s.turns.length*100}%"></i></div>
+    <div class="chat">${hist}<div class="bubble them"><span class="who">${esc(s.who)} <a href="#" id="tkHear">🔊 hear again</a></span>${esc(t.they)}${TK.en?`<div class="en">${esc(t.tEn)}</div>`:""}</div>
+      ${after?`<div class="bubble me"><span class="who">You</span>${esc(after.said||"(nothing heard)")}</div>`:""}</div>
+    ${after ? after.html : `<div class="tip">🎯 <b>Your turn:</b> ${esc(t.you)}</div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" id="tkRec">🎤 Reply</button><button class="btn" id="tkType">Type instead</button><button class="btn" id="tkHint">💡 Example</button></div>
+      <div id="tkLive" class="transcript hidden"></div><div id="tkHintBox"></div>`}
+  </div>`;
+  $("tkQuit").onclick = ()=>{ stopRec(true); speechSynthesis.cancel(); TK=null; $("talkRun").classList.add("hidden"); $("talkMenu").classList.remove("hidden"); };
+  $("tkEn").onclick = ()=>{ TK.en = !TK.en; after ? renderTalk(after) : renderTalk(); if(after) bindAfter(after); };
+  $("tkHear").onclick = e=>{ e.preventDefault(); sayDE(t.they.replace(/^\(.*?\)\s*/,"")); };
+  if(after){ bindAfter(after); return; }
+  $("tkHint").onclick = ()=>{ $("tkHintBox").innerHTML = `<div class="tip">Example: <span class="de">${esc(t.model)}</span> <a href="#" data-sayde="${esc(t.model)}">🔊</a><div class="en">${esc(t.mEn)}</div></div>`; };
+  $("tkType").onclick = ()=>{ $("tkLive").classList.remove("hidden"); $("tkLive").innerHTML = `<textarea id="tkTyped" placeholder="Type your reply in Polish..."></textarea><button class="btn primary sm" id="tkSend" style="margin-top:6px">Send</button>`; $("tkSend").onclick = ()=>judgeTalk($("tkTyped").value.trim()); };
+  $("tkRec").onclick = ()=>{ $("tkLive").classList.remove("hidden"); micButton($("tkRec"), $("tkLive"), said=>judgeTalk(said)); };
+}
+function bindAfter(after){
+  const s = TK.s, t = s.turns[TK.i];
+  $("tkRetry").onclick = ()=>renderTalk();
+  $("tkNext").onclick = ()=>{
+    TK.log.push({they:t.they, tEn:t.tEn, said:after.said}); if(after.ok) TK.ok++; TK.i++;
+    if(TK.i>=s.turns.length) return finishTalk();
+    renderTalk(); sayDE(s.turns[TK.i].they.replace(/^\(.*?\)\s*/,""));
+  };
+}
+function judgeTalk(said){
+  const t = TK.s.turns[TK.i], n = words(said||"").length;
+  const needQ = t.keys.includes("?"), keys = t.keys.filter(k=>k!=="?");
+  const hit = hasWord(said||"", keys), asked = isQuestion(said||"");
+  const sim = compareWords(t.model, said||"").acc;
+  let ok = true; const notes = [];
+  if(n < 2){ ok = false; notes.push("Too short. Try a full sentence."); }
+  else if(needQ && !asked && !hit){ ok = false; notes.push("Ask a question back, e.g. „A ty?“ (And you?) or „A pan?“ / „A pani?“ (formal)"); }
+  else if(!needQ && keys.length && !hit && sim < 50){ ok = false; notes.push(`Your reply may not fit the situation. Task: <i>${esc(t.you)}</i>`); }
+  if(ok) notes.push(sim>=70 ? "Very good! Very close to a natural answer." : "Good! You got the message across. Compare with the model answer to sound more natural.");
+  const html = `<div class="${ok?"pass":"fail"}"><b class="${ok?"ok":"low"}">${ok?"✅ Well done":"🔁 Try again"}</b><ul class="fb">${notes.map(x=>"<li>"+x+"</li>").join("")}</ul></div>
+    <div class="tip">Model answer: <span class="de">${esc(t.model)}</span> <a href="#" data-sayde="${esc(t.model)}">🔊</a><div class="en">${esc(t.mEn)}</div></div>
+    <div class="row" style="margin-top:12px"><button class="btn" id="tkRetry">🔁 Try again</button><button class="btn primary" id="tkNext">${TK.i+1<TK.s.turns.length?"Continue →":"Finish"}</button></div>`;
+  renderTalk({said, ok, html});
+}
+function finishTalk(){
+  const s = TK.s, pct = Math.round(TK.ok/s.turns.length*100);
+  DB.talks.push({id:s.id, date:today(), ts:Date.now(), pct}); save();
+  $("talkRun").innerHTML = `<div class="card"><h2>${s.icon} Conversation finished!</h2>
+    <div class="prompt ${pct>=80?"ok":pct>=50?"mid":"low"}" style="font-size:42px">${pct}%</div><p class="muted">${TK.ok} of ${s.turns.length} replies were good.</p>
+    <p>${pct>=80?"Great! Next time, press \"Hide English\" and try without the examples.":"Read the model answers out loud a few times, then try again tomorrow."}</p>
+    <div class="row"><button class="btn primary" data-talk="${s.id}">Practise again</button><button class="btn" id="tkBack">Other conversations</button></div></div>`;
+  $("tkBack").onclick = ()=>{ TK=null; $("talkRun").classList.add("hidden"); $("talkMenu").classList.remove("hidden"); };
+  TK = null;
+}
+document.addEventListener("click", e=>{ const b = e.target.closest("[data-talk]"); if(b){ showTab("talk"); startTalk(b.dataset.talk); } });
+
+// ================= LISTEN =================
+const DICTATION = COURSE.flatMap(c=>c.say);
+let LS = {mode:"comp", p:0, d:0};
+function fillVoices(){
+  const vs = deVoices(), sel = $("voiceSel"), cur = sel.value;
+  sel.innerHTML = vs.length ? `<option value="">🔀 Mix (different voice each time)</option>` + vs.map(v=>`<option value="${esc(v.name)}">${esc(v.name.replace(/Microsoft |Google | Online \(Natural\).*$/g,""))} (${esc(v.lang)})</option>`).join("") : `<option value="">No Polish voice installed</option>`;
+  sel.value = cur;
+}
+function listenVoice(){ const n = $("voiceSel").value; if(n) return n; const vs = deVoices(); return vs.length ? vs[Math.floor(Math.random()*vs.length)].name : null; }
+function listenSay(text, rate){ LS.voice = LS.voice || listenVoice(); sayDE(text, rate || +$("listenRate").value, LS.voice); }
+function renderListen(){
+  $("modeComp").classList.toggle("primary", LS.mode==="comp"); $("modeDict").classList.toggle("primary", LS.mode==="dict");
+  LS.voice = null;
+  if(LS.mode==="comp"){
+    const P = PASSAGES[LS.p % PASSAGES.length]; LS.answers = {};
+    $("listenBox").innerHTML = `<div class="lvl">Message ${LS.p % PASSAGES.length + 1} of ${PASSAGES.length}</div><h2>${esc(P.en)}</h2><div class="muted">${esc(P.title)}</div>
+      <p class="muted">Listen without reading, then answer. Replay as often as you need, but the goal is 2 listens.</p>
+      <div class="row"><button class="btn primary" id="lsPlay">▶ Play</button><button class="btn" id="lsStop">⏹</button><span class="muted" id="lsPlays">Played 0×</span></div>
+      ${P.qs.map((q,qi)=>`<h3>${qi+1}. ${esc(q[0])}</h3>` + shuffle(q.slice(1).map((o,oi)=>[o,oi===0])).map(([o,c])=>`<button class="btn opt" data-q="${qi}" data-c="${c?1:0}">${esc(o)}</button>`).join("")).join("")}
+      <div id="lsResult"></div>
+      <details style="margin-top:12px"><summary>Show the text in Polish and English (after answering)</summary><div class="transcript de">${esc(P.text)}</div><div class="transcript en">${esc(P.textEn)}</div></details>
+      <div class="row" style="margin-top:12px"><button class="btn" id="lsNext">Next message →</button></div>`;
+    let plays = 0;
+    $("lsPlay").onclick = ()=>{ plays++; $("lsPlays").textContent = `Played ${plays}×`; listenSay(P.text); };
+    $("lsStop").onclick = ()=>speechSynthesis.cancel();
+    $("lsNext").onclick = ()=>{ LS.p++; renderListen(); };
+    $("listenBox").querySelectorAll(".opt").forEach(b=>b.onclick = ()=>{
+      const qi = b.dataset.q; if(LS.answers[qi]!=null) return;
+      LS.answers[qi] = b.dataset.c==="1";
+      $("listenBox").querySelectorAll(`.opt[data-q="${qi}"]`).forEach(x=>{ if(x.dataset.c==="1") x.classList.add("correct"); });
+      if(b.dataset.c!=="1") b.classList.add("wrongpick");
+      if(Object.keys(LS.answers).length===P.qs.length){
+        const right = Object.values(LS.answers).filter(Boolean).length;
+        $("lsResult").innerHTML = `<p class="${right===P.qs.length?"pass":"fail"}" style="margin-top:12px">${right} of ${P.qs.length} correct. ${right===P.qs.length?"Very good! Try it at normal speed next time.":"Open the Polish text, read along while you listen again, and find the words you missed."}</p>`;
+        DB.listens.push({date:today(), ts:Date.now(), type:"comp", right, total:P.qs.length}); save();
+      }
+    });
+  } else {
+    const s = DICTATION[LS.d % DICTATION.length];
+    $("listenBox").innerHTML = `<h2>✍️ Dictation</h2><p class="muted">Listen and type exactly what you hear. You don't need Polish letters: type "a" for ą, "l" for ł, "z" for ż, and so on.</p>
+      <div class="row"><button class="btn primary" id="dPlay">▶ Play</button><button class="btn" id="dSlow">🐢 Slow</button></div>
+      <input type="text" id="dIn" placeholder="Type what you hear..." style="margin-top:12px" autocomplete="off">
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="dCheck">Check</button><button class="btn" id="dNext">Next →</button></div>
+      <div id="dOut" style="margin-top:10px"></div>`;
+    $("dPlay").onclick = ()=>listenSay(s);
+    $("dSlow").onclick = ()=>listenSay(s, 0.6);
+    $("dNext").onclick = ()=>{ LS.d = Math.floor(Math.random()*DICTATION.length); renderListen(); };
+    const check = ()=>{
+      const typed = $("dIn").value.trim(); if(!typed) return;
+      const r = compareWords(s, typed);
+      $("dOut").innerHTML = `<b class="${r.acc>=90?"ok":r.acc>=70?"mid":"low"}">${r.acc}% correct</b><div class="transcript">${r.html}</div><div class="muted">Correct sentence: <span class="de">${esc(s)}</span><br>Meaning: ${esc(SAY_EN[s]||"")}</div>`;
+      DB.listens.push({date:today(), ts:Date.now(), type:"dict", acc:r.acc}); save();
+    };
+    $("dCheck").onclick = check;
+    $("dIn").onkeydown = e=>{ if(e.key==="Enter") check(); };
+    setTimeout(()=>listenSay(s), 300);
+  }
+}
+$("modeComp").onclick = ()=>{ LS.mode="comp"; renderListen(); };
+$("modeDict").onclick = ()=>{ LS.mode="dict"; LS.d = Math.floor(Math.random()*DICTATION.length); renderListen(); };
+
+// ================= EXAM (speaking test practice) =================
+let EXQ = null;
+function renderExam(kind){
+  EXQ = {kind};
+  const box = $("exBox");
+  if(kind==="intro"){
+    box.innerHTML = `<h2>Part 1 — Introduce yourself <span class="muted">(Przedstaw się)</span></h2>
+      <p class="muted">Every Polish speaking test starts with this. Introduce yourself in about 1 minute. Cover <b>all 7 points</b>:</p>
+      <div id="introKeys" class="row">${INTRO.map(([k],i)=>`<span class="pill" id="ik-${i}">${esc(k)}</span>`).join("")}</div>
+      <div class="tip">Example (copy this and change the details): <i>Mam na imię Ravi. Mam trzydzieści lat. Jestem z Indii i mieszkam teraz w Warszawie. Mówię po angielsku, w hindi i trochę po polsku. Pracuję jako inżynier. W wolnym czasie lubię gotować.</i><div class="en">My name is Ravi. I am thirty years old. I'm from India and now live in Warsaw. I speak English, Hindi and a little Polish. I work as an engineer. In my free time I like cooking.</div></div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" id="introRec">🎤 Start</button></div>
+      <div id="introOut" class="transcript"><span class="muted">Speak, then press Stop.</span></div><div id="introRes"></div>`;
+    $("introRec").onclick = ()=>micButton($("introRec"), $("introOut"), said=>{
+      const s = words(said).join(" ");
+      const hits = INTRO.map(([k,re])=>re.test(s));
+      hits.forEach((h,i)=>{ $("ik-"+i).style.background = h ? "var(--good-soft)" : "var(--bad-soft)"; $("ik-"+i).style.color = h ? "var(--good)" : "var(--bad)"; });
+      const n = hits.filter(Boolean).length;
+      $("introRes").innerHTML = `<div class="${n===7?"pass":"fail"}" style="margin-top:12px"><b>${n} of 7 points covered.</b> ${n===7?"Perfect! Now practise until you can say it smoothly without pausing.":"The red points are missing. Add them and try again."}</div>`;
+      logAct("exam", {part:"intro", n}); save();
+    }, {continuous:true});
+  } else if(kind==="ask"){
+    const c = ASK[Math.floor(Math.random()*ASK.length)];
+    box.innerHTML = `<h2>Part 2 — Ask questions <span class="muted">(Zadawanie pytań)</span></h2>
+      <p class="muted">You get a card with a topic and a word. Make a <b>question</b> with that word. (The word may change its ending in your question, and that's fine: kawa → kawę.)</p>
+      <div class="flash"><div class="muted">Topic: ${esc(c[0])}</div><div class="big">${esc(c[1])}</div><div class="en">${esc(c[3])}</div></div>
+      <div class="row"><button class="btn primary" id="askRec">🎤 Ask your question</button><button class="btn" id="askNext">New card →</button><button class="btn" id="askShow">💡 Example</button></div>
+      <div id="askOut" class="transcript"><span class="muted">Your question will appear here.</span></div><div id="askRes"></div>`;
+    $("askNext").onclick = ()=>renderExam("ask");
+    $("askShow").onclick = ()=>{ $("askRes").innerHTML = `<div class="tip">Example: <span class="de">${esc(c[2])}</span> <a href="#" data-sayde="${esc(c[2])}">🔊</a><div class="en">${esc(c[4])}</div></div>`; };
+    $("askRec").onclick = ()=>micButton($("askRec"), $("askOut"), said=>{
+      const usesWord = hasWord(said, [c[1]]);
+      const q = isQuestion(said), ok = usesWord && q;
+      const tips = [];
+      if(!usesWord) tips.push(`Use the word „${esc(c[1])}“ in your question.`);
+      if(!q) tips.push("That doesn't sound like a question. Start with a question word (Co, Gdzie, Kiedy, Jak...) or with „Czy...?“ for yes/no questions.");
+      $("askRes").innerHTML = `<div class="${ok?"pass":"fail"}" style="margin-top:12px"><b class="${ok?"ok":"low"}">${ok?"✅ Good question!":"🔁 Try again"}</b>${tips.length?`<ul class="fb">${tips.map(t=>"<li>"+t+"</li>").join("")}</ul>`:""}
+        <div class="muted">Example: <span class="de">${esc(c[2])}</span> = ${esc(c[4])}</div></div>`;
+      logAct("exam", {part:"ask", ok}); save();
+    });
+  } else {
+    const c = REQUEST[Math.floor(Math.random()*REQUEST.length)];
+    box.innerHTML = `<h2>Part 3 — Make polite requests <span class="muted">(Prośby)</span></h2>
+      <p class="muted">You see a picture. Make a <b>polite request</b> with it, using <i>Czy może pan / pani...?</i>, <i>Czy możesz...?</i>, <i>Czy mogę...?</i> or <i>Poproszę...</i></p>
+      <div class="flash"><div class="big" style="font-size:56px">${c[0]}</div><div class="muted">${esc(c[2])} = <span class="de">${esc(c[1])}</span></div></div>
+      <div class="row"><button class="btn primary" id="reqRec">🎤 Make a request</button><button class="btn" id="reqNext">New card →</button><button class="btn" id="reqShow">💡 Example</button></div>
+      <div id="reqOut" class="transcript"><span class="muted">Your request will appear here.</span></div><div id="reqRes"></div>`;
+    $("reqNext").onclick = ()=>renderExam("request");
+    $("reqShow").onclick = ()=>{ $("reqRes").innerHTML = `<div class="tip">Example: <span class="de">${esc(c[3])}</span> <a href="#" data-sayde="${esc(c[3])}">🔊</a><div class="en">${esc(c[4])}</div></div>`; };
+    $("reqRec").onclick = ()=>micButton($("reqRec"), $("reqOut"), said=>{
+      const usesWord = hasWord(said, [c[1]]), polite = hasWord(said, ["proszę","poproszę","czy","może","możesz","mogę","mógłby","mogłaby","chciałbym","chciałabym"]);
+      const ok = usesWord && polite, tips = [];
+      if(!usesWord) tips.push(`Use the word „${esc(c[1])}“.`);
+      if(!polite) tips.push("Make it polite: start with „Czy może pan/pani...?“ or „Poproszę...“, and add „proszę“.");
+      $("reqRes").innerHTML = `<div class="${ok?"pass":"fail"}" style="margin-top:12px"><b class="${ok?"ok":"low"}">${ok?"✅ Very polite!":"🔁 Try again"}</b>${tips.length?`<ul class="fb">${tips.map(t=>"<li>"+t+"</li>").join("")}</ul>`:""}
+        <div class="muted">Example: <span class="de">${esc(c[3])}</span> = ${esc(c[4])}</div></div>`;
+      logAct("exam", {part:"request", ok}); save();
+    });
+  }
+}
+document.addEventListener("click", e=>{ const b = e.target.closest("[data-ex]"); if(b){ document.querySelectorAll("[data-ex]").forEach(x=>x.classList.toggle("primary", x===b)); renderExam(b.dataset.ex); } });
+
+// ================= PHRASES =================
+function renderPhrases(){
+  $("phraseList").innerHTML = Object.entries(PHRASES).map(([cat,list])=>`<h3>${esc(cat)}</h3>` + list.map(([de,en])=>`
+    <div class="phrase"><span>${esc(en)}<br><span class="de">${esc(de)}</span></span>
+    <span class="row"><button class="btn sm" data-sayde="${esc(de)}">🔊</button></span></div>`).join("")).join("");
+}
+
+// ================= REAL-WORLD TRACKER =================
+const REAL = [
+  {k:"course", label:"Did a lesson from a free online course (Easy Polish, Polish with John...)", unit:"", step:1, goal:3},
+  {k:"tandem", label:"Spoke Polish with a real person (tandem, colleague, shop)", unit:"", step:1, goal:3},
+  {k:"media", label:"Polish input: YouTube, podcasts, series (minutes)", unit:" min", step:15, goal:120},
+  {k:"life", label:"Used Polish in daily life (ordering, asking, phone call)", unit:"", step:1, goal:5},
+];
+function weekDates(){
+  const d = new Date(), dow = (d.getDay()+6)%7; d.setDate(d.getDate()-dow);
+  return Array.from({length:7},(_,i)=>{ const x = new Date(d); x.setDate(d.getDate()+i); return ymd(x); });
+}
+function renderReal(){
+  const wk = weekDates();
+  $("realLog").innerHTML = REAL.map(r=>{
+    const total = wk.reduce((t,day)=>t+((DB.real[day]||{})[r.k]||0),0), todayN = (DB.real[today()]||{})[r.k]||0;
+    return `<div class="counter"><div style="flex:2;min-width:220px">${esc(r.label)}<div class="muted">${total}${r.unit} / ${r.goal}${r.unit} this week</div></div>
+      <div class="bar"><i style="width:${Math.min(100,total/r.goal*100)}%"></i></div>
+      <span class="row"><button class="btn sm" data-real="${r.k}" data-n="-1" ${todayN?"":"disabled"}>−</button><button class="btn sm primary" data-real="${r.k}" data-n="1">+${r.step}${r.unit}</button></span></div>`;
+  }).join("");
+}
+$("realLog").addEventListener("click", e=>{
+  const b = e.target.closest("[data-real]"); if(!b) return;
+  const r = REAL.find(x=>x.k===b.dataset.real), t = today();
+  DB.real[t] = DB.real[t] || {};
+  DB.real[t][r.k] = Math.max(0, (DB.real[t][r.k]||0) + (+b.dataset.n)*r.step);
+  save();
+});
+
+// ================= TODAY / STREAK / PROGRESS =================
+function activeDays(){
+  const d = new Set();
+  [DB.log, DB.talks, DB.listens].forEach(l=>l.forEach(x=>d.add(x.date)));
+  Object.values(DB.course).forEach(p=>p.doneDate && d.add(p.doneDate));
+  Object.entries(DB.real).forEach(([day,v])=>{ if(Object.values(v).some(Boolean)) d.add(day); });
+  return d;
+}
+function streak(){
+  const d = activeDays(); let n = 0; const dt = new Date();
+  if(!d.has(today())) dt.setDate(dt.getDate()-1);
+  while(d.has(ymd(dt))){ n++; dt.setDate(dt.getDate()-1); }
+  return n;
+}
+function renderToday(){
+  const t = today(), cur = currentLesson();
+  const lessonToday = Object.values(DB.course).some(x=>x.doneDate===t);
+  const cards = DB.log.filter(x=>x.type==="card" && x.date===t).length;
+  const tk = DB.talks.filter(x=>x.date===t).length;
+  const L = DB.listens.filter(x=>x.date===t), ls = (L.some(x=>x.type==="comp") || L.filter(x=>x.type==="dict").length>=5) ? 1 : 0;
+  const gd = DB.log.filter(x=>x.type==="gender" && x.ok && x.date===t).length;
+  const ci = Math.min(cur, COURSE.length-1);
+  const tasks = [
+    [lessonToday, cur<COURSE.length||lessonToday ? `🎓 Lesson ${ci+1}: ${esc(COURSE[ci].en)} <span class="muted">(${esc(COURSE[ci].t)})</span>` : "🎓 Course complete!", lessonToday?"1/1":"0/1", "course"],
+    [cards>=15, "🃏 Review 15 vocabulary cards", `${Math.min(cards,15)}/15`, "words"],
+    [gd>=10, "🎲 Get 10 ten/ta/to right", `${Math.min(gd,10)}/10`, "words"],
+    [tk>=1, "💬 Have 1 conversation", `${Math.min(tk,1)}/1`, "talk"],
+    [ls>=1, "🎧 Understand 1 message or do 5 dictations", `${ls}/1`, "listen"],
+  ];
+  $("tasks").innerHTML = tasks.map(([done,label,cnt,tab])=>`<div class="task"><div class="check ${done?"done":""}">${done?"✓":""}</div>
+    <div style="flex:1">${label} <span class="muted">(${cnt})</span></div><button class="btn sm" data-go="${tab}">${done?"Again":"Start"}</button></div>`).join("");
+}
+$("tasks").addEventListener("click", e=>{ const b = e.target.closest("[data-go]"); if(b) showTab(b.dataset.go); });
+function renderProgress(){
+  const all = allCards(), learned = Object.values(DB.cards).filter(c=>c.box>=3).length;
+  const done = COURSE.filter((_,i)=>isDone(i)).length;
+  const lvl = done>=30 ? "B1 ✓" : LEVELS[Math.floor(Math.min(done,29)/6)].name;
+  $("progStats").innerHTML = `
+    <div class="stat"><b>${streak()} 🔥</b><span>Day streak</span></div>
+    <div class="stat"><b>${activeDays().size}</b><span>Days practised</span></div>
+    <div class="stat"><b>${done}/30</b><span>Lessons done</span></div>
+    <div class="stat"><b>${lvl}</b><span>Current level</span></div>
+    <div class="stat"><b class="ok">${learned}</b><span>Words learned</span></div>
+    <div class="stat"><b>${DB.talks.length}</b><span>Conversations</span></div>`;
+  const ad = activeDays();
+  $("dayGrid").innerHTML = Array.from({length:28},(_,k)=>{ const d = new Date(); d.setDate(d.getDate()-27+k); const s = ymd(d); return `<span class="${ad.has(s)?"on":""}" title="${s}"></span>`; }).join("");
+}
+$("exportBtn").onclick = ()=>{
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(DB,null,2)],{type:"application/json"}));
+  a.download = "polski-coach-backup-"+today()+".json"; a.click();
+};
+$("importFile").onchange = e=>{
+  const f = e.target.files[0]; if(!f) return;
+  f.text().then(t=>{ try{ const d = JSON.parse(t); if(!d.course) throw 0; DB = d; initDB(); save(); alert("Backup restored."); }catch(_){ alert("That file isn't a valid backup."); } });
+};
+$("resetBtn").onclick = ()=>{ if(confirm("Delete all your progress? Download a backup first if you want to keep it.")){ DB = {}; initDB(); openLesson = null; save(); } };
+
+// ================= THEME & INIT =================
+function setTheme(t){
+  if(t==="light") document.documentElement.setAttribute("data-theme","light"); else document.documentElement.removeAttribute("data-theme");
+  $("themeBtn").textContent = t==="light" ? "🌙" : "☀️";
+  try{ localStorage.setItem("polskicoach.theme", t); }catch(e){}
+}
+let theme = "dark"; try{ theme = localStorage.getItem("polskicoach.theme") || "dark"; }catch(e){}
+setTheme(theme);
+$("themeBtn").onclick = ()=>{ theme = theme==="light" ? "dark" : "light"; setTheme(theme); };
+
+function renderAll(){
+  const s = streak(), cur = currentLesson();
+  $("streak").textContent = `${cur>=COURSE.length ? "🏆 B1" : "Level " + LEVELS[Math.floor(cur/6)].name}  ·  ` + (s ? `🔥 ${s}-day streak` : "Start your streak today");
+  renderCourse(); renderToday(); renderProgress(); renderTalkList(); renderReal(); renderWordStats();
+}
+renderPhrases(); fillVoices(); renderListen(); renderExam("intro"); renderAll();
+</script>
+</body>
+</html>

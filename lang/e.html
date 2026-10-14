@@ -1,0 +1,1722 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speak Coach</title>
+<style>
+/* dark is the default; light only when chosen with the toggle */
+:root{
+  --bg:#0f1218; --card:#181c25; --text:#e6e8ee; --muted:#98a2b3; --line:#2a303d;
+  --accent:#7d95ff; --accent-soft:#232b48; --good:#51cf66; --warn:#ffa94d; --bad:#ff6b6b;
+  --good-soft:#1c3124; --bad-soft:#3a2124; --warn-soft:#382b1a;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#f6f7f9; --card:#ffffff; --text:#1d2330; --muted:#667085; --line:#e4e7ec;
+  --accent:#3b5bdb; --accent-soft:#e7ecff; --good:#2f9e44; --warn:#e67700; --bad:#e03131;
+  --good-soft:#e6f6ea; --bad-soft:#fdeaea; --warn-soft:#fff3e0;
+  color-scheme:light;
+}
+details summary{cursor:pointer;color:var(--muted);font-size:14px}
+.cue{background:var(--bg);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px;margin:10px 0}
+.cue ul{margin:6px 0 0;padding-left:20px}
+.wrong{color:var(--bad);text-decoration:line-through;text-decoration-thickness:1px}
+.right{color:var(--good);font-weight:600}
+.band{font-size:48px;font-weight:700;line-height:1}
+.chat{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.bubble{max-width:85%;padding:10px 14px;border-radius:14px;line-height:1.45}
+.bubble.them{background:var(--bg);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px}
+.bubble.me{background:var(--accent-soft);align-self:flex-end;border-bottom-right-radius:4px}
+.bubble .who{font-size:12px;color:var(--muted);display:block;margin-bottom:2px}
+.opt{display:block;width:100%;text-align:left;margin:6px 0}
+.opt.correct{border-color:var(--good);background:var(--good-soft);color:var(--good)}
+.opt.wrongpick{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.counter{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.counter:last-child{border:0}
+.counter .bar{flex:1;min-width:80px;margin:0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 0;gap:12px;flex-wrap:wrap}
+h1{font-size:20px;margin:0}
+.streak{font-weight:600;color:var(--warn)}
+nav{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px}
+nav button{border:0;background:none;color:var(--muted);padding:8px 14px;border-radius:8px;font:inherit;cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+main{padding:20px 0 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+h2{font-size:18px;margin:0 0 10px}
+h3{font-size:15px;margin:14px 0 6px}
+.muted{color:var(--muted);font-size:14px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:9px 16px;border-radius:8px;font:inherit;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.rec{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.prompt{font-size:20px;font-weight:600;margin:6px 0 4px}
+.tip{background:var(--accent-soft);border-radius:8px;padding:10px 12px;font-size:14px;margin-top:10px}
+textarea,select,input[type=text]{width:100%;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+textarea{min-height:110px;resize:vertical}
+.transcript{background:var(--bg);border-radius:8px;padding:12px;min-height:60px;margin-top:12px;white-space:pre-wrap}
+.filler{background:var(--warn-soft);color:var(--warn);border-radius:4px;padding:0 3px;font-weight:600}
+.miss{background:var(--bad-soft);color:var(--bad);border-radius:4px;padding:0 3px;text-decoration:line-through}
+.hit{color:var(--good)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px}
+.stat{background:var(--bg);border-radius:8px;padding:10px 12px}
+.stat b{display:block;font-size:22px}
+.stat span{font-size:13px;color:var(--muted)}
+.ok{color:var(--good)} .mid{color:var(--warn)} .low{color:var(--bad)}
+ul.fb{padding-left:20px;margin:8px 0}
+ul.fb li{margin:4px 0}
+.task{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.task:last-child{border:0}
+.check{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-size:13px}
+.check.done{background:var(--good);border-color:var(--good);color:#fff}
+.phrase{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.phrase:last-child{border:0}
+.phrase .row{flex:none}
+.sm{padding:5px 10px;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600}
+.chart{width:100%;height:180px}
+.hidden{display:none}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:13px;margin:2px}
+.timer{font-variant-numeric:tabular-nums;font-weight:600;font-size:18px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;background:var(--good)}
+.locked{opacity:.45}
+.lvl{font-size:13px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em}
+.step{border-top:1px solid var(--line);padding-top:12px;margin-top:14px}
+.pass{background:var(--good-soft);color:var(--good);padding:12px;border-radius:8px;margin-bottom:12px}
+.fail{background:var(--bad-soft);color:var(--bad);padding:12px;border-radius:8px;margin-bottom:12px}
+.warnbox{background:var(--warn-soft);color:var(--warn);padding:10px 12px;border-radius:8px;font-size:14px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <h1>🗣️ Speak Coach</h1>
+      <div class="row"><span class="streak" id="streak"></span>
+        <button class="btn sm" id="themeBtn" title="Switch light/dark">☀️</button></div>
+    </div>
+    <nav id="nav">
+      <button data-tab="course" class="on">🎓 Course</button>
+      <button data-tab="today">Today</button>
+      <button data-tab="talk">💬 Talk</button>
+      <button data-tab="listen">🎧 Listen</button>
+      <button data-tab="clear">🌍 Clear English</button>
+      <button data-tab="exam">🎯 IELTS &amp; Interview</button>
+      <button data-tab="speak">Speak</button>
+      <button data-tab="shadow">Repeat after me</button>
+      <button data-tab="phrases">Phrases</button>
+      <button data-tab="progress">Progress</button>
+      <button data-tab="guide">How to improve</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="noSpeech" class="warnbox hidden">Your browser can't recognise speech. Open this file in <b>Google Chrome</b> or <b>Microsoft Edge</b> and allow the microphone. You can still type your answers.</div>
+
+  <!-- TODAY -->
+  <section id="tab-course">
+    <div id="courseMap"></div>
+    <div id="lessonView" class="hidden"></div>
+  </section>
+
+  <!-- TALK (role-play) -->
+  <section id="tab-talk" class="hidden">
+    <div id="talkMenu">
+      <div class="card">
+        <h2>💬 Real-life conversations</h2>
+        <p class="muted">Practise real situations you'll face in Europe. The other person speaks; you reply out loud. After each reply you get feedback and an example answer. Try each scenario several times — it gets easier.</p>
+      </div>
+      <div id="talkList"></div>
+    </div>
+    <div id="talkRun" class="hidden"></div>
+  </section>
+
+  <!-- LISTEN -->
+  <section id="tab-listen" class="hidden">
+    <div class="card">
+      <h2>🎧 Listening practice</h2>
+      <p class="muted">In Europe you'll hear many accents, often fast. Train your ears every day. Pick a voice (accent) and speed below.</p>
+      <div class="row">
+        <label class="muted" style="flex:1;min-width:200px">Voice / accent<select id="voiceSel"></select></label>
+        <label class="muted">Speed<select id="listenRate" style="width:auto">
+          <option value="0.75">Slow</option><option value="0.9" selected>Normal</option><option value="1.05">Fast</option><option value="1.2">Native-fast</option></select></label>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn primary" id="modeComp">📻 Understand a message</button>
+        <button class="btn" id="modeDict">✍️ Dictation</button>
+      </div>
+    </div>
+    <div class="card" id="listenBox"></div>
+  </section>
+
+  <!-- CLEAR ENGLISH -->
+  <section id="tab-clear" class="hidden">
+    <div class="card">
+      <h2>Indian English → International English</h2>
+      <p class="muted">Europeans learned British or American English at school. Some common Indian phrases confuse them, or mean something different to them. Fix these and you'll sound clearer straight away. The Speak tab also flags them when you use them.</p>
+      <button class="btn primary" id="quizBtn">🧠 Quiz me</button>
+      <div id="quizBox" class="hidden" style="margin-top:14px"></div>
+    </div>
+    <div id="clearList"></div>
+  </section>
+
+  <!-- IELTS & INTERVIEW -->
+  <section id="tab-exam" class="hidden">
+    <div id="examMenu">
+      <div class="card">
+        <h2>🎯 IELTS Speaking mock test</h2>
+        <p class="muted">Same format as the real test (about 12 minutes). The examiner's voice reads each question. Many UK and European visas, universities and employers ask for IELTS — aim for <b>band 7</b>.</p>
+        <ul class="fb">
+          <li><b>Part 1</b>: 4 short questions about you. Answer in 2–3 sentences (about 20–30s).</li>
+          <li><b>Part 2</b>: a topic card. 1 minute to prepare, then speak for up to <b>2 minutes</b>.</li>
+          <li><b>Part 3</b>: 3 deeper discussion questions. Give opinions with reasons (about 45s each).</li>
+        </ul>
+        <div class="row"><button class="btn primary" data-exam="ielts">Start full mock test</button><button class="btn" data-exam="part2">Part 2 only (3 min)</button></div>
+      </div>
+      <div class="card">
+        <h2>💼 European job interview</h2>
+        <p class="muted">6 real questions European employers ask Indian candidates, including "Why do you want to move to Europe?". You get feedback and a tip for each answer.</p>
+        <button class="btn primary" data-exam="interview">Start mock interview</button>
+      </div>
+      <div class="card">
+        <h2>🏢 How Europeans communicate at work</h2>
+        <ul class="fb">
+          <li><b>Be direct.</b> "I don't agree, because..." is normal and respected. Long, polite introductions can sound unclear.</li>
+          <li><b>"No" is OK.</b> Saying "yes" and then not delivering is much worse than an honest "I can't do that by Friday."</li>
+          <li><b>Flat hierarchy.</b> Use first names, including your manager's. Say "Hi Anna", not "Respected Ma'am" or "Sir".</li>
+          <li><b>Be on time</b>, especially in Germany, the Netherlands and the Nordic countries. Joining 5 minutes late is rude.</li>
+          <li><b>Don't over-promise.</b> "I'll try" means "probably not". Give realistic dates.</li>
+          <li><b>Work–life balance is real.</b> Evening or weekend messages are often not expected — and not answered.</li>
+          <li><b>Small talk is short.</b> Weekend, weather, holidays. Avoid salary, religion and marriage questions.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Your test history</h2>
+        <div id="examHist" style="overflow-x:auto"></div>
+      </div>
+    </div>
+    <div id="examRun" class="hidden"></div>
+  </section>
+
+  <!-- TODAY -->
+  <section id="tab-today" class="hidden">
+    <div class="card">
+      <h2>Today's 25-minute plan</h2>
+      <p class="muted">Do this every day. Small daily practice beats one long session a week.</p>
+      <div id="tasks"></div>
+    </div>
+    <div class="card">
+      <h2>Real-world practice this week</h2>
+      <p class="muted">The app gets you ready — but you improve fastest by using English with real people. Log it here every time you do it.</p>
+      <div id="realLog"></div>
+    </div>
+    <div class="card">
+      <h2>Your focus this week</h2>
+      <div id="focus"></div>
+    </div>
+  </section>
+
+  <!-- SPEAK -->
+  <section id="tab-speak" class="hidden">
+    <div class="card">
+      <h2>Speaking practice</h2>
+      <div id="lessonBanner" class="tip hidden" style="margin:0 0 10px"></div>
+      <div class="row" id="topicRow">
+        <select id="topicCat" style="width:auto">
+          <option value="all">All topics</option>
+          <option value="work">Work &amp; meetings</option>
+          <option value="tech">Explain something technical</option>
+          <option value="self">About me</option>
+          <option value="opinion">Opinions</option>
+          <option value="story">Tell a story</option>
+        </select>
+        <button class="btn" id="newTopic">New topic</button>
+      </div>
+      <div class="prompt" id="topic"></div>
+      <div class="muted" id="topicHint"></div>
+      <div class="tip">Speak for <b>60–90 seconds</b>. Use this structure: <b>Point → Reason → Example → Point again</b>. Pause instead of saying "um".</div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn primary" id="recBtn">🎤 Start speaking</button>
+        <span class="timer" id="timer">0:00</span>
+        <button class="btn" id="typeToggle">Type instead</button>
+      </div>
+      <textarea id="typed" class="hidden" placeholder="Type what you would say..." style="margin-top:12px"></textarea>
+      <button class="btn primary hidden" id="analyseTyped" style="margin-top:8px">Check my answer</button>
+      <div class="transcript" id="transcript"><span class="muted">Your words will appear here.</span></div>
+    </div>
+    <div class="card hidden" id="result">
+      <div id="lessonRes"></div>
+      <h2>Feedback</h2>
+      <div class="stats" id="statBox"></div>
+      <h3>What to work on</h3>
+      <ul class="fb" id="fbList"></ul>
+      <h3>Say it better</h3>
+      <p class="muted">Read your answer again. Write one improved version (shorter, clearer, no fillers). Then say it out loud once more.</p>
+      <textarea id="reflect" placeholder="My better version..."></textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary" id="saveSession">Save to progress</button>
+        <span class="muted" id="savedMsg"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHADOW -->
+  <section id="tab-shadow" class="hidden">
+    <div class="card">
+      <h2>Repeat after me (shadowing)</h2>
+      <p class="muted">Listen, then repeat with the same rhythm and stress. This trains pronunciation and fluency fast.</p>
+      <div class="row">
+        <select id="shadowCat" style="width:auto"></select>
+        <label class="muted">Speed <input type="range" id="rate" min="0.6" max="1.2" step="0.1" value="0.9"></label>
+      </div>
+      <div class="prompt" id="shadowText" style="margin-top:14px"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="listen">🔊 Listen</button>
+        <button class="btn primary" id="shadowRec">🎤 Repeat</button>
+        <button class="btn" id="nextShadow">Next sentence →</button>
+      </div>
+      <div class="transcript" id="shadowOut"><span class="muted">What you said will be compared here.</span></div>
+      <div id="shadowScore" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <!-- PHRASES -->
+  <section id="tab-phrases" class="hidden">
+    <div class="card">
+      <h2>Ready-made phrases</h2>
+      <p class="muted">Learn these by heart. Having phrases ready means less thinking and fewer pauses. Tap 🔊 to hear, ▶ to practise it.</p>
+      <div id="phraseList"></div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section id="tab-progress" class="hidden">
+    <div class="card">
+      <h2>Your progress</h2>
+      <div class="stats" id="progStats"></div>
+    </div>
+    <div class="card">
+      <h2>Score over time</h2>
+      <svg class="chart" id="chartScore" viewBox="0 0 600 180" preserveAspectRatio="none"></svg>
+      <h3>Fillers per minute (lower is better)</h3>
+      <svg class="chart" id="chartFill" viewBox="0 0 600 180" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="card">
+      <h2>History</h2>
+      <div style="overflow-x:auto"><table id="hist"></table></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="exportBtn">Download backup</button>
+        <label class="btn">Restore backup <input type="file" id="importFile" accept=".json" hidden></label>
+        <button class="btn" id="resetBtn">Clear all data</button>
+      </div>
+      <p class="muted">Progress is saved in this browser only. Download a backup now and then.</p>
+    </div>
+  </section>
+
+  <!-- GUIDE -->
+  <section id="tab-guide" class="hidden">
+    <div class="card">
+      <h2>🆓 Free resources (no paid tutor needed)</h2>
+      <h3>Talk to real people for free</h3>
+      <ul class="fb">
+        <li><b>Tandem</b> or <b>HelloTalk</b> (free apps): language exchange. You help someone learn Hindi or your native language, and they help you with English. Many partners are Europeans. Do voice calls, not just chat.</li>
+        <li><b>Meetup.com</b> or local groups: search "English conversation" or "language exchange" in your city.</li>
+        <li><b>At work</b>: ask one colleague with good English to talk only in English with you over lunch, once a week.</li>
+      </ul>
+      <h3>Listening (YouTube / podcasts, free)</h3>
+      <ul class="fb">
+        <li><b>BBC Learning English: 6 Minute English</b>. Start here: short, clear, with useful words.</li>
+        <li><b>TED Talks</b>. Turn on English subtitles, then try without them.</li>
+        <li><b>Rachel's English</b> (YouTube): American pronunciation, slowed down and explained.</li>
+        <li>Series: watch with <b>English subtitles</b>, never Hindi. Good to start with: <i>Friends</i>, <i>The Office</i>, <i>Brooklyn Nine-Nine</i>.</li>
+      </ul>
+      <h3>IELTS (free official material)</h3>
+      <ul class="fb">
+        <li><b>IELTS official website</b> and the <b>British Council</b> have free sample speaking questions and band descriptors.</li>
+        <li><b>IELTS Liz</b> (website and YouTube): free speaking tips and model answers.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>How to actually get better</h2>
+      <h3>1. Speak a little every day</h3>
+      <p>15 minutes daily is better than 2 hours on Sunday. Keep your streak alive.</p>
+      <h3>2. Slow down</h3>
+      <p>Good speakers talk at about <b>120–160 words per minute</b>. Speaking fast when nervous makes you harder to understand. Slow is confident.</p>
+      <h3>3. Replace "um" with a pause</h3>
+      <p>A 1-second silence sounds thoughtful. "Um, uh, basically, actually" sound unsure. Notice them in your feedback and cut one at a time.</p>
+      <h3>4. Use a structure</h3>
+      <p><b>PREP:</b> Point → Reason → Example → Point. <br><b>For updates:</b> What I did → What's next → Any blockers. <br><b>For problems:</b> What happened → Impact → What we're doing.</p>
+      <h3>5. Short sentences</h3>
+      <p>One idea per sentence. You don't need complex grammar to sound professional.</p>
+      <h3>6. Record and re-say</h3>
+      <p>After each session, write a better version and say it again. That second attempt is where learning happens.</p>
+      <h3>7. Shadow native speakers</h3>
+      <p>Pick a 2-minute clip (TED talk, podcast, YouTube). Play a sentence, pause, copy it exactly — speed, stress, tone.</p>
+      <h3>8. Real conversations</h3>
+      <p>Once a week, speak up once in a meeting on purpose — even just "Can I add one thing?" Use the phrases tab to prepare.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+// ---------- data ----------
+const TOPICS = {
+  work:[
+    ["Give a 1-minute update on what you worked on this week.","What I did → What's next → Blockers"],
+    ["Explain a problem you solved recently at work.","Problem → What you tried → Result"],
+    ["Introduce yourself at the start of a meeting with a new client.","Name, role, what you'll help with"],
+    ["Politely disagree with a colleague's idea in a meeting.","Acknowledge → Your concern → Suggest an alternative"],
+    ["Ask your manager for more time on a deadline.","Situation → Reason → New date → What you'll deliver"],
+    ["Explain why a project got delayed.","What happened → Impact → Fix → New plan"],
+    ["Present one idea to improve how your team works.","Problem → Idea → Benefit"],
+    ["Say no to an extra task without sounding rude.","Thank → Explain current load → Offer alternative"],
+  ],
+  tech:[
+    ["Explain what a firewall is to someone who isn't technical.","Use a simple everyday comparison"],
+    ["Explain what phishing is and how to avoid it.","What it is → Example → 2 tips"],
+    ["Explain what you do in your job to a 10-year-old.","No jargon"],
+    ["Describe how you would investigate a security issue.","Step 1, step 2, step 3"],
+    ["Explain why strong passwords and 2FA matter.","Risk → Simple fix"],
+    ["Explain what the cloud is.","Simple comparison"],
+  ],
+  self:[
+    ["Tell me about yourself (job interview style).","Present → Past → Future"],
+    ["What is your biggest strength? Give an example.","Strength → Example → Result"],
+    ["Describe your typical working day.","Morning → Afternoon → Evening"],
+    ["What are your goals for the next two years?","Goal → Why → How"],
+    ["Describe your hometown to a foreigner.","Where → What's special → Why visit"],
+  ],
+  opinion:[
+    ["Is working from home better than working in an office?","Point → Reason → Example → Point"],
+    ["Should everyone learn to code?","Point → Reason → Example → Point"],
+    ["Is AI good or bad for jobs?","Both sides → Your view"],
+    ["What makes a good team leader?","2–3 qualities with examples"],
+    ["Is social media good for young people?","Point → Reason → Example → Point"],
+  ],
+  story:[
+    ["Tell a story about a mistake you learned from.","Situation → Mistake → Lesson"],
+    ["Describe the best trip you have taken.","Where → What happened → How you felt"],
+    ["Talk about a person who influenced you.","Who → What they did → Impact"],
+    ["Describe a difficult day and how you handled it.","Situation → Action → Result"],
+  ]
+};
+
+const SHADOW = {
+  "Meetings":[
+    "Could you give me a minute to think about that?",
+    "I'd like to add one point to what Ravi said.",
+    "Let me quickly summarise where we are.",
+    "I see your point, but I have a slightly different view.",
+    "Can we take this offline and discuss it after the call?",
+    "Just to make sure I understood correctly, you mean we should delay the release?",
+  ],
+  "Updates & status":[
+    "Yesterday I finished the report, and today I'm working on the review.",
+    "I'm blocked on access to the server. Could someone help me with that?",
+    "We're on track to finish by Friday.",
+    "There's a small risk, but we have a plan to handle it.",
+    "I'll send a follow-up email with the details after this call.",
+  ],
+  "Small talk":[
+    "How was your weekend? Did you do anything interesting?",
+    "It's been a busy week, but a good one.",
+    "Nice to finally meet you in person.",
+    "I've heard a lot about your work on the new project.",
+    "Have a great evening, and see you tomorrow.",
+  ],
+  "Tricky sounds (v / w / th)":[
+    "We very rarely visit the west village in winter.",
+    "Thank you for thinking about the three things I mentioned.",
+    "This is the third time this month that the weather has changed.",
+    "Wednesday works well for everyone involved.",
+    "I think they thought it through thoroughly.",
+  ],
+  "Interviews":[
+    "I have five years of experience in cyber security.",
+    "One of my strengths is staying calm under pressure.",
+    "In my last project, I reduced the response time by thirty percent.",
+    "I'm looking for a role where I can grow and take more responsibility.",
+    "Thank you for your time. I really enjoyed this conversation.",
+  ],
+};
+
+const PHRASES = {
+  "Buying time to think":[
+    "That's a good question. Let me think for a second.",
+    "Let me put it this way...",
+    "How can I explain this simply?",
+    "Give me a moment to get my thoughts together.",
+  ],
+  "Joining a conversation":[
+    "Can I add something here?",
+    "Sorry to interrupt, but I'd like to mention one thing.",
+    "Building on what you said...",
+    "If I could just come in here for a second...",
+  ],
+  "Agreeing & disagreeing politely":[
+    "I completely agree with you.",
+    "That's a fair point.",
+    "I see what you mean, but have we considered...?",
+    "I'm not sure I agree. My concern is...",
+    "I understand, but I'd look at it differently.",
+  ],
+  "Asking for clarification":[
+    "Sorry, could you say that again?",
+    "Just to confirm, you mean...?",
+    "Could you give me an example?",
+    "What do you mean by that exactly?",
+  ],
+  "Explaining clearly":[
+    "In simple terms...",
+    "The main point is...",
+    "For example...",
+    "There are two reasons. First... Second...",
+    "To sum up...",
+  ],
+  "When you made a mistake":[
+    "Sorry, let me rephrase that.",
+    "What I meant to say was...",
+    "Let me correct myself.",
+    "Thanks for pointing that out. I'll fix it.",
+  ],
+  "Ending well":[
+    "Thanks, everyone. That was really helpful.",
+    "So the next steps are...",
+    "I'll follow up by email.",
+    "Let me know if you have any questions.",
+  ],
+};
+
+// ---------- zero-to-hero course ----------
+const LEVELS = [
+  {name:"Zero", goal:"Be understood", crit:{secs:30, fpm:8, wpm:null}},
+  {name:"Builder", goal:"Everyday conversations", crit:{secs:45, fpm:5, wpm:null}},
+  {name:"Speaker", goal:"Structure your thoughts", crit:{secs:60, fpm:3.5, wpm:[100,175]}},
+  {name:"Professional", goal:"Meetings & work situations", crit:{secs:60, fpm:2.5, wpm:[105,170]}},
+  {name:"Hero", goal:"Confident communicator", crit:{secs:90, fpm:2, wpm:[110,165]}},
+];
+const COURSE = [
+  // Level 1 — Zero
+  {t:"Introduce yourself", learn:"Keep it to 4 parts: <b>name → role → team → one personal fact</b>. Use short sentences and smile — people can hear it.<br>❌ \"Myself Ravi, working as engineer in this company since 2 years.\"<br>✅ \"Hi, I'm Ravi. I'm an engineer on the security team. I've been here for two years.\"",
+   say:["Hi, nice to meet you. I'm new to the team.","I work as an engineer on the security team.","In my free time, I like reading and travelling."],
+   task:"Introduce yourself to a new colleague.", hint:"Name → Role → Team → One fact about you"},
+  {t:"Slow down", learn:"Nervous speakers rush. Rushed English is hard to follow even with perfect grammar. Aim for <b>120–150 words per minute</b>. Pause at every comma and full stop. Say the <b>last word</b> of each sentence clearly — don't swallow it.<br>This lesson's goal: <b>under 160 words per minute</b>.",
+   say:["I speak slowly, so people can understand me.","Let me explain. First, the problem. Then, the solution.","Speaking slowly sounds confident, not weak."],
+   task:"Describe where you live and how you get to work. Speak slowly.", hint:"Where → How → How long", crit:{wpm:[0,160]}},
+  {t:"Short sentences", learn:"One idea = one sentence. In long sentences you lose the grammar halfway.<br>❌ \"So the thing is yesterday when I was coming to office there was traffic and because of that I came late and...\"<br>✅ \"Yesterday there was heavy traffic. I came in late. Sorry about that.\"",
+   say:["There was heavy traffic today.","I reached the office at ten.","Sorry I'm late. It won't happen again."],
+   task:"Describe your morning today, using only short sentences.", hint:"Woke up → Got ready → Travel → Arrived"},
+  {t:"Asking for clarification", learn:"Not understanding is normal — even for native speakers. Asking is professional. <b>Never just nod and guess.</b> Repeat back what you heard to confirm.",
+   say:["Sorry, could you repeat that, please?","Could you speak a little slower?","Just to confirm, you need it by Friday?"],
+   task:"A colleague gave you a task but you didn't understand everything. Ask three questions to clarify it.", hint:"Thank them → Question 1 → Question 2 → Question 3"},
+  {t:"Numbers, dates & times", learn:"Numbers cause most mistakes on calls. <b>thir-TEEN</b> (13): stress the end. <b>THIR-ty</b> (30): stress the start. Dates: \"the fifth of March\". Times: \"two thirty\", \"quarter past four\".",
+   say:["The meeting is on Monday, the fifth of March, at two thirty.","We found fifteen issues, not fifty.","Can we move the call to quarter past four?"],
+   task:"Schedule a meeting: suggest two possible days and times, and say how long it will take.", hint:"Purpose → Option 1 → Option 2 → Duration"},
+  {t:"Tricky sounds: V, W and TH", learn:"<b>W</b>: round your lips like a kiss, no teeth (we, work, week).<br><b>V</b>: top teeth touch the bottom lip (very, video, vendor).<br><b>TH</b>: tongue between the teeth and blow air (think, three, thank).<br>Practise slowly in front of a mirror.",
+   say:["We work very well with the vendor.","I think the three of them will vote.","Thank you for the video on Wednesday."],
+   task:"Talk about what you did last weekend. Use as many V, W and TH words as you can.", hint:"Where → What → With whom → How was it"},
+  // Level 2 — Builder
+  {t:"Small talk", learn:"Small talk = easy question + short answer + <b>one question back</b>. The question back keeps it going. Safe topics: weekend, weather, travel, food, work in general.",
+   say:["How was your weekend?","It was relaxing, thanks. How about you?","Have you been busy this week?"],
+   task:"You meet a colleague at the coffee machine. Start small talk and keep it going.", hint:"Greeting → Question → Your answer → Question back"},
+  {t:"Talking about your work", learn:"Routine → <b>present simple</b>: \"I monitor...\", \"I handle...\".<br>Right now → <b>present continuous</b>: \"Currently I'm working on...\".",
+   say:["I'm responsible for monitoring our systems.","Currently, I'm working on a new security project.","My team helps clients protect their data."],
+   task:"Explain your job: what you do every day and what you're working on now.", hint:"Role → Daily tasks → Current project"},
+  {t:"Polite requests", learn:"Direct commands sound rude in English. Soften them: <b>Could you...? Would you mind...? Can I ask you to...?</b><br>❌ \"Do the needful.\" \"Kindly revert.\"<br>✅ \"Could you please take care of this?\" \"Please get back to me.\"",
+   say:["Could you send me the report by tomorrow?","Would you mind checking this once more?","Please get back to me when you have a moment."],
+   task:"Ask three different people for three things you need this week — politely.", hint:"Could you...? → Would you mind...? → Can I ask you to...?"},
+  {t:"Talking about the past", learn:"Finished events → <b>past simple</b>: went, did, found, fixed, called.<br>❌ \"Yesterday I am going to client.\" ✅ \"Yesterday I went to the client.\"<br>Add time words: yesterday, last week, two days ago.",
+   say:["Yesterday I fixed a bug that took three hours.","Last week we finished the migration.","Two days ago, I called the client and explained the issue."],
+   task:"Tell me what you did yesterday, from morning to evening.", hint:"Morning → Afternoon → Evening"},
+  {t:"Talking about the future", learn:"Plans → <b>going to</b>: \"I'm going to finish this today.\"<br>Promises & quick decisions → <b>will</b>: \"I'll send it now.\"<br>Fixed arrangements → <b>present continuous</b>: \"I'm meeting the client on Friday.\"",
+   say:["I'm going to finish the report today.","I'll send you the link right after this call.","We're meeting the client on Friday."],
+   task:"Talk about your plans for next week, next month and next year.", hint:"Next week → Next month → Next year"},
+  {t:"Calls & video meetings", learn:"Calls are harder than face to face — no body language. Have ready phrases for: <b>opening, checking audio, bad connection, handing over, closing</b>.",
+   say:["Hi everyone, can you hear me clearly?","Sorry, you're breaking up. Could you repeat that?","I think that's everything from my side. Thank you."],
+   task:"Open a team call: greet people, check they can hear you, and explain the purpose of the call.", hint:"Greet → Check audio → Purpose → Hand over"},
+  // Level 3 — Speaker
+  {t:"PREP: give your opinion", learn:"<b>Point → Reason → Example → Point</b>.<br>\"I think we should automate testing (P). It saves a lot of time (R). Last month manual testing took three days (E). So automation is worth it (P).\"",
+   say:["In my opinion, we should automate this.","The main reason is that it saves time.","So overall, I think it's worth it."],
+   task:"Do you prefer working from home or from the office? Why?", hint:"Point → Reason → Example → Point"},
+  {t:"Status updates", learn:"<b>Done → Next → Blockers</b>. Keep it under 45 seconds. Numbers make it clear: \"3 of 5 tasks done\".",
+   say:["Yesterday I completed the firewall review.","Today I'm going to work on the audit report.","I'm blocked on access, so I need help from IT."],
+   task:"Give your daily stand-up update.", hint:"Done → Next → Blockers"},
+  {t:"Explaining a process", learn:"Use sequence words so people can follow: <b>First, Then, After that, Once that's done, Finally.</b>",
+   say:["First, log in to the dashboard.","After that, select the report and click export.","Finally, share the file with the team."],
+   task:"Explain step by step how to make tea, or how to reset a password.", hint:"First → Then → After that → Finally"},
+  {t:"Linking ideas", learn:"Stop chaining \"and... and... and\". Use real connectors:<br>Add: <b>also, in addition</b> · Contrast: <b>but, however</b> · Reason: <b>because, since</b> · Result: <b>so, as a result</b> · Example: <b>for example</b>",
+   say:["The tool is fast. However, it is expensive.","We delayed the release because testing wasn't finished.","As a result, the team has more time for quality checks."],
+   task:"Talk about the pros and cons of using AI tools at work.", hint:"Pros → However → Cons → So my view is"},
+  {t:"Kill the fillers", learn:"Fillers (um, uh, basically, actually, like, you know) appear when your mouth moves before your brain. <b>The fix: close your mouth and pause.</b> A silent second sounds thoughtful.<br>This lesson's goal: <b>under 2 fillers per minute</b>.",
+   say:["Let me think about that for a second.","That's a good question.","The short answer is yes."],
+   task:"Describe your favourite film or book — with no fillers. Pause instead.", hint:"What it is → What happens → Why you like it", crit:{fpm:2}},
+  {t:"Describing a problem", learn:"<b>What happened → Impact → What we're doing → When it'll be fixed.</b> Stay calm and factual. Don't blame.",
+   say:["This morning the login service went down.","About two hundred users couldn't access the portal.","We've found the cause, and we expect a fix within an hour."],
+   task:"Explain a technical problem to your manager.", hint:"What → Impact → Action → When fixed"},
+  // Level 4 — Professional
+  {t:"Joining the conversation", learn:"Many people stay silent waiting for a perfect gap. There is no perfect gap. Use an <b>entry phrase</b>, then make your point.",
+   say:["Can I add something here?","Sorry to interrupt, but I have a quick point.","Building on what you said, I think we should also test it."],
+   task:"In a meeting, the team is discussing a new tool. Jump in and add your idea.", hint:"Entry phrase → Your point → Reason"},
+  {t:"Agree & disagree politely", learn:"Disagree with the idea, not the person. <b>Acknowledge first</b>, then your concern, then an alternative. Soft words help: \"I'm not sure\", \"maybe\", \"have we considered\".",
+   say:["I see your point, but I have a concern.","I'm not sure that will work, because of the cost.","Have we considered a smaller pilot first?"],
+   task:"Your manager wants to release on Friday. You think it's not ready. Disagree politely.", hint:"Acknowledge → Concern → Alternative"},
+  {t:"Explain tech simply", learn:"Use <b>analogies</b> from daily life. \"A firewall is like a security guard at the gate.\" \"Encryption is like a letter in a locked box.\" Avoid acronyms, or explain them.",
+   say:["Think of a firewall as a security guard at the gate.","In simple terms, encryption locks your data in a box.","Only the person with the key can open it."],
+   task:"Explain phishing to a non-technical person, and how to avoid it.", hint:"What it is → Analogy → Example → Two tips"},
+  {t:"When you don't know the answer", learn:"Never fake it. <b>Acknowledge → be honest → say what you do know → promise a follow-up.</b>",
+   say:["That's a great question. I'm not sure right now.","Let me check and get back to you by tomorrow.","What I can tell you is that the data is safe."],
+   task:"A client asks a hard technical question you can't answer. Respond professionally.", hint:"Acknowledge → Honest → What you know → Follow-up"},
+  {t:"Saying no & negotiating", learn:"Say no to the <b>task</b>, yes to the <b>person</b>. Explain your priorities and offer options.",
+   say:["I'd love to help, but I'm fully booked this week.","Could we move this to next Monday?","If it's urgent, I can do a quick version today."],
+   task:"Your manager asks you to take on an extra project, but you're overloaded. Negotiate.", hint:"Thank → Current load → Options"},
+  {t:"Running a short meeting", learn:"<b>Open</b> with the purpose and time limit. <b>Keep</b> it on track. <b>Close</b> with next steps, owners and dates.",
+   say:["Thanks for joining. The goal today is to agree on the timeline.","Let's keep this to fifteen minutes.","To wrap up, I'll send the plan by Thursday."],
+   task:"Run the opening and closing of a project meeting.", hint:"Purpose → Agenda → Time limit ... Next steps → Owners → Dates"},
+  // Level 5 — Hero
+  {t:"Stories with STAR", learn:"<b>Situation → Task → Action → Result.</b> Used in interviews and presentations. Spend most of the time on <b>Action</b>. End with a number.",
+   say:["Last year, our client faced a serious data leak.","My task was to find the source quickly.","As a result, we closed the gap in under six hours."],
+   task:"Tell a STAR story about a challenge you solved at work.", hint:"Situation → Task → Action → Result"},
+  {t:"Tell me about yourself", learn:"The most common interview question. <b>Present → Past → Future</b> in about 90 seconds. It's your professional story, not your life story.",
+   say:["Currently, I work as a security engineer.","Before this, I spent three years in network support.","Now I'm looking to take on more responsibility."],
+   task:"Answer: \"Tell me about yourself.\"", hint:"Present → Past → Future"},
+  {t:"Persuade people", learn:"<b>Problem → Solution → Benefit → Call to action.</b> Use numbers. Talk about what <i>they</i> gain.",
+   say:["Right now, most attacks start with one careless click.","A short training programme can reduce that risk.","I'd like your approval to start a pilot next month."],
+   task:"Convince management to invest in security awareness training.", hint:"Problem → Solution → Benefit → Ask"},
+  {t:"Delivering bad news", learn:"Be <b>direct, early, and come with a plan</b>. Don't hide the bad news in the middle. Take ownership.",
+   say:["I need to share some difficult news.","The project will be two weeks late.","Here's our plan to recover, and I'll update you every Monday."],
+   task:"Tell a client their project will be two weeks late.", hint:"Headline → Reason → Impact → Plan → Next update"},
+  {t:"Mini presentation", learn:"<b>Hook</b> (a question or surprising fact) → <b>3 points</b> → <b>close</b> by repeating the key message. Pause between sections. Look at the camera or audience.<br>Goal: <b>2 minutes</b>.",
+   say:["Did you know most breaches start with a simple password?","Today I'll share three habits that keep you safe.","So remember: strong passwords, updates, and think before you click."],
+   task:"Give a 2-minute talk: \"Three habits that keep you safe online\".", hint:"Hook → Point 1 → Point 2 → Point 3 → Key message", crit:{secs:120}},
+  {t:"🏆 Final challenge", learn:"Put everything together: slow pace, short sentences, structure, linking words, pauses instead of fillers. Goal: <b>3 minutes</b>. You've got this.",
+   say:["Thank you all for being here today.","Let me tell you how I got here, and what I've learned.","Thank you. I'm happy to take any questions."],
+   task:"Give a 3-minute talk about your career journey and what you've learned.", hint:"Hook → Past → Present → Lessons → Future", crit:{secs:150}},
+];
+const lessonCrit = i => Object.assign({}, LEVELS[Math.floor(i/6)].crit, COURSE[i].crit||{});
+
+const FILLERS = ["you know","i mean","kind of","sort of","um","umm","uh","uhh","uh-huh","er","erm","ah","hmm","like","basically","actually","literally","okay so","right"];
+const WEAK = {"very good":"excellent / great","very bad":"terrible / poor","very big":"huge","very important":"essential / crucial","very tired":"exhausted","very happy":"delighted","very difficult":"challenging","a lot of":"many / plenty of","do the needful":"please take care of this","revert back":"reply / get back to me","prepone":"bring forward / move earlier","kindly do":"please do","discuss about":"discuss","explain about":"explain","return back":"return","repeat again":"repeat","myself ":"I am / my name is (when introducing)"};
+
+// ---------- storage ----------
+const KEY = "speakcoach.v1";
+let DB = load(); DB.course = DB.course || {};
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {sessions:[],shadows:[],phrasesSeen:[]}; }catch(e){ return {sessions:[],shadows:[],phrasesSeen:[]}; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){} renderAll(); }
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; // local date, not UTC
+const today = () => ymd(new Date());
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// ---------- tabs ----------
+$("nav").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  showTab(b.dataset.tab);
+});
+function showTab(t){
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on", x.dataset.tab===t));
+  document.querySelectorAll("main > section").forEach(s=>s.classList.toggle("hidden", s.id!=="tab-"+t));
+  window.scrollTo(0,0);
+}
+
+// ---------- speech ----------
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(!SR) $("noSpeech").classList.remove("hidden");
+
+function makeRec(onText, onEnd){
+  const r = new SR();
+  r.lang = "en-US"; r.continuous = true; r.interimResults = true;
+  let finalText = ""; const confs = [];
+  r.onresult = ev=>{
+    let interim = "";
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      const t = ev.results[i][0].transcript;
+      if(ev.results[i].isFinal){ finalText += t + " "; if(ev.results[i][0].confidence>0) confs.push(ev.results[i][0].confidence); }
+      else interim += t;
+    }
+    onText(finalText, interim);
+  };
+  // second arg: average recognition confidence, a rough clarity signal (null if unknown)
+  r.onend = ()=>onEnd(finalText.trim(), confs.length ? confs.reduce((a,b)=>a+b,0)/confs.length : null);
+  r.onerror = ev=>{ if(ev.error==="not-allowed") alert("Microphone blocked. Please allow microphone access in your browser."); };
+  return r;
+}
+function speak(text){
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US"; u.rate = parseFloat($("rate").value || 0.9);
+  const v = speechSynthesis.getVoices().find(v=>/en-(US|GB)/.test(v.lang) && /Natural|Google|Aria|Jenny|Guy/i.test(v.name)) || speechSynthesis.getVoices().find(v=>v.lang.startsWith("en"));
+  if(v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+speechSynthesis.onvoiceschanged = ()=>{};
+
+// ---------- speak tab ----------
+let curTopic = null, lessonCtx = null, rec = null, recording = false, startT = 0, tick = null, lastAnalysis = null;
+function pickTopic(){
+  const cat = $("topicCat").value;
+  const pool = cat==="all" ? Object.entries(TOPICS).flatMap(([k,v])=>v.map(x=>[...x,k])) : TOPICS[cat].map(x=>[...x,cat]);
+  let t; do { t = pool[Math.floor(Math.random()*pool.length)]; } while(pool.length>1 && curTopic && t[0]===curTopic[0]);
+  curTopic = t; lessonCtx = null;
+  $("lessonBanner").classList.add("hidden"); $("topicRow").classList.remove("hidden");
+  $("topic").textContent = t[0];
+  $("topicHint").textContent = "Structure: " + t[1];
+}
+$("newTopic").onclick = pickTopic;
+$("topicCat").onchange = pickTopic;
+
+$("recBtn").onclick = ()=>{
+  if(!SR){ $("typeToggle").click(); return; }
+  if(recording){ rec.stop(); return; }
+  $("result").classList.add("hidden");
+  $("transcript").textContent = "Listening...";
+  rec = makeRec(
+    (f,i)=>{ $("transcript").innerHTML = esc(f) + '<span class="muted">' + esc(i) + '</span>'; },
+    (text)=>{
+      recording = false; clearInterval(tick);
+      $("recBtn").textContent = "🎤 Start speaking"; $("recBtn").classList.replace("rec","primary");
+      const secs = (Date.now()-startT)/1000;
+      if(!text){ $("transcript").innerHTML = '<span class="muted">I didn\'t hear anything. Check your microphone and try again.</span>'; return; }
+      analyse(text, secs);
+    }
+  );
+  rec.start(); recording = true; startT = Date.now();
+  $("recBtn").textContent = "⏹ Stop"; $("recBtn").classList.replace("primary","rec");
+  tick = setInterval(()=>{ const s=Math.floor((Date.now()-startT)/1000); $("timer").textContent = Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); },250);
+};
+$("typeToggle").onclick = ()=>{
+  $("typed").classList.toggle("hidden"); $("analyseTyped").classList.toggle("hidden");
+};
+$("analyseTyped").onclick = ()=>{
+  const t = $("typed").value.trim(); if(!t) return;
+  analyse(t, null);
+};
+
+function words(t){ return t.toLowerCase().replace(/[^a-z0-9'\s-]/g," ").split(/\s+/).filter(Boolean); }
+
+// Offline grammar checker: common mistakes (many typical of Indian English).
+// Runs on the normalised transcript: lowercase words joined by single spaces.
+const NUMW = "(?:\\d+|one|two|three|four|five|six|seven|eight|nine|ten|many|few|several)";
+const GRAMMAR = [
+  [new RegExp(`\\bsince ${NUMW} (?:years?|months?|weeks?|days?|hours?)\\b`), "Use \"for\" with a length of time (\"for two years\"), and \"since\" with a starting point (\"since 2020\")."],
+  [/\b(?:informations|advices|equipments|softwares|feedbacks|furnitures|luggages|knowledges|researches|homeworks|staffs)\b/, "This word has no plural: information, advice, equipment, software, feedback, furniture, luggage, knowledge, research."],
+  [/\b(?:can|could) able to\b/, "Say \"can\" or \"am able to\", not both."],
+  [/\bdid(?:n't| not)? (?:went|came|saw|took|gave|did|made|told|said|got|knew|wrote|ate|bought|found|sent|left|thought)\b/, "After \"did\" / \"didn't\", use the base verb: \"didn't go\", \"did you see\"."],
+  [/\b(?:i am|i'm|we are|we're|they are|they're) agree\b/, "\"Agree\" is a verb: say \"I agree\", not \"I am agree\"."],
+  [/\bmore (?:better|easier|faster|bigger|smaller|cheaper|worse|higher|lower|cleaner)\b/, "Don't add \"more\" to -er words: \"better\", not \"more better\"."],
+  [/\bcope up\b/, "Say \"cope with\"."],
+  [/\baccording to me\b/, "Say \"in my opinion\" or \"I think\"."],
+  [/\bone of (?:my|the|our|his|her|their) (?:friend|colleague|project|client|brother|sister|reason|problem|manager|team member)\b/, "After \"one of my...\" use a plural: \"one of my friends\"."],
+  [/\b(?:he|she|it) don't\b/, "Use \"doesn't\" with he / she / it: \"he doesn't\"."],
+  [new RegExp(`\\b${NUMW} years? experience\\b`), "Add \"of\": \"five years of experience\"."],
+  [/\b(?:have|has) (?:went|came|did|saw|ate|wrote|took|gave)\b/, "After \"have\", use the past participle: \"have gone\", \"have come\", \"have done\", \"have seen\"."],
+  [/\bmarried with\b/, "Say \"married to\"."],
+  [/\bexplain (?:me|us|him|her)\b/, "Say \"explain to me\" or \"explain it to me\"."],
+  [/\bpeople is\b/, "\"People\" is plural: \"people are\"."],
+  [/\b(?:i am|i'm|we are|they are) (?:understanding|knowing|liking|wanting|needing|believing|owning)\b/, "These verbs don't usually take -ing: \"I understand\", \"I know\", \"I want\"."],
+  [/\bin (?:last|next) (?:week|month|year)\b/, "No \"in\": say \"last week\", \"next month\"."],
+  [/\b(?:i|we|they) (?:has|was been)\b/, "With I / we / they, use \"have\" (and \"have been\")."],
+  [/\bmy (?:mother|father|wife|husband|son|daughter|manager) name\b/, "Use the possessive: \"my mother's name\"."],
+  [/\bwhat is the time it is\b/, "Say \"what time is it?\""],
+  [/\bthe both\b/, "Say \"both\" (no \"the\"): \"both of them\"."],
+];
+function checkGrammar(lower){
+  return GRAMMAR.filter(([re])=>re.test(lower)).map(([re,msg])=>({hit: lower.match(re)[0].trim(), msg}));
+}
+
+function metrics(text, secs){
+  const w = words(text);
+  const n = w.length;
+  const lower = " " + w.join(" ") + " ";
+  // fillers
+  const fillerCounts = {};
+  let fillerTotal = 0;
+  FILLERS.forEach(f=>{
+    const re = new RegExp("\\s" + f.replace(/[-]/g,"\\-") + "(?=\\s)","g");
+    const m = lower.match(re);
+    if(m){ fillerCounts[f]=m.length; fillerTotal+=m.length; }
+  });
+  // repeated words (same word twice in a row)
+  let repeats = 0; for(let i=1;i<n;i++) if(w[i]===w[i-1] && w[i].length>1) repeats++;
+  // vocabulary
+  const stop = new Set("the a an and or but to of in on at for is are was were be i you it this that we they he she my your our with as so".split(" "));
+  const content = w.filter(x=>!stop.has(x));
+  const variety = content.length ? new Set(content).size / content.length : 0;
+  // overused words
+  const freq = {}; content.forEach(x=>{ if(x.length>3) freq[x]=(freq[x]||0)+1; });
+  const overused = Object.entries(freq).filter(([k,v])=>v>=3 && !FILLERS.includes(k)).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  // weak phrases
+  const weak = Object.entries(WEAK).filter(([k])=>lower.includes(" "+k.trim()+" "));
+  const grammar = checkGrammar(lower);
+  const mins = secs ? secs/60 : null;
+  const wpm = mins ? Math.round(n/mins) : null;
+  const fpm = mins ? fillerTotal/mins : (n ? fillerTotal/(n/140) : 0);
+
+  // score
+  let score = 100;
+  score -= Math.min(35, fpm*7);
+  if(wpm){ if(wpm<100) score -= Math.min(20,(100-wpm)/2); if(wpm>170) score -= Math.min(20,(wpm-170)/2); }
+  if(secs && secs<45) score -= Math.min(15,(45-secs)/3);
+  if(n<60) score -= Math.min(15,(60-n)/4);
+  score -= Math.min(10, repeats*2);
+  score -= Math.min(10, weak.length*3);
+  score -= Math.min(12, grammar.length*3);
+  if(variety>0.7) score += 5;
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  return {w, n, lower, fillerCounts, fillerTotal, repeats, variety, overused, weak, grammar, mins, wpm, fpm, score};
+}
+function analyse(text, secs){
+  const {n, fillerCounts, fillerTotal, repeats, variety, overused, weak, grammar, wpm, fpm, score} = metrics(text, secs);
+
+  // highlight transcript
+  let html = esc(text);
+  Object.keys(fillerCounts).sort((a,b)=>b.length-a.length).forEach(f=>{
+    html = html.replace(new RegExp("\\b("+f.replace(/[-]/g,"\\-")+")\\b","gi"), '<span class="filler">$1</span>');
+  });
+  $("transcript").innerHTML = html;
+
+  // stats
+  const cls = (v,good,ok,rev)=> rev ? (v<=good?"ok":v<=ok?"mid":"low") : (v>=good?"ok":v>=ok?"mid":"low");
+  const pace = wpm==null ? "—" : wpm;
+  const paceCls = wpm==null ? "" : (wpm>=110 && wpm<=165 ? "ok" : (wpm>=90 && wpm<=185 ? "mid":"low"));
+  $("statBox").innerHTML = `
+    <div class="stat"><b class="${cls(score,80,60)}">${score}</b><span>Score / 100</span></div>
+    <div class="stat"><b class="${paceCls}">${pace}</b><span>Words per minute (aim 120–160)</span></div>
+    <div class="stat"><b class="${cls(fpm,1,3,true)}">${fillerTotal}</b><span>Filler words (${fpm.toFixed(1)}/min)</span></div>
+    <div class="stat"><b>${n}</b><span>Words spoken</span></div>
+    <div class="stat"><b class="${cls(variety,0.65,0.5)}">${Math.round(variety*100)}%</b><span>Word variety</span></div>
+    ${secs?`<div class="stat"><b>${Math.round(secs)}s</b><span>Speaking time</span></div>`:""}`;
+
+  // feedback
+  const fb = [];
+  if(fillerTotal){
+    const top = Object.entries(fillerCounts).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`"${k}" ×${v}`).join(", ");
+    fb.push(`<b>Fillers:</b> ${top}. Next time, when you feel "${Object.keys(fillerCounts)[0]}" coming, close your mouth and pause for one second instead.`);
+  } else fb.push(`<b>No fillers detected — excellent!</b> (Speech recognition sometimes drops "um", so also listen to yourself.)`);
+  if(wpm!=null){
+    if(wpm>165) fb.push(`<b>Too fast (${wpm} wpm).</b> Slow down. Pause at every full stop. Speaking slower makes you sound more confident.`);
+    else if(wpm<110) fb.push(`<b>A bit slow (${wpm} wpm).</b> Long gaps can mean you're searching for words. Learn a few phrases from the Phrases tab so you have them ready.`);
+    else fb.push(`<b>Good pace (${wpm} wpm).</b> Keep it.`);
+  }
+  if(secs && secs<45) fb.push(`<b>Short answer (${Math.round(secs)}s).</b> Try to reach 60 seconds. Add an example — examples are the easiest way to speak longer.`);
+  if(repeats) fb.push(`<b>Repeated words ×${repeats}</b> (like "the the"). This happens when you start before you know what to say. Think of the whole sentence first, then speak.`);
+  if(overused.length) fb.push(`<b>Overused words:</b> ${overused.map(([k,v])=>`"${k}" ×${v}`).join(", ")}. Try a synonym.`);
+  weak.forEach(([k,v])=>fb.push(`<b>Say it better:</b> instead of "${k.trim()}", try "<i>${v}</i>".`));
+  grammar.forEach(g=>fb.push(`<b>Grammar:</b> you said "<i>${esc(g.hit)}</i>". ${g.msg}`));
+  if(curTopic && secs) fb.push(`<b>Structure check:</b> did you follow <i>${curTopic[1]}</i>? Did you finish with a clear final sentence?`);
+  $("fbList").innerHTML = fb.map(x=>"<li>"+x+"</li>").join("");
+  $("reflect").value = ""; $("savedMsg").textContent = "";
+  $("result").classList.remove("hidden");
+  $("result").scrollIntoView({behavior:"smooth"});
+  lastAnalysis = {date:today(), ts:Date.now(), topic: curTopic?curTopic[0]:"", text, score, wpm, fillers:fillerTotal, fpm:+fpm.toFixed(2), words:n, secs: secs?Math.round(secs):null, fillerCounts};
+  $("lessonRes").innerHTML = "";
+  if(lessonCtx){
+    const c = lessonCtx.crit, fails = [];
+    if(secs!=null){ if(secs < c.secs) fails.push(`Speak for at least <b>${c.secs} seconds</b> (you spoke ${Math.round(secs)}s). Add an example to speak longer.`); }
+    else if(n < c.secs*2) fails.push(`Write at least <b>${c.secs*2} words</b> (you wrote ${n}). Better: use the microphone!`);
+    if(fpm > c.fpm) fails.push(`Keep fillers under <b>${c.fpm} per minute</b> (you had ${fpm.toFixed(1)}). Pause instead.`);
+    if(wpm!=null && c.wpm && (wpm<c.wpm[0] || wpm>c.wpm[1])) fails.push(`Keep your pace ${c.wpm[0] ? `between <b>${c.wpm[0]}–${c.wpm[1]}</b>` : `under <b>${c.wpm[1]}</b>`} words per minute (you were ${wpm}).`);
+    const id = lessonCtx.id, p = lp(id);
+    p.speakTries = (p.speakTries||0) + 1;
+    if(!fails.length){
+      p.speak = true; p.best = Math.max(p.best||0, score);
+      lastAnalysis.topic = `Day ${id+1}: ${COURSE[id].t}`;
+      DB.sessions.push(lastAnalysis); lastSaved = lastAnalysis; lastAnalysis = null;
+      checkDone(id); save();
+      $("lessonRes").innerHTML = `<div class="pass">✅ <b>Speaking task passed!</b> ${p.done ? "Lesson complete — next lesson unlocked." : "Now finish the \"Say it right\" sentences to complete the lesson."}
+        <div style="margin-top:8px"><button class="btn primary" data-openlesson="${p.done && id<COURSE.length-1 ? id+1 : id}">${p.done && id<COURSE.length-1 ? "Next lesson →" : "Back to lesson"}</button></div></div>`;
+    } else {
+      save();
+      $("lessonRes").innerHTML = `<div class="fail">Not yet — try again. You need to:<ul class="fb">${fails.map(f=>"<li>"+f+"</li>").join("")}</ul>
+        <button class="btn" onclick="$('result').classList.add('hidden');window.scrollTo(0,0)">🎤 Try again</button></div>`;
+    }
+  }
+}
+let lastSaved = null;
+$("saveSession").onclick = ()=>{
+  if(!lastAnalysis){
+    if(lastSaved){ lastSaved.better = $("reflect").value.trim(); save(); $("savedMsg").textContent = "Saved ✓"; }
+    return;
+  }
+  lastAnalysis.better = $("reflect").value.trim();
+  DB.sessions.push(lastAnalysis); lastSaved = lastAnalysis; lastAnalysis = null;
+  save();
+  $("savedMsg").textContent = "Saved ✓ — try another topic!";
+};
+
+// ---------- shadowing ----------
+let shadowIdx = 0, shadowRecObj = null;
+Object.keys(SHADOW).forEach(k=>$("shadowCat").insertAdjacentHTML("beforeend",`<option>${esc(k)}</option>`));
+function shadowSet(){ return SHADOW[$("shadowCat").value]; }
+function showShadow(){
+  const s = shadowSet(); shadowIdx %= s.length;
+  $("shadowText").textContent = s[shadowIdx];
+  $("shadowOut").innerHTML = '<span class="muted">What you said will be compared here.</span>';
+  $("shadowScore").innerHTML = "";
+}
+$("shadowCat").onchange = ()=>{ shadowIdx=0; showShadow(); };
+$("nextShadow").onclick = ()=>{ shadowIdx++; showShadow(); };
+$("listen").onclick = ()=>speak($("shadowText").textContent);
+$("shadowRec").onclick = ()=>{
+  if(!SR){ alert("Speech recognition needs Chrome or Edge."); return; }
+  if(shadowRecObj){ shadowRecObj.stop(); return; }
+  $("shadowOut").textContent = "Listening...";
+  $("shadowRec").textContent = "⏹ Stop"; $("shadowRec").classList.replace("primary","rec");
+  shadowRecObj = makeRec(
+    (f,i)=>{ $("shadowOut").textContent = f+i; },
+    (text)=>{
+      shadowRecObj = null;
+      $("shadowRec").textContent = "🎤 Repeat"; $("shadowRec").classList.replace("rec","primary");
+      compareShadow($("shadowText").textContent, text);
+    });
+  shadowRecObj.continuous = false;
+  shadowRecObj.start();
+};
+function compareWords(target, said){
+  const a = words(target), b = words(said);
+  const dp = Array.from({length:a.length+1},()=>Array(b.length+1).fill(0));
+  for(let i=a.length-1;i>=0;i--) for(let j=b.length-1;j>=0;j--)
+    dp[i][j] = a[i]===b[j] ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j],dp[i][j+1]);
+  const matched = new Set(); let i=0,j=0;
+  while(i<a.length && j<b.length){ if(a[i]===b[j]){matched.add(i);i++;j++;} else if(dp[i+1][j]>=dp[i][j+1]) i++; else j++; }
+  return {acc: a.length ? Math.round(matched.size/a.length*100) : 0,
+          html: a.map((x,k)=>matched.has(k)?`<span class="hit">${esc(x)}</span>`:`<span class="miss">${esc(x)}</span>`).join(" ")};
+}
+function compareShadow(target, said){
+  const a = words(target), b = words(said);
+  // LCS
+  const dp = Array.from({length:a.length+1},()=>Array(b.length+1).fill(0));
+  for(let i=a.length-1;i>=0;i--) for(let j=b.length-1;j>=0;j--)
+    dp[i][j] = a[i]===b[j] ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j],dp[i][j+1]);
+  const matched = new Set(); let i=0,j=0;
+  while(i<a.length && j<b.length){ if(a[i]===b[j]){matched.add(i);i++;j++;} else if(dp[i+1][j]>=dp[i][j+1]) i++; else j++; }
+  const acc = a.length ? Math.round(matched.size/a.length*100) : 0;
+  const missed = a.filter((_,k)=>!matched.has(k));
+  $("shadowOut").innerHTML = '<div class="muted" style="font-size:13px">Target:</div>' + a.map((x,k)=>matched.has(k)?`<span class="hit">${esc(x)}</span>`:`<span class="miss">${esc(x)}</span>`).join(" ")
+    + '<div class="muted" style="font-size:13px;margin-top:8px">You said:</div>' + esc(said || "(nothing heard)");
+  const c = acc>=90?"ok":acc>=70?"mid":"low";
+  $("shadowScore").innerHTML = `<b class="${c}">${acc}% match</b> ` + (acc>=90?"— great! Move to the next one.": missed.length?`— practise these words: ${missed.map(m=>`<span class="pill">${esc(m)}</span>`).join("")} Tap Listen and try again.`:"");
+  if(said) { DB.shadows.push({date:today(), ts:Date.now(), text:target, acc}); save(); }
+}
+
+// ---------- phrases ----------
+function renderPhrases(){
+  $("phraseList").innerHTML = Object.entries(PHRASES).map(([cat,list])=>{
+    const seen = DB.phrasesSeen.includes(cat);
+    return `<h3>${esc(cat)} ${seen?'<span class="pill">learned ✓</span>':''}</h3>` + list.map(p=>`
+      <div class="phrase"><span>${esc(p)}</span><span class="row">
+        <button class="btn sm" data-say="${esc(p)}">🔊</button>
+        <button class="btn sm" data-practise="${esc(p)}">▶</button></span></div>`).join("")
+      + (seen?"":`<button class="btn sm" data-learned="${esc(cat)}" style="margin-top:6px">I've practised this set ✓</button>`);
+  }).join("");
+}
+$("phraseList").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  if(b.dataset.say) speak(b.dataset.say);
+  if(b.dataset.practise){ $("shadowText").textContent = b.dataset.practise; $("shadowOut").innerHTML=""; $("shadowScore").innerHTML=""; showTab("shadow"); }
+  if(b.dataset.learned){ DB.phrasesSeen.push(b.dataset.learned); DB.phraseDates = DB.phraseDates||{}; DB.phraseDates[today()] = (DB.phraseDates[today()]||0)+1; save(); }
+});
+
+// ---------- course ----------
+let openLesson = null, repRec = null;
+function lp(i){ return DB.course[i] = DB.course[i] || {rep:{}, tries:{}}; }
+const repOk = (p,k) => (p.rep[k]||0) >= 80 || (p.tries[k]||0) >= 3;
+function checkDone(i){
+  const p = lp(i);
+  if(!p.done && p.speak && COURSE[i].say.every((_,k)=>repOk(p,k))){ p.done = true; p.doneDate = today(); }
+}
+const isDone = i => !!(DB.course[i] && DB.course[i].done);
+const unlocked = i => i===0 || isDone(i-1);
+function currentLesson(){ const i = COURSE.findIndex((_,k)=>!isDone(k)); return i<0 ? COURSE.length : i; }
+function critText(c){
+  return `speak at least <b>${c.secs}s</b>, under <b>${c.fpm} fillers/min</b>` + (c.wpm ? `, pace ${c.wpm[0]?c.wpm[0]+"–":"under "}${c.wpm[1]} wpm` : "");
+}
+function renderCourse(){
+  const map = $("courseMap"), view = $("lessonView");
+  if(openLesson!=null){ map.classList.add("hidden"); view.classList.remove("hidden"); renderLesson(openLesson); return; }
+  map.classList.remove("hidden"); view.classList.add("hidden");
+  const cur = currentLesson(), total = COURSE.filter((_,i)=>isDone(i)).length;
+  let html = `<div class="card"><h2>Zero to Hero: 30 days of speaking</h2>
+    <p class="muted">One lesson a day, about 15 minutes. Each lesson: <b>learn</b> one skill → <b>repeat</b> 3 sentences → <b>pass</b> a speaking task. Passing unlocks the next lesson.</p>
+    <div class="bar"><i style="width:${total/COURSE.length*100}%"></i></div><div class="muted">${total} of ${COURSE.length} lessons done</div>
+    ${cur<COURSE.length ? `<button class="btn primary" style="margin-top:12px" data-openlesson="${cur}">${total?"Continue":"Start"}: Day ${cur+1} — ${esc(COURSE[cur].t)} →</button>` : `<p class="pass" style="margin-top:12px">🏆 You finished the whole course. You're a Hero! Keep practising with the Speak tab.</p>`}</div>`;
+  LEVELS.forEach((L,li)=>{
+    const ids = [0,1,2,3,4,5].map(k=>li*6+k), done = ids.filter(isDone).length;
+    html += `<div class="card ${unlocked(ids[0])?"":"locked"}"><div class="lvl">Level ${li+1} · ${L.name}</div><h2>${L.goal}</h2>
+      <div class="bar"><i style="width:${done/6*100}%"></i></div>
+      ${ids.map(i=>{
+        const d = isDone(i), u = unlocked(i);
+        return `<div class="task"><div class="check ${d?"done":""}">${d?"✓":u?"":"🔒"}</div>
+          <div style="flex:1"><span class="muted">Day ${i+1}</span> · ${esc(COURSE[i].t)}${DB.course[i]&&DB.course[i].best?` <span class="pill">best ${DB.course[i].best}</span>`:""}</div>
+          ${u?`<button class="btn sm ${i===cur?"primary":""}" data-openlesson="${i}">${d?"Review":i===cur?"Start":"Open"}</button>`:""}</div>`;
+      }).join("")}</div>`;
+  });
+  map.innerHTML = html;
+}
+function renderLesson(i){
+  const L = COURSE[i], p = lp(i), c = lessonCrit(i), lvl = LEVELS[Math.floor(i/6)];
+  const repDone = L.say.filter((_,k)=>repOk(p,k)).length;
+  $("lessonView").innerHTML = `<div class="card">
+    <button class="btn sm" data-closelesson>← All lessons</button>
+    <div class="lvl" style="margin-top:14px">Level ${Math.floor(i/6)+1} · ${lvl.name} · Day ${i+1}</div>
+    <h2 style="font-size:22px">${esc(L.t)}</h2>
+    ${p.done?`<div class="pass">✅ Lesson complete${i<COURSE.length-1?` — <a href="#" data-openlesson="${i+1}">go to Day ${i+2} →</a>`:" — you finished the course! 🏆"}</div>`:""}
+    <div class="step"><h3>Step 1 · Learn</h3><p>${L.learn}</p></div>
+    <div class="step"><h3>Step 2 · Say it right <span class="muted">(${repDone}/${L.say.length})</span></h3>
+      <p class="muted">Listen 🔊, then repeat 🎤. You need 80% match. (If the app keeps mishearing you, it counts after 3 tries.)</p>
+      ${L.say.map((s,k)=>`<div class="phrase" style="flex-wrap:wrap"><span style="flex:1;min-width:200px">${repOk(p,k)?"✅ ":""}${esc(s)}</span>
+        <span class="row"><button class="btn sm" data-rsay="${k}">🔊</button><button class="btn sm primary" data-rrec="${k}" id="rrb-${k}">🎤</button></span>
+        <div id="rr-${k}" style="width:100%;font-size:14px"></div></div>`).join("")}
+    </div>
+    <div class="step"><h3>Step 3 · Speaking task ${p.speak?"✅":""}</h3>
+      <p class="prompt" style="font-size:18px">${esc(L.task)}</p>
+      <p class="muted">Structure: ${esc(L.hint)}<br>To pass: ${critText(c)}.</p>
+      <button class="btn primary" data-lessonspeak="${i}">🎤 ${p.speak?"Do it again":"Start speaking task"}</button>
+    </div></div>`;
+}
+function startLessonSpeak(i){
+  const L = COURSE[i];
+  lessonCtx = {id:i, crit:lessonCrit(i)};
+  curTopic = [L.task, L.hint, "lesson"];
+  $("topic").textContent = L.task;
+  $("topicHint").textContent = "Structure: " + L.hint;
+  $("topicRow").classList.add("hidden");
+  $("lessonBanner").innerHTML = `🎓 <b>Day ${i+1} task.</b> To pass: ${critText(lessonCtx.crit)}. <a href="#" data-openlesson="${i}">Back to lesson</a>`;
+  $("lessonBanner").classList.remove("hidden");
+  $("result").classList.add("hidden");
+  $("transcript").innerHTML = '<span class="muted">Your words will appear here.</span>';
+  $("timer").textContent = "0:00";
+  showTab("speak");
+}
+function lessonRepeat(k){
+  if(!SR){ alert("Speech recognition needs Chrome or Edge."); return; }
+  if(repRec){ repRec.stop(); return; }
+  const i = openLesson, target = COURSE[i].say[k], btn = $("rrb-"+k);
+  $("rr-"+k).textContent = "Listening... speak now";
+  btn.textContent = "⏹"; btn.classList.replace("primary","rec");
+  repRec = makeRec((f,x)=>{ $("rr-"+k).textContent = f+x; }, said=>{
+    repRec = null;
+    const p = lp(i), r = compareWords(target, said);
+    p.tries[k] = (p.tries[k]||0) + 1;
+    p.rep[k] = Math.max(p.rep[k]||0, r.acc);
+    if(said) DB.shadows.push({date:today(), ts:Date.now(), text:target, acc:r.acc});
+    checkDone(i); save();
+    const cls = r.acc>=80?"ok":r.acc>=60?"mid":"low";
+    $("rr-"+k).innerHTML = `<b class="${cls}">${r.acc}%</b> ${r.html}<br><span class="muted">Heard: ${esc(said||"(nothing)")}</span>`;
+  });
+  repRec.continuous = false;
+  repRec.start();
+}
+document.addEventListener("click", e=>{
+  const t = e.target.closest("[data-openlesson],[data-closelesson],[data-lessonspeak],[data-rsay],[data-rrec]");
+  if(!t) return;
+  if(t.dataset.openlesson!=null){ e.preventDefault(); openLesson = +t.dataset.openlesson; showTab("course"); renderCourse(); }
+  else if(t.hasAttribute("data-closelesson")){ openLesson = null; renderCourse(); window.scrollTo(0,0); }
+  else if(t.dataset.lessonspeak!=null) startLessonSpeak(+t.dataset.lessonspeak);
+  else if(t.dataset.rsay!=null) speak(COURSE[openLesson].say[+t.dataset.rsay]);
+  else if(t.dataset.rrec!=null) lessonRepeat(+t.dataset.rrec);
+});
+
+// ---------- Indian English → International English ----------
+const CLEAR = {
+  "Phrases Europeans won't understand":[
+    ["Please do the needful.","Could you please take care of this?","Europeans won't know what \"the needful\" is. Say exactly what you need."],
+    ["Kindly revert at the earliest.","Please get back to me as soon as you can.","\"Revert\" means \"go back to an old version\". Say \"reply\" or \"get back to me\"."],
+    ["Can we prepone the meeting?","Can we move the meeting earlier?","\"Prepone\" only exists in Indian English."],
+    ["I have a doubt.","I have a question.","\"Doubt\" means you think something is wrong or untrue."],
+    ["He is out of station.","He is travelling this week.","Say \"travelling\", \"away\" or \"out of the office\"."],
+    ["I passed out from college in 2018.","I graduated from college in 2018.","\"Passed out\" means \"fainted\"!"],
+    ["Let's have a con call.","Let's have a call.","Just \"call\", \"meeting\" or \"video call\"."],
+    ["The updation is done.","The update is done.","\"Updation\" is not a word in international English."],
+    ["I am a fresher.","I'm a recent graduate.","Or \"I'm early in my career\" / \"entry-level\"."],
+    ["What is your good name?","May I ask your name?","Or simply: \"What's your name?\""],
+    ["It's the same to same.","It's exactly the same.",""],
+    ["We did it for timepass.","We did it just for fun.","Or \"to pass the time\"."],
+  ],
+  "Grammar habits":[
+    ["Myself Ravi, from the security team.","Hi, I'm Ravi from the security team.","\"Myself\" can't start a sentence. Use \"I'm\" or \"My name is\"."],
+    ["I am having five years of experience.","I have five years of experience.","\"Have\" for owning something is not used with -ing."],
+    ["I am knowing him for two years.","I have known him for two years.","Use \"have + past participle\" for things that started in the past and continue now."],
+    ["Today morning I called the client.","This morning I called the client.","Say \"this morning\", \"this evening\", \"last night\"."],
+    ["You are coming, isn't it?","You're coming, aren't you?","Or the easy option: \"You're coming, right?\""],
+    ["Let's discuss about the plan.","Let's discuss the plan.","\"Discuss\" never takes \"about\". The same goes for \"explain\" and \"return back\"."],
+    ["Please do it today itself.","Please do it today.","\"Itself\" here sounds strange. Drop it, or say \"today, please\"."],
+    ["Do one thing, send me the file.","Could you send me the file?","\"Do one thing\" is a direct translation. Just make the request."],
+    ["The food was too good.","The food was really good.","\"Too\" means \"more than you want\" (too hot, too expensive)."],
+    ["My cousin brother lives in Pune.","My cousin lives in Pune.","English has only \"cousin\". Add \"he\" or \"she\" later if needed."],
+  ],
+  "Pronunciation":[
+    ["vest / west (same sound)","V: teeth on lip. W: round lips, no teeth.","Say: \"We visit very well every Wednesday.\""],
+    ["tree (for three)","three: tongue between teeth, blow air.","Say: \"I think the three of them thanked us.\""],
+    ["is-school, is-tation","school, station (no extra vowel at the start)","Start directly with the S sound."],
+    ["develOPment, hoTEL→HOtel","deVELopment, hoTEL, CAtegory, comPUter","Stressing the wrong syllable is the #1 reason people say \"Sorry?\" to Indians."],
+    ["jero, jebra","zero, zebra","Z buzzes like a bee: zzzz."],
+    ["wal-k, ta-lk (saying the L)","wok, tok (silent L)","Also silent: Wednesday (WENZ-day), receipt (ri-SEET), debt (DET)."],
+    ["I work-ed yesterday","I workt yesterday","-ed is often a T or D sound, not an extra syllable: worked, asked, fixed."],
+  ],
+};
+// let the Speak tab flag these too
+Object.assign(WEAK, {"revert":"reply / get back to me","have a doubt":"have a question","out of station":"travelling / away",
+  "passed out":"graduated","con call":"call","updation":"update","fresher":"recent graduate","good name":"your name",
+  "same to same":"exactly the same","timepass":"just for fun","am having":"have (for owning / experience)",
+  "today morning":"this morning","isn't it":"right? / aren't you? / don't you?","discuss about":"discuss",
+  "today itself":"today","do one thing":"could you...?","cousin brother":"cousin","cousin sister":"cousin","too good":"really good"});
+
+function renderClear(){
+  $("clearList").innerHTML = Object.entries(CLEAR).map(([cat,list])=>`<div class="card"><h2>${esc(cat)}</h2>` +
+    list.map(([bad,good,why],k)=>`<div class="phrase" style="flex-wrap:wrap">
+      <div style="flex:1;min-width:220px"><div class="wrong">${esc(bad)}</div><div class="right">✓ ${esc(good)}</div>${why?`<div class="muted">${esc(why)}</div>`:""}</div>
+      <span class="row"><button class="btn sm" data-csay="${esc(cat)}|${k}">🔊</button><button class="btn sm" data-cpract="${esc(cat)}|${k}">▶ Practise</button></span></div>`).join("") + `</div>`).join("");
+}
+function clearItem(key){ const [c,k] = key.split("|"); return CLEAR[c][+k]; }
+// the pronunciation entries have a practice sentence in the "why" slot
+const clearSayText = it => /^Say: /.test(it[2]) ? it[2].replace(/^Say: "|"$/g,"") : it[1];
+$("clearList").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  if(b.dataset.csay) speak(clearSayText(clearItem(b.dataset.csay)));
+  if(b.dataset.cpract){ $("shadowText").textContent = clearSayText(clearItem(b.dataset.cpract)); $("shadowOut").innerHTML=""; $("shadowScore").innerHTML=""; showTab("shadow"); }
+});
+
+// quiz: see the Indian-English version, say the international one
+let quiz = null, quizRec = null;
+const QUIZ_POOL = [...CLEAR["Phrases Europeans won't understand"], ...CLEAR["Grammar habits"]];
+function nextQuiz(){
+  if(!quiz) quiz = {n:0, right:0};
+  quiz.item = QUIZ_POOL[Math.floor(Math.random()*QUIZ_POOL.length)];
+  $("quizBox").classList.remove("hidden");
+  $("quizBox").innerHTML = `<div class="muted">Say this in international English: <span style="float:right">${quiz.right}/${quiz.n} correct</span></div>
+    <div class="prompt wrong" style="text-decoration:none">"${esc(quiz.item[0])}"</div>
+    <div class="row" style="margin-top:10px"><button class="btn primary" id="qRec">🎤 Say it correctly</button><button class="btn" id="qShow">Show answer</button><button class="btn" id="qNext">Next →</button></div>
+    <div id="qOut" class="transcript"><span class="muted">Your answer will appear here.</span></div>`;
+  $("qNext").onclick = nextQuiz;
+  $("qShow").onclick = ()=>{ $("qOut").innerHTML = `<span class="right">✓ ${esc(quiz.item[1])}</span><div class="muted">${esc(quiz.item[2])}</div>`; };
+  $("qRec").onclick = ()=>{
+    if(!SR){ alert("Speech recognition needs Chrome or Edge."); return; }
+    if(quizRec){ quizRec.stop(); return; }
+    $("qOut").textContent = "Listening..."; $("qRec").textContent = "⏹ Stop"; $("qRec").classList.replace("primary","rec");
+    quizRec = makeRec((f,i)=>{ $("qOut").textContent = f+i; }, said=>{
+      quizRec = null; $("qRec").textContent = "🎤 Say it correctly"; $("qRec").classList.replace("rec","primary");
+      const r = compareWords(quiz.item[1], said);
+      const stillWrong = Object.keys(WEAK).some(k=>(" "+words(said).join(" ")+" ").includes(" "+k.trim()+" "));
+      const ok = r.acc>=60 && !stillWrong;
+      quiz.n++; if(ok) quiz.right++;
+      $("qOut").innerHTML = (ok ? `<b class="ok">✅ Good!</b>` : stillWrong ? `<b class="low">❌ You still used the Indian-English phrase.</b>` : `<b class="mid">Close — compare with the answer:</b>`)
+        + `<div class="muted" style="margin-top:6px">You said: ${esc(said||"(nothing)")}</div><div class="right">✓ ${esc(quiz.item[1])}</div><div class="muted">${esc(quiz.item[2])}</div>`;
+      if(said){ DB.shadows.push({date:today(), ts:Date.now(), text:quiz.item[1], acc:r.acc}); save(); }
+    });
+    quizRec.continuous = false; quizRec.start();
+  };
+}
+$("quizBtn").onclick = nextQuiz;
+
+// ---------- IELTS & interview ----------
+const P1 = ["Do you work or are you a student?","What do you like most about your job?","Where is your hometown, and what is it like?","What do you like to do at the weekend?","Do you like cooking? Why or why not?","How often do you use public transport?","Are you a morning person or an evening person?","What kind of music do you like?","Do you enjoy travelling?","How do you usually spend your holidays?","Do you like reading?","What's your favourite season, and why?","Do you use social media a lot?","Is it easy to make friends where you live?","How often do you watch films?","What did you want to be when you were a child?"];
+const P2 = [
+  {q:"Describe a skill you learned that is useful in your life.", b:["what the skill is","when and how you learned it","how often you use it","and explain why it is useful"],
+   p3:["Which skills are most important for young people today?","Is it better to learn a skill from a teacher or by yourself online?","Will AI change the skills people need in the future?"]},
+  {q:"Describe a person you admire.", b:["who this person is","how you know them","what they have done","and explain why you admire them"],
+   p3:["What qualities make a good role model?","Do celebrities have a responsibility to be good role models?","How are role models today different from the past?"]},
+  {q:"Describe a place you visited that you would like to visit again.", b:["where it is","when you went there","what you did there","and explain why you want to go back"],
+   p3:["Why do people like to travel?","How does tourism affect local communities?","Will people travel more or less in the future?"]},
+  {q:"Describe a time you helped someone.", b:["who you helped","what the situation was","how you helped","and explain how you felt about it"],
+   p3:["Why don't some people help others?","Should schools teach children to volunteer?","Do people in big cities help each other less?"]},
+  {q:"Describe a piece of technology you use every day.", b:["what it is","when you started using it","how you use it","and explain why it is important to you"],
+   p3:["How has technology changed the way people work?","Do people depend too much on their phones?","What are the risks of sharing personal data online?"]},
+  {q:"Describe a goal you want to achieve in the future.", b:["what the goal is","why you chose it","what you are doing to achieve it","and explain how you will feel when you achieve it"],
+   p3:["Is it important to set goals?","Why do some people give up on their goals?","Should parents choose goals for their children?"]},
+  {q:"Describe a city you would like to live in.", b:["which city it is","how you know about it","what life is like there","and explain why you would like to live there"],
+   p3:["What makes a city a good place to live?","Why do people move to other countries?","What problems do people face when they move abroad?"]},
+  {q:"Describe a difficult decision you made.", b:["what the decision was","when you made it","what options you had","and explain why it was difficult"],
+   p3:["Do young people make decisions differently from older people?","Should people ask for advice before big decisions?","Which decisions are hardest for people today?"]},
+];
+const IV_FIRST = {q:"Tell me about yourself.", tip:"Present → Past → Future in 60–90 seconds. Your current role, 1–2 achievements with numbers, and why you're looking for this job now. Not your family history or school marks."};
+const IV_EUROPE = {q:"Why do you want to move to Europe?", tip:"Talk about career growth, the type of work, the company and the work culture. Never say only \"salary\" or \"to leave India\". Example: \"I want to work in international teams on larger security projects, and I really value the work culture here.\""};
+const IV_LAST = {q:"Do you have any questions for us?", tip:"Always ask 1–2. For example: \"What does success look like in the first six months?\" or \"How is the team structured?\" Saying \"No questions\" sounds uninterested."};
+const IV_POOL = [
+  {q:"Why do you want to work for our company?", tip:"Mention something specific about the company (product, values, projects), then connect it to your skills."},
+  {q:"Tell me about a challenging project you worked on.", tip:"Use STAR: Situation → Task → Action → Result. Spend most time on what YOU did. End with a number."},
+  {q:"Tell me about a time you disagreed with your manager.", tip:"Show that you disagree politely and with facts — Europeans value this. Acknowledge → your concern → what happened → what you learned."},
+  {q:"How do you work in international teams?", tip:"Give an example of working with people from other countries or time zones. Mention clear written communication and respecting different styles."},
+  {q:"What are your salary expectations?", tip:"Research the local market (Glassdoor, levels.fyi). Give a range in euros: \"Based on my research, I'm looking for 55 to 65 thousand euros a year.\" Don't convert from your Indian salary."},
+  {q:"What is your biggest weakness?", tip:"Choose a real but non-critical weakness and what you're doing about it. Example: \"Speaking up in big meetings — I've been practising daily and now I contribute in every meeting.\""},
+  {q:"Where do you see yourself in five years?", tip:"Show ambition linked to this role: growing expertise, taking on leadership or ownership — and staying with the company."},
+  {q:"How do you handle feedback or criticism?", tip:"Give a real example of feedback you received, what you changed, and the result."},
+  {q:"Do you need visa sponsorship, and how soon could you relocate?", tip:"Be clear and confident: \"Yes, I'd need sponsorship, for example the EU Blue Card. I could relocate within two to three months.\""},
+  {q:"Explain something technical from your work to someone without a technical background.", tip:"Use an everyday comparison. Avoid acronyms. Check understanding at the end."},
+  {q:"Why are you leaving your current job?", tip:"Stay positive. Never criticise your current employer. Focus on what you're moving TOWARDS: growth, new challenges, international experience."},
+  {q:"How do you prioritise when you have too many tasks?", tip:"Explain a simple method: urgency and impact, agree priorities with the manager, communicate early if something will be late."},
+];
+const shuffle = a => a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+
+let EX = null, exRec = null, exTick = null;
+function startExam(type){
+  let steps = [];
+  if(type==="ielts" || type==="part2"){
+    const card = P2[Math.floor(Math.random()*P2.length)];
+    if(type==="ielts") steps.push(...shuffle(P1).slice(0,4).map(q=>({part:"Part 1", q, max:40, exp:25})));
+    steps.push({part:"Part 2", q:card.q, cue:card.b, prep:60, max:120, exp:105});
+    if(type==="ielts") steps.push(...card.p3.map(q=>({part:"Part 3", q, max:80, exp:45})));
+  } else {
+    steps = [IV_FIRST, IV_EUROPE, ...shuffle(IV_POOL).slice(0,3), IV_LAST].map(x=>({part:"Interview", q:x.q, tip:x.tip, max:120, exp:x===IV_LAST?30:75}));
+  }
+  EX = {type, steps, idx:0, answers:[], phase:"ready"};
+  $("examMenu").classList.add("hidden"); $("examRun").classList.remove("hidden");
+  renderExamStep(true);
+}
+function stopExamTimers(){ clearInterval(exTick); exTick = null; }
+function renderExamStep(readAloud){
+  const s = EX.steps[EX.idx];
+  const name = EX.type==="interview" ? "Mock interview" : EX.type==="part2" ? "IELTS Part 2 practice" : "IELTS mock test";
+  $("examRun").innerHTML = `<div class="card">
+    <div class="row" style="justify-content:space-between"><span class="lvl">${name} · ${s.part} · ${EX.idx+1} of ${EX.steps.length}</span><button class="btn sm" id="exQuit">✕ Quit</button></div>
+    <div class="bar"><i style="width:${EX.idx/EX.steps.length*100}%"></i></div>
+    <div class="prompt" style="margin-top:12px">${esc(s.q)}</div>
+    ${s.cue?`<div class="cue">You should say:<ul>${s.cue.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
+    <div class="row" style="margin-top:12px"><span class="timer" id="exTimer"></span><span class="muted" id="exHint"></span></div>
+    <div class="row" style="margin-top:12px" id="exBtns"></div>
+    <div class="transcript" id="exText"><span class="muted">Your answer will appear here.</span></div>
+    ${s.cue?`<textarea id="exNotes" placeholder="Notes during your 1-minute preparation (keywords only)..." style="margin-top:10px;min-height:70px"></textarea>`:""}
+  </div>`;
+  $("exQuit").onclick = ()=>{ if(confirm("Quit this test? Your answers won't be saved.")) quitExam(); };
+  setExamButtons();
+  if(readAloud) speak(s.q);
+}
+function setExamButtons(){
+  const s = EX.steps[EX.idx], B = $("exBtns");
+  stopExamTimers();
+  if(EX.phase==="ready"){
+    $("exTimer").textContent = "";
+    $("exHint").textContent = s.cue ? "You have 1 minute to prepare, then speak for 1–2 minutes." : `Aim for about ${s.exp} seconds.`;
+    B.innerHTML = (s.cue?`<button class="btn primary" id="exPrep">⏱ Start 1-minute preparation</button>`:"")
+      + `<button class="btn ${s.cue?"":"primary"}" id="exGo">🎤 Start answering</button><button class="btn" id="exHear">🔊 Hear again</button><button class="btn" id="exSkip">Skip</button>`;
+    if(s.cue) $("exPrep").onclick = startPrep;
+    $("exGo").onclick = startAnswer;
+    $("exHear").onclick = ()=>speak(s.q);
+    $("exSkip").onclick = ()=>finishAnswer("", 0, null);
+  }
+}
+function startPrep(){
+  EX.phase = "prep";
+  let left = EX.steps[EX.idx].prep;
+  $("exBtns").innerHTML = `<button class="btn primary" id="exGo">🎤 I'm ready — start now</button>`;
+  $("exGo").onclick = startAnswer;
+  $("exHint").textContent = "Prepare: write keywords, not sentences.";
+  const show = ()=>{ $("exTimer").textContent = `Prep 0:${String(left).padStart(2,"0")}`; };
+  show();
+  exTick = setInterval(()=>{ left--; show(); if(left<=0){ stopExamTimers(); speak("Your preparation time is over. Please start speaking now."); setTimeout(startAnswer, 2500); } },1000);
+}
+function startAnswer(){
+  if(EX.phase==="speaking") return;
+  stopExamTimers();
+  const s = EX.steps[EX.idx];
+  if(!SR){
+    EX.phase = "typing";
+    $("exBtns").innerHTML = `<button class="btn primary" id="exTypedDone">Submit answer</button>`;
+    $("exText").innerHTML = `<textarea id="exTyped" placeholder="No microphone support — type your answer"></textarea>`;
+    $("exTypedDone").onclick = ()=>finishAnswer($("exTyped").value.trim(), null, null);
+    return;
+  }
+  speechSynthesis.cancel();
+  EX.phase = "speaking";
+  const t0 = Date.now();
+  $("exBtns").innerHTML = `<button class="btn rec" id="exStop">⏹ I've finished</button>`;
+  $("exHint").textContent = s.cue ? "Keep going until 2 minutes if you can. Cover every point on the card." : "";
+  $("exText").textContent = "Listening...";
+  exRec = makeRec((f,i)=>{ $("exText").innerHTML = esc(f) + '<span class="muted">' + esc(i) + '</span>'; },
+    (text, conf)=>{ exRec = null; finishAnswer(text, (Date.now()-t0)/1000, conf); });
+  $("exStop").onclick = ()=>exRec && exRec.stop();
+  exRec.start();
+  exTick = setInterval(()=>{
+    const e = Math.floor((Date.now()-t0)/1000);
+    $("exTimer").textContent = `${Math.floor(e/60)}:${String(e%60).padStart(2,"0")} / ${Math.floor(s.max/60)}:${String(s.max%60).padStart(2,"0")}`;
+    if(e>=s.max && exRec){ exRec.stop(); }
+  },250);
+}
+function finishAnswer(text, secs, conf){
+  stopExamTimers();
+  if(!EX) return;
+  const s = EX.steps[EX.idx];
+  const m = text ? metrics(text, secs) : null;
+  EX.answers.push({q:s.q, part:s.part, tip:s.tip, exp:s.exp, text, secs: secs==null ? null : Math.round(secs), conf, m});
+  EX.idx++; EX.phase = "ready";
+  if(EX.idx >= EX.steps.length) return showExamResults();
+  if(EX.steps[EX.idx].part !== s.part) speak(EX.steps[EX.idx].part==="Part 2" ? "Now, Part 2. Here is your topic." : EX.steps[EX.idx].part==="Part 3" ? "Thank you. Now let's discuss some more general questions." : "");
+  setTimeout(()=>renderExamStep(true), EX.steps[EX.idx].part !== s.part ? 2500 : 300);
+}
+function estimateBand(ans){
+  const spoken = ans.filter(a=>a.m && a.m.n);
+  if(!spoken.length) return null;
+  const sum = f => spoken.reduce((t,a)=>t+f(a),0);
+  const timed = spoken.filter(a=>a.secs);
+  const tSec = timed.reduce((t,a)=>t+a.secs,0);
+  const fpm = tSec ? timed.reduce((t,a)=>t+a.m.fillerTotal,0)/(tSec/60) : sum(a=>a.m.fpm)/spoken.length;
+  const wpm = tSec ? timed.reduce((t,a)=>t+a.m.n,0)/(tSec/60) : null;
+  // answers that were skipped or too short pull fluency down
+  const lenRatio = ans.reduce((t,a)=>t+Math.min(1.2, a.secs!=null ? a.secs/a.exp : (a.m ? a.m.n/(a.exp*2.2) : 0)),0)/ans.length;
+  let fc = 8 - Math.min(3, fpm*0.5);
+  if(wpm!=null){ if(wpm<90) fc -= 1.5; else if(wpm<110) fc -= 0.5; if(wpm>185) fc -= 1; }
+  if(lenRatio<0.5) fc -= 2; else if(lenRatio<0.75) fc -= 1;
+  const variety = sum(a=>a.m.variety)/spoken.length;
+  const weakN = sum(a=>a.m.weak.length);
+  let lr = variety>0.8?7.5 : variety>0.72?7 : variety>0.64?6.5 : variety>0.56?6 : 5.5;
+  lr -= Math.min(1.5, weakN*0.5);
+  if(sum(a=>a.m.n) < 200) lr -= 0.5;
+  const confs = spoken.map(a=>a.conf).filter(x=>x!=null);
+  const conf = confs.length ? confs.reduce((x,y)=>x+y,0)/confs.length : null;
+  const pr = conf==null ? null : conf>0.92?7.5 : conf>0.87?7 : conf>0.82?6.5 : conf>0.75?6 : 5.5;
+  const parts = [fc, lr, pr].filter(x=>x!=null);
+  const r = x => Math.max(4, Math.min(8.5, Math.round(x*2)/2));
+  return {overall: r(parts.reduce((a,b)=>a+b,0)/parts.length), fc:r(fc), lr:r(lr), pr: pr==null?null:r(pr), fpm, wpm, weakN};
+}
+function showExamResults(){
+  const A = EX.answers, isIV = EX.type==="interview";
+  const band = isIV ? null : estimateBand(A);
+  const scored = A.filter(a=>a.m);
+  const avgScore = scored.length ? Math.round(scored.reduce((t,a)=>t+a.m.score,0)/scored.length) : 0;
+  DB.exams = DB.exams || [];
+  DB.exams.push({date:today(), ts:Date.now(), type:EX.type, band: band?band.overall:null, score:avgScore, answered:scored.length, total:A.length});
+  save();
+  const bandCls = b => b>=7?"ok":b>=6?"mid":"low";
+  let head;
+  if(band){
+    head = `<div class="row" style="gap:20px;align-items:flex-end"><div><div class="muted">Estimated band</div><div class="band ${bandCls(band.overall)}">${band.overall}</div></div>
+      <div class="stats" style="flex:1;margin:0">
+        <div class="stat"><b class="${bandCls(band.fc)}">${band.fc}</b><span>Fluency &amp; coherence</span></div>
+        <div class="stat"><b class="${bandCls(band.lr)}">${band.lr}</b><span>Vocabulary</span></div>
+        <div class="stat"><b class="${band.pr?bandCls(band.pr):""}">${band.pr ?? "—"}</b><span>Clarity (how well the app understood you)</span></div>
+      </div></div>
+      <p class="muted">This is a <b>rough estimate</b> from your speed, filler words, vocabulary and how clearly the app could understand you. A real examiner also scores grammar and pronunciation in detail. Before the real test, do at least one mock with a human tutor.</p>`;
+    const tips = [];
+    if(band.fpm>2) tips.push(`Cut filler words (${band.fpm.toFixed(1)} per minute). Examiners notice them. Pause instead.`);
+    if(band.wpm && band.wpm<110) tips.push(`Speak a little faster and more smoothly (${Math.round(band.wpm)} wpm). Long gaps lower your fluency score.`);
+    if(A.some(a=>a.part==="Part 2" && (a.secs||0)<90)) tips.push("In Part 2, speak for the full 1.5–2 minutes. Cover every point on the card and add a personal story.");
+    if(A.some(a=>a.part==="Part 1" && a.m && a.m.n<25)) tips.push("Part 1 answers are too short. Answer, give a reason, then add an example: 3 sentences.");
+    if(band.weakN) tips.push(`You used ${band.weakN} Indian-English phrase(s). Practise the Clear English tab.`);
+    if(band.lr<7) tips.push("Use more varied words. Learn topic words (travel, technology, environment, work) and less common adjectives (fascinating, challenging, crowded).");
+    if(!tips.length) tips.push("Great work. Keep practising Part 2 with new topics and try harder Part 3 questions.");
+    head += `<h3>How to get a higher band</h3><ul class="fb">${tips.map(t=>`<li>${t}</li>`).join("")}</ul>`;
+  } else if(!isIV){
+    head = `<p>You didn't answer any questions, so there's no score. Try again!</p>`;
+  } else {
+    head = `<div class="row" style="gap:20px;align-items:flex-end"><div><div class="muted">Interview score</div><div class="band ${avgScore>=80?"ok":avgScore>=60?"mid":"low"}">${avgScore}</div></div>
+      <p class="muted" style="flex:1">Based on fluency, filler words, pace and answer length. Read the tip under each answer, write a better version, and do the interview again tomorrow. Interviews get easier with repetition.</p></div>`;
+  }
+  const rows = A.map((a,i)=>`<div class="step"><b>${i+1}. ${esc(a.q)}</b> <span class="muted">(${a.part})</span>
+      ${a.m ? `<div class="muted">${a.secs!=null?a.secs+"s · ":""}${a.m.wpm?a.m.wpm+" wpm · ":""}${a.m.fillerTotal} fillers · score ${a.m.score}${a.secs!=null && a.secs < a.exp*0.6 ? ` · <span class="low">too short (aim ~${a.exp}s)</span>`:""}</div>
+        ${a.m.weak.length?`<div class="mid" style="font-size:14px">Say it better: ${a.m.weak.map(([k,v])=>`"${esc(k.trim())}" → "${esc(v)}"`).join(", ")}</div>`:""}
+        ${a.m.grammar.map(g=>`<div class="mid" style="font-size:14px">Grammar: "${esc(g.hit)}" — ${esc(g.msg)}</div>`).join("")}
+        <details><summary>Show what you said</summary><div class="transcript">${esc(a.text)}</div></details>` : `<div class="low" style="font-size:14px">Skipped</div>`}
+      ${a.tip?`<div class="tip">💡 ${esc(a.tip)}</div>`:""}</div>`).join("");
+  $("examRun").innerHTML = `<div class="card"><h2>${isIV?"Interview":"Test"} results</h2>${head}</div>
+    <div class="card"><h2>Your answers</h2>${rows}
+    <div class="row" style="margin-top:16px"><button class="btn primary" data-exam="${EX.type}">Try again with new questions</button><button class="btn" id="exBack">Back</button></div></div>`;
+  $("exBack").onclick = quitExam;
+  EX = null;
+  window.scrollTo(0,0);
+}
+function quitExam(){
+  stopExamTimers();
+  if(exRec){ const r = exRec; exRec = null; r.onend = null; r.stop(); }
+  speechSynthesis.cancel();
+  EX = null;
+  $("examRun").classList.add("hidden"); $("examMenu").classList.remove("hidden");
+  renderExamHist();
+}
+function renderExamHist(){
+  const E = (DB.exams||[]).slice().reverse();
+  const label = {ielts:"IELTS mock", part2:"IELTS Part 2", interview:"Interview"};
+  $("examHist").innerHTML = E.length ? `<table><tr><th>Date</th><th>Test</th><th>Result</th><th>Answered</th></tr>` +
+    E.slice(0,30).map(e=>`<tr><td>${e.date}</td><td>${label[e.type]}</td><td>${e.band!=null?"Band ~"+e.band:"Score "+e.score}</td><td>${e.answered}/${e.total}</td></tr>`).join("") + `</table>`
+    : `<p class="muted">No tests yet. Try the Part 2 practice first — it only takes 3 minutes.</p>`;
+}
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-exam]"); if(!b) return;
+  showTab("exam"); startExam(b.dataset.exam);
+});
+
+// ---------- voices ----------
+function enVoices(){ return speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang)); }
+function speakWith(text, rate, voiceName, onend){
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-GB"; u.rate = rate || 0.95;
+  const vs = enVoices();
+  const v = (voiceName && vs.find(x=>x.name===voiceName)) || vs.find(x=>/Natural|Google|Aria|Jenny|Guy|Libby|Sonia|Ryan/i.test(x.name)) || vs[0];
+  if(v){ u.voice = v; u.lang = v.lang; }
+  if(onend) u.onend = onend;
+  speechSynthesis.speak(u);
+}
+
+// ---------- TALK: offline role-play conversations ----------
+// keys: words/phrases a good reply usually contains ("?" = you should ask a question back)
+const TALK = [
+  {id:"coffee", icon:"☕", title:"Coffee chat with a Dutch colleague", place:"Amsterdam office", who:"Sanne", turns:[
+    {they:"Hi! You must be the new colleague from India. I'm Sanne. How are you settling in?", you:"Greet her, say your name, and how you're settling in.", keys:["hi","hello","nice","thanks","thank","settling","good","fine","well"], model:"Hi Sanne, nice to meet you! I'm Ravi. I'm settling in well, thanks. Everything is new, but people here are very friendly."},
+    {they:"Where in India are you from?", you:"Say where you're from and one interesting thing about it.", keys:["from","city","born","grew"], model:"I'm from Bangalore. It's a big tech city in the south. The food is great, but the traffic is terrible!"},
+    {they:"Oh nice. And what do you think of the weather here so far?", you:"Give your honest opinion about the weather. A little humour helps.", keys:["cold","rain","raining","weather","wind","windy","different","warm","grey"], model:"Honestly, it's much colder than I expected, and it rains a lot! But I'm slowly getting used to it."},
+    {they:"Ha, everyone says that. Do you have any plans for the weekend?", you:"Talk about your plans, then ask her a question back.", keys:["?"], model:"I'm planning to explore the city and maybe visit a museum. What about you? Any plans?"},
+    {they:"I'm going cycling with some friends. You should join us sometime! Anyway, I have a meeting now.", you:"Respond to the invitation and end the conversation politely.", keys:["love","sure","great","thanks","thank","see","bye","later","enjoy"], model:"I'd love to, thanks for asking! Good luck with your meeting. See you later."},
+  ]},
+  {id:"recruiter", icon:"📞", title:"Phone screen with a recruiter", place:"Call from Berlin", who:"Markus", turns:[
+    {they:"Hello, this is Markus from TechNord in Berlin. Is this a good time to talk?", you:"Confirm politely and thank him for calling.", keys:["yes","good","time","sure","thank","hello","hi","perfect"], model:"Yes, absolutely. Thank you for calling, Markus."},
+    {they:"Great. Could you briefly tell me about your current role?", you:"Describe your current job in 3 to 4 sentences, with one achievement.", keys:["work","working","role","responsible","team","engineer","currently","company"], model:"Currently I work as a security engineer at a mid-sized IT company. I'm responsible for monitoring systems and responding to incidents. Last year I helped reduce our response time by thirty percent."},
+    {they:"And why are you interested in moving to Germany?", you:"Give career reasons, not only salary. Mention growth, the work or the culture.", keys:["career","grow","growth","team","culture","international","opportunity","experience","learn","projects"], model:"I want to work in international teams on larger projects, and grow my experience. I also really like the work culture and work-life balance in Germany."},
+    {they:"Our team works in English, but do you speak any German?", you:"Answer honestly and show you have a plan to learn.", keys:["learning","learn","course","basic","little","not","yet","plan","started"], model:"Not yet, but I've started a beginner course, and I plan to reach a basic level within six months."},
+    {they:"What notice period do you have at your current job?", you:"Say how long your notice period is.", keys:["month","months","weeks","notice","days"], model:"My notice period is two months, but I could try to negotiate an earlier start date."},
+    {they:"Okay, thanks. Do you have any questions for me?", you:"Ask one or two good questions about the role or the process.", keys:["?"], model:"Yes, thank you. What are the next steps in the process? And how big is the team?"},
+  ]},
+  {id:"flat", icon:"🏠", title:"Apartment viewing", place:"Rotterdam", who:"Landlord", turns:[
+    {they:"Hello, you're here for the apartment viewing? Please come in.", you:"Greet the landlord and confirm.", keys:["yes","hello","hi","thank","thanks","nice","morning","afternoon"], model:"Yes, hello! Thank you for showing me the apartment."},
+    {they:"So this is the living room. The rent is one thousand four hundred euros per month. Do you have any questions?", you:"Ask what is included in the rent (bills, heating, internet...).", keys:["include","included","including","utilities","bills","heating","internet","electricity","water"], model:"It looks nice. Is anything included in the rent, like heating, water or internet?"},
+    {they:"Utilities are about one hundred and fifty extra. When would you like to move in?", you:"Say when you would like to move in.", keys:["first","month","date","soon","week","next","january","february","march","april","may","june","july","august","september","october","november","december","immediately"], model:"I'd like to move in on the first of next month, if that's possible."},
+    {they:"I'll need a copy of your work contract and a deposit of two months' rent.", you:"Confirm, and ask how and when to send them.", keys:["okay","ok","sure","fine","send","contract","deposit","problem","can","will","?"], model:"No problem. I can send you my work contract today. How should I pay the deposit?"},
+    {they:"Several people are interested. Why should I choose you?", you:"Convince the landlord: stable job, reliable, quiet, tidy.", keys:["stable","job","quiet","clean","tidy","reliable","pay","time","careful","responsible","permanent"], model:"I have a stable job with a permanent contract. I'm quiet and tidy, and I always pay my rent on time."},
+  ]},
+  {id:"doctor", icon:"🩺", title:"At the doctor", place:"Local GP practice", who:"Doctor", turns:[
+    {they:"Good morning. What seems to be the problem?", you:"Describe how you feel and your symptoms.", keys:["pain","fever","headache","cough","cold","throat","feel","feeling","sick","hurt","hurts","stomach","tired"], model:"Good morning. I've had a bad sore throat and a fever, and I feel very tired."},
+    {they:"How long have you had these symptoms?", you:"Say how long (use \"for\" + time, or \"since\" + day).", keys:["days","day","week","since","yesterday","for","monday","tuesday","wednesday","thursday","friday","saturday","sunday"], model:"For about three days. It started on Monday."},
+    {they:"Are you taking any medication at the moment?", you:"Answer yes or no and give details.", keys:["no","yes","taking","paracetamol","medicine","tablet","tablets","nothing"], model:"Just paracetamol, two times a day. Nothing else."},
+    {they:"Do you have any allergies?", you:"Answer clearly.", keys:["no","yes","allergic","allergy","allergies","penicillin","not","any"], model:"No, I don't have any allergies."},
+    {they:"Okay, I'll prescribe something. Take one tablet twice a day after meals. Is that clear?", you:"Confirm and ask one clarifying question.", keys:["?","clear","understand"], model:"Yes, that's clear, thank you. How many days should I take it for?"},
+  ]},
+  {id:"standup", icon:"👥", title:"Team meeting with your manager", place:"Morning stand-up", who:"Manager", turns:[
+    {they:"Morning everyone. Let's do quick updates. Can you start?", you:"Give your update: done → next → blockers.", keys:["yesterday","today","finished","completed","working","done","next","fixed"], model:"Sure. Yesterday I finished the firewall review. Today I'm working on the audit report."},
+    {they:"Thanks. Is anything blocking you?", you:"Say if anything is blocking you and what help you need.", keys:["no","yes","blocked","access","need","help","waiting","nothing"], model:"Yes, I'm waiting for access to the test server. Could someone from IT help me with that today?"},
+    {they:"The client wants the report by Thursday instead of Friday. Is that possible?", you:"Answer honestly. If it's difficult, explain and offer options.", keys:["possible","can","could","if","friday","thursday","need","help","try","difficult","priority","priorities","but"], model:"It's tight, but possible if I pause the dashboard work for two days. Is that okay with you?"},
+    {they:"I'm thinking we skip the testing to save time. What do you think?", you:"Disagree politely: acknowledge, explain the risk, suggest an alternative.", keys:["but","however","concern","risk","think","suggest","maybe","instead","point","worried"], model:"I understand the time pressure, but I'm worried about skipping testing. What if we test only the critical parts?"},
+    {they:"Good point, let's do that. Anything else before we finish?", you:"Close the meeting politely.", keys:["no","that's","all","thanks","thank","nothing","good"], model:"No, that's all from my side. Thanks, everyone."},
+  ]},
+  {id:"office", icon:"🏛️", title:"City registration office", place:"Bürgeramt / town hall", who:"Officer", turns:[
+    {they:"Next, please. How can I help you?", you:"Explain that you need to register your new address.", keys:["register","registration","address","moved","new","appointment"], model:"Good morning. I recently moved here, and I'd like to register my new address."},
+    {they:"Do you have your passport and your rental contract?", you:"Answer and hand over the documents.", keys:["yes","here","passport","contract","have","sorry","forgot"], model:"Yes, here is my passport, and this is my rental contract."},
+    {they:"I'm afraid the landlord's confirmation form is missing.", you:"Stay calm and ask what you should do.", keys:["?","what","how","should","form","sorry"], model:"Oh, I'm sorry, I didn't know about that. What should I do now?"},
+    {they:"Your landlord has to sign this form. Then you need to book a new appointment.", you:"Confirm you understand and ask how to book.", keys:["?","okay","ok","understand","book","online","appointment","thank"], model:"Okay, I understand. How can I book a new appointment? Is it possible online?"},
+    {they:"Yes, you can book online on our website. Anything else?", you:"Thank the officer and finish politely.", keys:["no","thank","thanks","that's","all","bye","help"], model:"No, that's all. Thank you very much for your help."},
+  ]},
+];
+const isQuestion = (raw, lower) => /\?/.test(raw) || /\b(what|how|when|where|why|which|who|could you|can you|can i|could i|do you|are you|is there|is it|any|should i|is that|would you)\b/.test(lower);
+
+let TK = null, talkRec = null;
+function renderTalkList(){
+  const done = DB.talks || [];
+  $("talkList").innerHTML = TALK.map(s=>{
+    const runs = done.filter(d=>d.id===s.id), best = runs.length ? Math.max(...runs.map(r=>r.pct)) : null;
+    return `<div class="card"><div class="row" style="justify-content:space-between">
+      <div><h2 style="margin:0">${s.icon} ${esc(s.title)}</h2><div class="muted">${esc(s.place)} · ${s.turns.length} replies${best!=null?` · best ${best}%`:""}</div></div>
+      <button class="btn ${runs.length?"":"primary"}" data-talk="${s.id}">${runs.length?"Practise again":"Start"}</button></div></div>`;
+  }).join("");
+}
+function startTalk(id){
+  TK = {s: TALK.find(x=>x.id===id), i:0, log:[], ok:0};
+  $("talkMenu").classList.add("hidden"); $("talkRun").classList.remove("hidden");
+  renderTalk(); talkSay();
+}
+function talkSay(){ speakWith(TK.s.turns[TK.i].they, 0.95); }
+function renderTalk(after){
+  const s = TK.s, t = s.turns[TK.i];
+  const hist = TK.log.map(l=>`<div class="bubble them"><span class="who">${esc(s.who)}</span>${esc(l.they)}</div><div class="bubble me"><span class="who">You</span>${esc(l.said||"(skipped)")}</div>`).join("");
+  $("talkRun").innerHTML = `<div class="card">
+    <div class="row" style="justify-content:space-between"><span class="lvl">${s.icon} ${esc(s.title)} · ${TK.i+1} of ${s.turns.length}</span><button class="btn sm" id="tkQuit">✕ End</button></div>
+    <div class="bar"><i style="width:${TK.i/s.turns.length*100}%"></i></div>
+    <div class="chat">${hist}<div class="bubble them"><span class="who">${esc(s.who)} <a href="#" id="tkHear">🔊 hear again</a></span>${esc(t.they)}</div>
+      ${after?`<div class="bubble me"><span class="who">You</span>${esc(after.said||"(nothing heard)")}</div>`:""}</div>
+    ${after ? after.html : `<div class="tip">🎯 <b>Your turn:</b> ${esc(t.you)}</div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" id="tkRec">🎤 Reply</button><button class="btn" id="tkType">Type instead</button><button class="btn" id="tkHint">💡 Show example</button></div>
+      <div id="tkLive" class="transcript hidden"></div><div id="tkHintBox"></div>`}
+  </div>`;
+  $("tkQuit").onclick = ()=>{ talkStopRec(); speechSynthesis.cancel(); TK=null; $("talkRun").classList.add("hidden"); $("talkMenu").classList.remove("hidden"); };
+  $("tkHear").onclick = e=>{ e.preventDefault(); talkSay(); };
+  if(after){
+    $("tkRetry").onclick = ()=>renderTalk();
+    $("tkNext").onclick = ()=>{ TK.log.push({they:t.they, said:after.said}); if(after.ok) TK.ok++; TK.i++; if(TK.i>=s.turns.length) return finishTalk(); renderTalk(); talkSay(); };
+    return;
+  }
+  $("tkHint").onclick = ()=>{ $("tkHintBox").innerHTML = `<div class="tip">Example: <i>${esc(t.model)}</i> <a href="#" id="tkHintSay">🔊</a></div>`; $("tkHintSay").onclick = e=>{e.preventDefault(); speakWith(t.model,0.9);}; };
+  $("tkType").onclick = ()=>{ $("tkLive").classList.remove("hidden"); $("tkLive").innerHTML = `<textarea id="tkTyped" placeholder="Type your reply..."></textarea><button class="btn primary sm" id="tkSend" style="margin-top:6px">Send</button>`; $("tkSend").onclick = ()=>judgeTalk($("tkTyped").value.trim(), null); };
+  $("tkRec").onclick = ()=>{
+    if(!SR){ $("tkType").click(); return; }
+    if(talkRec){ talkRec.stop(); return; }
+    speechSynthesis.cancel();
+    const t0 = Date.now();
+    $("tkLive").classList.remove("hidden"); $("tkLive").textContent = "Listening... (click Stop when you finish)";
+    $("tkRec").textContent = "⏹ Stop"; $("tkRec").classList.replace("primary","rec");
+    talkRec = makeRec((f,i)=>{ $("tkLive").textContent = f+i; }, said=>{ talkRec = null; judgeTalk(said, (Date.now()-t0)/1000); });
+    talkRec.start();
+  };
+}
+function talkStopRec(){ if(talkRec){ const r = talkRec; talkRec = null; r.onend = null; r.stop(); } }
+function judgeTalk(said, secs){
+  const t = TK.s.turns[TK.i];
+  const m = metrics(said||"", secs);
+  const lower = " " + words(said||"").join(" ") + " ";
+  const needQ = t.keys.includes("?"), others = t.keys.filter(k=>k!=="?");
+  const asked = isQuestion(said||"", lower);
+  const hitKey = others.some(k=>lower.includes(" "+k+" "));
+  const notes = [];
+  let ok = true;
+  if(m.n < 4){ ok = false; notes.push("Too short. Answer in at least one full sentence."); }
+  else {
+    if(needQ && !asked && !hitKey){ ok = false; notes.push("You didn't ask a question back. Ask one: \"What about you?\""); }
+    else if(!needQ && others.length && !hitKey){ ok = false; notes.push(`Your reply may not answer the situation. The task was: <i>${esc(t.you)}</i>`); }
+  }
+  if(m.n >= 4 && m.n < 8) notes.push("A bit short. Add one more detail or reason to sound more natural.");
+  if(m.fillerTotal) notes.push(`Fillers: ${Object.keys(m.fillerCounts).map(f=>`"${f}"`).join(", ")}. Pause instead.`);
+  m.weak.forEach(([k,v])=>notes.push(`Say "<i>${esc(v)}</i>" instead of "${esc(k.trim())}".`));
+  m.grammar.forEach(g=>notes.push(`Grammar: "${esc(g.hit)}". ${g.msg}`));
+  if(ok && notes.length===0) notes.push("Clear and natural. Well done!");
+  const html = `<div class="${ok?"pass":"fail"}" style="color:inherit"><b class="${ok?"ok":"low"}">${ok?"✅ Good reply":"🔁 Try again"}</b><ul class="fb">${notes.map(n=>"<li>"+n+"</li>").join("")}</ul></div>
+    <div class="tip">A natural reply: <i>${esc(t.model)}</i> <a href="#" id="tkModel">🔊</a></div>
+    <div class="row" style="margin-top:12px"><button class="btn" id="tkRetry">🔁 Try again</button><button class="btn primary" id="tkNext">${TK.i+1<TK.s.turns.length?"Continue →":"Finish"}</button></div>`;
+  renderTalk({said, ok, html});
+  $("tkModel").onclick = e=>{ e.preventDefault(); speakWith(t.model, 0.9); };
+}
+function finishTalk(){
+  const s = TK.s, pct = Math.round(TK.ok/s.turns.length*100);
+  DB.talks = DB.talks || [];
+  DB.talks.push({id:s.id, date:today(), ts:Date.now(), pct});
+  save();
+  $("talkRun").innerHTML = `<div class="card"><h2>${s.icon} Conversation complete</h2>
+    <div class="band ${pct>=80?"ok":pct>=50?"mid":"low"}">${pct}%</div><p class="muted">${TK.ok} of ${s.turns.length} replies were good on the first try.</p>
+    <p>${pct>=80?"Great job! Next time, try to answer without looking at the examples, and make each reply a bit longer.":"Do this conversation again tomorrow. Read the example answers out loud first, then try again in your own words."}</p>
+    <div class="row"><button class="btn primary" data-talk="${s.id}">Practise again</button><button class="btn" id="tkBack">Other conversations</button></div></div>`;
+  $("tkBack").onclick = ()=>{ TK=null; $("talkRun").classList.add("hidden"); $("talkMenu").classList.remove("hidden"); };
+  TK = null;
+}
+document.addEventListener("click", e=>{ const b = e.target.closest("[data-talk]"); if(b){ showTab("talk"); startTalk(b.dataset.talk); } });
+
+// ---------- LISTEN ----------
+// Each answer list has the correct option first; options are shuffled when shown.
+const PASSAGES = [
+  {title:"Voicemail from HR", text:"Hi, this is Laura from HR at Nordic Systems. I'm calling about your interview. We'd like to invite you to a second interview next Tuesday at ten thirty, here at our office in Amsterdam. It will take about two hours, and you'll meet the team lead and one of the engineers. Please bring your passport. Could you call me back before Friday to confirm? Thanks, bye!",
+   qs:[["When is the second interview?","Tuesday at 10:30","Thursday at 10:30","Tuesday at 2:30","Friday at 10:00"],["What should you bring?","Your passport","Your laptop","A printed CV","Your work contract"],["What should you do before Friday?","Call back to confirm","Send an email","Book a flight","Prepare a presentation"]]},
+  {title:"Train station announcement", text:"Attention please. The ten fifteen train to Rotterdam Central will depart from platform seven instead of platform four. Because of work on the line, this train will not stop at Delft. Passengers for Delft should take the replacement bus from the station entrance. We apologise for the inconvenience.",
+   qs:[["Which platform will the train leave from?","Platform 7","Platform 4","Platform 10","Platform 15"],["Where will the train NOT stop?","Delft","Rotterdam","The Hague","Leiden"],["How can passengers get to Delft?","Replacement bus from the entrance","The next train","A taxi","Change at Rotterdam"]]},
+  {title:"Manager's team update", text:"Okay team, quick update. The client has moved the deadline forward by one week, so the release is now on the twelfth, not the nineteenth. I know that's tight. To make it work, we'll pause the dashboard redesign and focus only on the security fixes. Priya will lead the testing, and I'll handle communication with the client. If anyone is overloaded, please tell me today, not on Friday.",
+   qs:[["What is the new release date?","The 12th","The 19th","The 5th","Friday"],["What will the team pause?","The dashboard redesign","The security fixes","The testing","Client communication"],["When should you say if you're overloaded?","Today","On Friday","Next week","At the release"]]},
+  {title:"Message from your landlord", text:"Hi, it's Thomas, your landlord. Just to let you know, a technician will come on Wednesday morning between eight and twelve to check the heating. If you're not home, that's fine, I'll let him in with my key. Also, the rent this month is due on the third, not the first, because of the bank holiday. Have a nice day!",
+   qs:[["What will the technician check?","The heating","The internet","The washing machine","The windows"],["When will the technician come?","Wednesday, 8 to 12","Wednesday afternoon","Thursday morning","Monday, 8 to 12"],["When is the rent due this month?","On the 3rd","On the 1st","On the 5th","On the 30th"]]},
+  {title:"Doctor's receptionist", text:"Good afternoon, Doctor Jansen's practice. I'm afraid the doctor is fully booked today. The earliest appointment I can offer is tomorrow at eight forty-five. If it's urgent, you can go to the walk-in clinic at the hospital, which is open until ten p.m. Please remember to bring your insurance card.",
+   qs:[["What is the earliest appointment?","Tomorrow at 8:45","Today at 8:45","Tomorrow at 4:45","Today at 10 p.m."],["What can you do if it's urgent?","Go to the walk-in clinic at the hospital","Call back tonight","Go to a pharmacy","Email the doctor"],["What should you bring?","Your insurance card","Your passport","A prescription","Cash"]]},
+  {title:"Colleague's weekend story", text:"Morning! Did you have a good weekend? I went to Utrecht with my sister. We rented bikes and cycled along the canals. It was lovely, although it started raining on the way back, so we got completely soaked. Anyway, are you coming to the team dinner on Thursday? Marco booked an Indian restaurant, so you can tell us if it's any good!",
+   qs:[["Where did she go at the weekend?","Utrecht","Amsterdam","Delft","The Hague"],["What happened on the way back?","It started raining","Her bike broke","They missed the train","They got lost"],["What is the team dinner?","Thursday, at an Indian restaurant","Friday, at an Italian restaurant","Thursday, at an Italian restaurant","Saturday, at an Indian restaurant"]]},
+  {title:"IT security reminder", text:"Quick reminder from the security team. Next Monday we're switching on multi-factor authentication for all accounts. Before then, please install the authenticator app on your phone and follow the instructions in the email we sent on Tuesday. If you don't set it up by Monday, you won't be able to log in, and you'll need to contact the help desk. And remember: we will never ask for your password by email or phone.",
+   qs:[["What starts next Monday?","Multi-factor authentication","A new email system","A password reset","Office renovation"],["What happens if you don't set it up?","You can't log in","Your account is deleted","You lose your emails","Nothing"],["What will the security team never ask for?","Your password","Your phone number","Your employee ID","Your email address"]]},
+  {title:"Radio weather forecast", text:"And now the weather. Tomorrow will start cloudy, with rain arriving in the west by midday. Temperatures will stay low, around six degrees, with strong winds along the coast. The weekend looks brighter: sunny on Saturday, with temperatures rising to twelve degrees.",
+   qs:[["When will the rain arrive?","By midday","Early morning","In the evening","At the weekend"],["What is the temperature tomorrow?","About 6 degrees","About 12 degrees","About 16 degrees","About 2 degrees"],["What will Saturday be like?","Sunny, 12 degrees","Rainy, 6 degrees","Cloudy, 12 degrees","Windy, 6 degrees"]]},
+];
+const DICTATION = [...COURSE.flatMap(c=>c.say), ...Object.values(SHADOW).flat()];
+let LS = {mode:"comp", p:0, d:0};
+function fillVoices(){
+  const vs = enVoices(), sel = $("voiceSel"), cur = sel.value;
+  if(!vs.length){ sel.innerHTML = `<option value="">Default voice</option>`; return; }
+  const label = l => ({"en-GB":"British","en-US":"American","en-AU":"Australian","en-IN":"Indian","en-IE":"Irish","en-CA":"Canadian","en-NZ":"New Zealand","en-ZA":"South African"})[l.replace("_","-")] || l;
+  sel.innerHTML = `<option value="">🔀 Mix (different accent each time)</option>` + vs.map(v=>`<option value="${esc(v.name)}">${esc(label(v.lang))} · ${esc(v.name.replace(/Microsoft |Google | Online \(Natural\).*$/g,""))}</option>`).join("");
+  sel.value = cur;
+}
+fillVoices(); speechSynthesis.onvoiceschanged = fillVoices;
+function listenVoice(){
+  const name = $("voiceSel").value; if(name) return name;
+  const vs = enVoices().filter(v=>!/en-IN/i.test(v.lang)); // mix: practise non-Indian accents
+  return vs.length ? vs[Math.floor(Math.random()*vs.length)].name : null;
+}
+function listenSpeak(text){ LS.voice = LS.voice || listenVoice(); speakWith(text, +$("listenRate").value, LS.voice); }
+function renderListen(){
+  $("modeComp").classList.toggle("primary", LS.mode==="comp"); $("modeDict").classList.toggle("primary", LS.mode==="dict");
+  LS.voice = null;
+  if(LS.mode==="comp"){
+    const P = PASSAGES[LS.p % PASSAGES.length];
+    LS.answers = {};
+    $("listenBox").innerHTML = `<div class="lvl">Message ${LS.p % PASSAGES.length + 1} of ${PASSAGES.length}</div><h2>${esc(P.title)}</h2>
+      <p class="muted">Listen first (no reading!), then answer. You can replay it, but try to understand it in 1–2 listens.</p>
+      <div class="row"><button class="btn primary" id="lsPlay">▶ Play</button><button class="btn" id="lsStop">⏹ Stop</button><span class="muted" id="lsPlays">Played 0×</span></div>
+      ${P.qs.map((q,qi)=>`<h3>${qi+1}. ${esc(q[0])}</h3>` + shuffle(q.slice(1).map((o,oi)=>[o,oi===0])).map(([o,c])=>`<button class="btn opt" data-q="${qi}" data-c="${c?1:0}">${esc(o)}</button>`).join("")).join("")}
+      <div id="lsResult"></div>
+      <details style="margin-top:12px"><summary>Show the text (after answering)</summary><div class="transcript">${esc(P.text)}</div></details>
+      <div class="row" style="margin-top:12px"><button class="btn" id="lsNext">Next message →</button></div>`;
+    let plays = 0;
+    $("lsPlay").onclick = ()=>{ plays++; $("lsPlays").textContent = `Played ${plays}×`; listenSpeak(P.text); };
+    $("lsStop").onclick = ()=>speechSynthesis.cancel();
+    $("lsNext").onclick = ()=>{ LS.p++; renderListen(); };
+    $("listenBox").querySelectorAll(".opt").forEach(b=>b.onclick = ()=>{
+      const qi = b.dataset.q; if(LS.answers[qi]!=null) return;
+      LS.answers[qi] = b.dataset.c==="1";
+      $("listenBox").querySelectorAll(`.opt[data-q="${qi}"]`).forEach(x=>{ if(x.dataset.c==="1") x.classList.add("correct"); });
+      if(b.dataset.c!=="1") b.classList.add("wrongpick");
+      if(Object.keys(LS.answers).length===P.qs.length){
+        const right = Object.values(LS.answers).filter(Boolean).length;
+        $("lsResult").innerHTML = `<p class="${right===P.qs.length?"pass":"fail"}" style="margin-top:12px">${right} of ${P.qs.length} correct. ${right===P.qs.length?"Excellent! Try it at a faster speed or a different accent.":"Open the text below, read along while you listen again, and notice what you missed."}</p>`;
+        DB.listens = DB.listens || []; DB.listens.push({date:today(), ts:Date.now(), type:"comp", right, total:P.qs.length}); save();
+      }
+    });
+  } else {
+    const s = DICTATION[LS.d % DICTATION.length];
+    $("listenBox").innerHTML = `<h2>✍️ Dictation</h2><p class="muted">Listen and type exactly what you hear. This trains your ears to catch every word, even small ones like "a", "the", "to".</p>
+      <div class="row"><button class="btn primary" id="dPlay">▶ Play</button><button class="btn" id="dSlow">🐢 Play slowly</button></div>
+      <input type="text" id="dIn" placeholder="Type what you hear..." style="margin-top:12px" autocomplete="off">
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="dCheck">Check</button><button class="btn" id="dNext">Next →</button></div>
+      <div id="dOut" style="margin-top:10px"></div>`;
+    $("dPlay").onclick = ()=>listenSpeak(s);
+    $("dSlow").onclick = ()=>{ LS.voice = LS.voice || listenVoice(); speakWith(s, 0.7, LS.voice); };
+    $("dNext").onclick = ()=>{ LS.d = Math.floor(Math.random()*DICTATION.length); renderListen(); };
+    const check = ()=>{
+      const typed = $("dIn").value.trim(); if(!typed) return;
+      const r = compareWords(s, typed);
+      $("dOut").innerHTML = `<b class="${r.acc>=90?"ok":r.acc>=70?"mid":"low"}">${r.acc}% correct</b><div class="transcript">${r.html}</div><div class="muted">Red words = missed or misspelled. Play it again and listen for them.</div>`;
+      DB.listens = DB.listens || []; DB.listens.push({date:today(), ts:Date.now(), type:"dict", acc:r.acc}); save();
+    };
+    $("dCheck").onclick = check;
+    $("dIn").onkeydown = e=>{ if(e.key==="Enter") check(); };
+    setTimeout(()=>listenSpeak(s), 300);
+  }
+}
+$("modeComp").onclick = ()=>{ LS.mode="comp"; renderListen(); };
+$("modeDict").onclick = ()=>{ LS.mode="dict"; LS.d = Math.floor(Math.random()*DICTATION.length); renderListen(); };
+
+// ---------- real-world practice tracker ----------
+const REAL = [
+  {k:"partner", label:"Conversation with a real person (language exchange, colleague, tutor)", unit:"", step:1, goal:3},
+  {k:"listen", label:"Listening: podcasts / YouTube / series in English (minutes)", unit:" min", step:15, goal:150},
+  {k:"meeting", label:"Spoke up in a meeting or call in English", unit:"", step:1, goal:3},
+  {k:"write", label:"Wrote messages / emails in English (days)", unit:"", step:1, goal:5},
+];
+function weekDates(){
+  const d = new Date(), dow = (d.getDay()+6)%7; d.setDate(d.getDate()-dow);
+  return Array.from({length:7},(_,i)=>{ const x = new Date(d); x.setDate(d.getDate()+i); return ymd(x); });
+}
+function renderReal(){
+  DB.real = DB.real || {};
+  const wk = weekDates();
+  $("realLog").innerHTML = REAL.map(r=>{
+    const total = wk.reduce((t,day)=>t+((DB.real[day]||{})[r.k]||0),0);
+    const todayN = (DB.real[today()]||{})[r.k]||0;
+    return `<div class="counter"><div style="flex:2;min-width:220px">${esc(r.label)}<div class="muted">${total}${r.unit} / ${r.goal}${r.unit} this week</div></div>
+      <div class="bar"><i style="width:${Math.min(100,total/r.goal*100)}%"></i></div>
+      <span class="row"><button class="btn sm" data-real="${r.k}" data-n="-1" ${todayN?"":"disabled"}>−</button><button class="btn sm primary" data-real="${r.k}" data-n="1">+${r.step}${r.unit}</button></span></div>`;
+  }).join("");
+}
+$("realLog").addEventListener("click", e=>{
+  const b = e.target.closest("[data-real]"); if(!b) return;
+  const r = REAL.find(x=>x.k===b.dataset.real), t = today();
+  DB.real = DB.real || {}; DB.real[t] = DB.real[t] || {};
+  DB.real[t][r.k] = Math.max(0, (DB.real[t][r.k]||0) + (+b.dataset.n)*r.step);
+  save();
+});
+
+// ---------- theme ----------
+function setTheme(t){
+  if(t==="light") document.documentElement.setAttribute("data-theme","light"); else document.documentElement.removeAttribute("data-theme");
+  $("themeBtn").textContent = t==="light" ? "🌙" : "☀️";
+  try{ localStorage.setItem("speakcoach.theme", t); }catch(e){}
+}
+let theme = "dark"; try{ theme = localStorage.getItem("speakcoach.theme") || "dark"; }catch(e){}
+setTheme(theme);
+$("themeBtn").onclick = ()=>{ theme = theme==="light" ? "dark" : "light"; setTheme(theme); };
+
+// ---------- today / streak ----------
+function activeDays(){
+  const d = new Set();
+  DB.sessions.forEach(s=>d.add(s.date)); DB.shadows.forEach(s=>d.add(s.date));
+  Object.keys(DB.phraseDates||{}).forEach(x=>d.add(x));
+  [DB.exams, DB.talks, DB.listens].forEach(list=>(list||[]).forEach(e=>d.add(e.date)));
+  Object.entries(DB.real||{}).forEach(([day,v])=>{ if(Object.values(v).some(Boolean)) d.add(day); });
+  return d;
+}
+function streak(){
+  const d = activeDays(); let n=0; const dt = new Date();
+  if(!d.has(today())) dt.setDate(dt.getDate()-1);
+  while(d.has(ymd(dt))){ n++; dt.setDate(dt.getDate()-1); }
+  return n;
+}
+function renderToday(){
+  const t = today();
+  const sp = DB.sessions.filter(s=>s.date===t).length;
+  const sh = DB.shadows.filter(s=>s.date===t && s.acc>=80).length;
+  const tk = (DB.talks||[]).filter(x=>x.date===t).length;
+  const L = (DB.listens||[]).filter(x=>x.date===t);
+  const ls = (L.some(x=>x.type==="comp") || L.filter(x=>x.type==="dict").length>=5) ? 1 : 0;
+  const cur = currentLesson();
+  const lessonToday = Object.values(DB.course).some(x=>x.doneDate===t);
+  const tasks = [
+    [lessonToday, cur<COURSE.length || lessonToday ? `🎓 Course lesson: Day ${Math.min(cur,COURSE.length-1)+1} — ${esc(COURSE[Math.min(cur,COURSE.length-1)].t)}` : "🎓 Course complete!", lessonToday?"1/1":"0/1", "course"],
+    [tk>=1, `💬 Have 1 real-life conversation`, `${Math.min(tk,1)}/1`, "talk"],
+    [ls>=1, `🎧 Understand 1 message, or do 5 dictations`, `${Math.min(ls,1)}/1`, "listen"],
+    [sp>=1, `🎤 Speak about 1 topic for 60+ seconds and save it`, `${Math.min(sp,1)}/1`, "speak"],
+    [sh>=5, `🔁 Repeat 5 sentences with 80%+ match`, `${Math.min(sh,5)}/5`, "shadow"],
+  ];
+  $("tasks").innerHTML = tasks.map(([done,label,cnt,tab])=>`
+    <div class="task"><div class="check ${done?"done":""}">${done?"✓":""}</div>
+    <div style="flex:1">${label} <span class="muted">(${cnt})</span></div>
+    <button class="btn sm" data-go="${tab}">${done?"Again":"Start"}</button></div>`).join("");
+
+  // focus: based on last 5 sessions
+  const last = DB.sessions.slice(-5);
+  if(!last.length){ $("focus").innerHTML = `<p class="muted">Do your first speaking session and I'll tell you what to focus on.</p>`; return; }
+  const avg = k => { const v = last.map(s=>s[k]).filter(x=>x!=null); return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null; };
+  const f = avg("fpm"), w = avg("wpm"), s = avg("score");
+  const tally = {}; last.forEach(x=>Object.entries(x.fillerCounts||{}).forEach(([k,v])=>tally[k]=(tally[k]||0)+v));
+  const topF = Object.entries(tally).sort((a,b)=>b[1]-a[1])[0];
+  let msg = [];
+  if(f!=null && f>2) msg.push(`🎯 <b>Cut filler words.</b> You average ${f.toFixed(1)} per minute${topF?`, mostly "<b>${topF[0]}</b>"`:""}. Goal: under 2. Pause instead.`);
+  if(w!=null && w>165) msg.push(`🐢 <b>Slow down.</b> Average pace is ${Math.round(w)} wpm. Goal: 120–160.`);
+  if(w!=null && w<110) msg.push(`💬 <b>Build fluency.</b> Average pace is ${Math.round(w)} wpm. Learn phrases so words come faster.`);
+  if(!msg.length) msg.push(`🌟 <b>Looking good!</b> Now try harder topics — "Explain something technical" and "Opinions".`);
+  $("focus").innerHTML = `<p>Average score (last ${last.length}): <b>${Math.round(s)}</b></p>` + msg.map(m=>`<p>${m}</p>`).join("");
+}
+$("tasks").addEventListener("click", e=>{ const b=e.target.closest("[data-go]"); if(b) showTab(b.dataset.go); });
+
+// ---------- progress ----------
+function lineChart(svg, vals, color, maxHint){
+  if(vals.length<2){ svg.innerHTML = `<text x="300" y="95" text-anchor="middle" fill="currentColor" opacity=".5" font-size="14">Save 2+ sessions to see a chart</text>`; return; }
+  const max = Math.max(maxHint||0, ...vals)*1.1 || 1, W=600, H=180, p=20;
+  const pts = vals.map((v,i)=>[p+i*(W-2*p)/(vals.length-1), H-p-(v/max)*(H-2*p)]);
+  svg.innerHTML = `<line x1="${p}" y1="${H-p}" x2="${W-p}" y2="${H-p}" stroke="var(--line)"/>
+    <polyline fill="none" stroke="${color}" stroke-width="2.5" vector-effect="non-scaling-stroke" points="${pts.map(x=>x.join(",")).join(" ")}"/>
+    ${pts.map((x,i)=>`<circle cx="${x[0]}" cy="${x[1]}" r="3.5" fill="${color}"><title>${vals[i]}</title></circle>`).join("")}`;
+}
+function renderProgress(){
+  const S = DB.sessions;
+  const avg = (arr)=> arr.length? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
+  const first5 = S.slice(0,5), last5 = S.slice(-5);
+  const delta = S.length>=6 ? Math.round(avg(last5.map(s=>s.score)) - avg(first5.map(s=>s.score))) : null;
+  $("progStats").innerHTML = `
+    <div class="stat"><b>${streak()} 🔥</b><span>Day streak</span></div>
+    <div class="stat"><b>${activeDays().size}</b><span>Days practised</span></div>
+    <div class="stat"><b>${S.length}</b><span>Speaking sessions</span></div>
+    <div class="stat"><b>${DB.shadows.length}</b><span>Sentences repeated</span></div>
+    <div class="stat"><b>${S.length?Math.round(avg(last5.map(s=>s.score))):"—"}</b><span>Recent avg score</span></div>
+    <div class="stat"><b class="${delta==null?"":delta>=0?"ok":"low"}">${delta==null?"—":(delta>=0?"+":"")+delta}</b><span>Change since first 5</span></div>`;
+  lineChart($("chartScore"), S.map(s=>s.score), "var(--accent)", 100);
+  lineChart($("chartFill"), S.map(s=>s.fpm), "var(--warn)", 3);
+  $("hist").innerHTML = `<tr><th>Date</th><th>Topic</th><th>Score</th><th>WPM</th><th>Fillers</th><th>My better version</th></tr>` +
+    S.slice().reverse().slice(0,50).map(s=>`<tr><td>${s.date}</td><td>${esc(s.topic||"")}</td><td>${s.score}</td><td>${s.wpm??"—"}</td><td>${s.fillers}</td><td class="muted">${esc(s.better||"")}</td></tr>`).join("");
+}
+$("exportBtn").onclick = ()=>{
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(DB,null,2)],{type:"application/json"}));
+  a.download = "speak-coach-backup-"+today()+".json"; a.click();
+};
+$("importFile").onchange = e=>{
+  const f = e.target.files[0]; if(!f) return;
+  f.text().then(t=>{ try{ const d=JSON.parse(t); if(!d.sessions) throw 0; DB=d; DB.course=DB.course||{}; save(); alert("Backup restored."); }catch(_){ alert("That file isn't a valid backup."); } });
+};
+$("resetBtn").onclick = ()=>{ if(confirm("Delete all your progress? Download a backup first if you want to keep it.")){ DB={sessions:[],shadows:[],phrasesSeen:[],course:{}}; openLesson=null; save(); } };
+
+// ---------- init ----------
+function renderAll(){
+  const s = streak();
+  const cur = currentLesson(), lvl = LEVELS[Math.min(4, Math.floor(cur/6))];
+  $("streak").textContent = `${cur>=COURSE.length ? "🏆 Hero" : `Level ${Math.floor(cur/6)+1} · ${lvl.name}`}  ·  ` + (s ? `🔥 ${s}-day streak` : "Start your streak today");
+  renderCourse(); renderToday(); renderExamHist(); renderProgress(); renderPhrases(); renderTalkList(); renderReal();
+}
+pickTopic(); showShadow(); renderClear(); renderListen(); renderAll();
+</script>
+</body>
+</html>

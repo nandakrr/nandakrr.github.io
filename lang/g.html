@@ -1,0 +1,1143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deutsch Coach</title>
+<style>
+/* dark is the default; light only when chosen with the toggle */
+:root{
+  --bg:#0f1218; --card:#181c25; --text:#e6e8ee; --muted:#98a2b3; --line:#2a303d;
+  --accent:#ffc94d; --accent-ink:#1a1400; --accent-soft:#3a3018; --good:#51cf66; --warn:#ffa94d; --bad:#ff6b6b;
+  --good-soft:#1c3124; --bad-soft:#3a2124; --warn-soft:#382b1a;
+  --der:#74a8ff; --die:#ff7b8a; --das:#5fd38a;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#f6f7f9; --card:#ffffff; --text:#1d2330; --muted:#667085; --line:#e4e7ec;
+  --accent:#c98a00; --accent-ink:#ffffff; --accent-soft:#fff3d6; --good:#2f9e44; --warn:#e67700; --bad:#e03131;
+  --good-soft:#e6f6ea; --bad-soft:#fdeaea; --warn-soft:#fff3e0;
+  --der:#1c62d6; --die:#d6334a; --das:#1f8a4c;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 0;gap:12px;flex-wrap:wrap}
+h1{font-size:20px;margin:0}
+.streak{font-weight:600;color:var(--warn)}
+nav{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px}
+nav button{border:0;background:none;color:var(--muted);padding:8px 14px;border-radius:8px;font:inherit;cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+main{padding:20px 0 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+h2{font-size:18px;margin:0 0 10px}
+h3{font-size:15px;margin:14px 0 6px}
+.muted{color:var(--muted);font-size:14px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:9px 16px;border-radius:8px;font:inherit;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.rec{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.prompt{font-size:20px;font-weight:600;margin:6px 0 4px}
+.tip{background:var(--accent-soft);border-radius:8px;padding:10px 12px;font-size:14px;margin-top:10px}
+textarea,select,input[type=text]{width:100%;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+textarea{min-height:90px;resize:vertical}
+.transcript{background:var(--bg);border-radius:8px;padding:12px;min-height:48px;margin-top:12px;white-space:pre-wrap}
+.miss{background:var(--bad-soft);color:var(--bad);border-radius:4px;padding:0 3px;text-decoration:line-through}
+.hit{color:var(--good)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px}
+.stat{background:var(--bg);border-radius:8px;padding:10px 12px}
+.stat b{display:block;font-size:22px}
+.stat span{font-size:13px;color:var(--muted)}
+.ok{color:var(--good)} .mid{color:var(--warn)} .low{color:var(--bad)}
+ul.fb{padding-left:20px;margin:8px 0}
+ul.fb li{margin:4px 0}
+.task{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.task:last-child{border:0}
+.check{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-size:13px}
+.check.done{background:var(--good);border-color:var(--good);color:#fff}
+.phrase{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.phrase:last-child{border:0}
+.phrase .row{flex:none}
+.sm{padding:5px 10px;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600}
+.hidden{display:none}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:13px;margin:2px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;background:var(--good)}
+.locked{opacity:.45}
+.lvl{font-size:13px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em}
+.step{border-top:1px solid var(--line);padding-top:12px;margin-top:14px}
+.pass{background:var(--good-soft);padding:12px;border-radius:8px;margin-bottom:12px}
+.fail{background:var(--bad-soft);padding:12px;border-radius:8px;margin-bottom:12px}
+.warnbox{background:var(--warn-soft);color:var(--warn);padding:10px 12px;border-radius:8px;font-size:14px;margin-bottom:12px}
+.de{font-weight:600}
+.en{color:var(--muted);font-size:14px}
+.a-der{color:var(--der);font-weight:700} .a-die{color:var(--die);font-weight:700} .a-das{color:var(--das);font-weight:700}
+.vocab{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin-top:8px}
+.vocab div{background:var(--bg);border-radius:8px;padding:8px 10px;cursor:pointer}
+.flash{text-align:center;padding:30px 16px;background:var(--bg);border-radius:12px;margin:12px 0}
+.flash .big{font-size:30px;font-weight:700}
+.chat{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.bubble{max-width:85%;padding:10px 14px;border-radius:14px;line-height:1.45}
+.bubble.them{background:var(--bg);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px}
+.bubble.me{background:var(--accent-soft);align-self:flex-end;border-bottom-right-radius:4px}
+.bubble .who{font-size:12px;color:var(--muted);display:block;margin-bottom:2px}
+.opt{display:block;width:100%;text-align:left;margin:6px 0}
+.opt.correct{border-color:var(--good);background:var(--good-soft);color:var(--good)}
+.opt.wrongpick{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.gbtn{flex:1;font-size:20px;font-weight:700;padding:14px}
+.counter{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.counter:last-child{border:0}
+.counter .bar{flex:1;min-width:80px;margin:0}
+.days{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.days span{width:22px;height:22px;border-radius:4px;background:var(--line)}
+.days span.on{background:var(--good)}
+details summary{cursor:pointer;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <h1>🥨 Deutsch Coach</h1>
+      <div class="row"><span class="streak" id="streak"></span>
+        <button class="btn sm" id="themeBtn" title="Switch light/dark">☀️</button></div>
+    </div>
+    <nav id="nav">
+      <button data-tab="course" class="on">🎓 Course</button>
+      <button data-tab="today">Today</button>
+      <button data-tab="words">🃏 Words</button>
+      <button data-tab="talk">💬 Conversations</button>
+      <button data-tab="listen">🎧 Listening</button>
+      <button data-tab="exam">🎯 A1 Exam</button>
+      <button data-tab="phrases">Phrases</button>
+      <button data-tab="progress">Progress</button>
+      <button data-tab="guide">Tips</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="noSpeech" class="warnbox hidden">Your browser can't recognise speech. Open this file in <b>Google Chrome</b> or <b>Microsoft Edge</b> and allow the microphone. You can still type your answers.</div>
+  <div id="noVoice" class="warnbox hidden">No German voice found, so the app can't read German aloud. <b>Microsoft Edge</b> has good German voices built in. In Chrome or Windows, go to <i>Settings → Time &amp; language → Speech → Add voices → Deutsch</i>, then restart the browser.</div>
+
+  <!-- COURSE -->
+  <section id="tab-course">
+    <div id="courseMap"></div>
+    <div id="lessonView" class="hidden"></div>
+  </section>
+
+  <!-- TODAY -->
+  <section id="tab-today" class="hidden">
+    <div class="card">
+      <h2>Today's 25-minute plan</h2>
+      <p class="muted">Every day. Languages are learned in small daily doses, not big weekend sessions.</p>
+      <div id="tasks"></div>
+    </div>
+    <div class="card">
+      <h2>Real-world German this week</h2>
+      <p class="muted">Log every time you use German outside the app. That's where it becomes real.</p>
+      <div id="realLog"></div>
+    </div>
+  </section>
+
+  <!-- WORDS -->
+  <section id="tab-words" class="hidden">
+    <div class="card">
+      <h2>🃏 Vocabulary cards</h2>
+      <p class="muted">Spaced repetition: words you know come back less often, words you forget come back soon. New words unlock as you progress in the course. Nouns are colour-coded: <span class="a-der">der</span> · <span class="a-die">die</span> · <span class="a-das">das</span>.</p>
+      <div class="row">
+        <button class="btn primary" id="wStart">Start review</button>
+        <button class="btn" id="wDir">Direction: German → English</button>
+      </div>
+      <div class="stats" id="wStats"></div>
+      <div id="wBox"></div>
+    </div>
+    <div class="card">
+      <h2>der, die or das? (the gender game)</h2>
+      <p class="muted">German nouns have a gender, and you just have to learn it. Always learn a noun <b>with its article</b>. This game trains your instinct.</p>
+      <button class="btn primary" id="gStart">Play</button>
+      <div id="gBox"></div>
+    </div>
+  </section>
+
+  <!-- TALK -->
+  <section id="tab-talk" class="hidden">
+    <div id="talkMenu">
+      <div class="card">
+        <h2>💬 Real-life conversations in German</h2>
+        <p class="muted">Situations you'll face in your first weeks in Germany. The other person speaks German; you reply out loud. Tap "EN" to see a translation. After each reply you get feedback and a model answer.</p>
+      </div>
+      <div id="talkList"></div>
+    </div>
+    <div id="talkRun" class="hidden"></div>
+  </section>
+
+  <!-- LISTEN -->
+  <section id="tab-listen" class="hidden">
+    <div class="card">
+      <h2>🎧 Listening practice</h2>
+      <p class="muted">Train your ears with real-life German messages and dictation.</p>
+      <div class="row">
+        <label class="muted" style="flex:1;min-width:200px">Voice<select id="voiceSel"></select></label>
+        <label class="muted">Speed<select id="listenRate" style="width:auto">
+          <option value="0.7">Very slow</option><option value="0.85" selected>Slow</option><option value="1">Normal</option></select></label>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn primary" id="modeComp">📻 Understand a message</button>
+        <button class="btn" id="modeDict">✍️ Dictation</button>
+      </div>
+    </div>
+    <div class="card" id="listenBox"></div>
+  </section>
+
+  <!-- EXAM -->
+  <section id="tab-exam" class="hidden">
+    <div class="card">
+      <h2>🎯 Goethe / telc A1 — Speaking practice</h2>
+      <p class="muted">The A1 certificate is often required for a spouse visa, and it's your first official milestone. The speaking test has 3 parts. Practise each one here.</p>
+      <div class="row">
+        <button class="btn primary" data-ex="intro">Part 1: Introduce yourself</button>
+        <button class="btn" data-ex="ask">Part 2: Ask questions</button>
+        <button class="btn" data-ex="request">Part 3: Make requests</button>
+      </div>
+    </div>
+    <div class="card" id="exBox"></div>
+  </section>
+
+  <!-- PHRASES -->
+  <section id="tab-phrases" class="hidden">
+    <div class="card">
+      <h2>Survival phrases</h2>
+      <p class="muted">Learn these by heart before you land. Tap 🔊 to hear one.</p>
+      <div id="phraseList"></div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section id="tab-progress" class="hidden">
+    <div class="card">
+      <h2>Your progress</h2>
+      <div class="stats" id="progStats"></div>
+      <h3>Last 28 days</h3>
+      <div class="days" id="dayGrid"></div>
+    </div>
+    <div class="card">
+      <h2>Backup</h2>
+      <div class="row">
+        <button class="btn" id="exportBtn">Download backup</button>
+        <label class="btn">Restore backup <input type="file" id="importFile" accept=".json" hidden></label>
+        <button class="btn" id="resetBtn">Clear all data</button>
+      </div>
+      <p class="muted">Progress is saved in this browser only. Download a backup now and then.</p>
+    </div>
+  </section>
+
+  <!-- GUIDE -->
+  <section id="tab-guide" class="hidden">
+    <div class="card">
+      <h2>How much German do you need?</h2>
+      <table>
+        <tr><th>Level</th><th>What you can do</th><th>Why it matters</th><th>Time*</th></tr>
+        <tr><td><b>A1</b></td><td>Introduce yourself, shop, simple questions</td><td>Often needed for a spouse/family visa</td><td>2–3 months</td></tr>
+        <tr><td><b>A2</b></td><td>Daily life: doctor, landlord, offices</td><td>Life is much easier, and you feel less lost</td><td>+3 months</td></tr>
+        <tr><td><b>B1</b></td><td>Talk about most things, work small talk</td><td>Can speed up permanent residence; needed for citizenship</td><td>+4–6 months</td></tr>
+        <tr><td><b>B2</b></td><td>Work fully in German</td><td>Opens jobs outside international tech teams</td><td>+6 months</td></tr>
+      </table>
+      <p class="muted">*At about 1 hour a day. Many tech jobs (and the EU Blue Card) don't require German, but daily life, friendships and long-term residence are far easier with it. Rules change, so always check the current official requirements.</p>
+    </div>
+    <div class="card">
+      <h2>🆓 Free resources</h2>
+      <ul class="fb">
+        <li><b>DW Learn German</b> (dw.com): the free course <b>"Nicos Weg"</b> takes you from A1 to B1 with videos and exercises. It's the best free course available, so do it alongside this app.</li>
+        <li><b>Easy German</b> (YouTube): real Germans on the street, with German and English subtitles.</li>
+        <li><b>Goethe-Institut</b>: free sample A1/A2/B1 exams with audio.</li>
+        <li><b>Tandem / HelloTalk</b>: free language exchange. Germans who want to learn English will happily practise German with you.</li>
+        <li><b>Once you're in Germany</b>: the <b>VHS</b> (Volkshochschule) offers cheap courses, and the government-funded <b>Integrationskurs</b> may be free or subsidised for you.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>How to actually learn German</h2>
+      <h3>1. Learn nouns with der / die / das, always</h3>
+      <p>Not "Tisch" but "<span class="a-der">der</span> Tisch". Helpful patterns: <b>-ung, -heit, -keit, -ion, -tät</b> → <span class="a-die">die</span>. <b>-chen, -lein, -ment, -um</b> → <span class="a-das">das</span>. Male people, days, months and seasons → <span class="a-der">der</span>.</p>
+      <h3>2. The verb is always in position 2</h3>
+      <p>"Heute <b>gehe</b> ich ins Kino." Not "Heute ich gehe". In questions without a W-word the verb comes first: "<b>Hast</b> du Zeit?" After <i>weil / dass / wenn</i>, the verb goes to the end: "..., weil ich Deutsch <b>lerne</b>."</p>
+      <h3>3. Pronunciation that helps you a lot</h3>
+      <ul class="fb">
+        <li><b>w</b> = English "v" (Wasser = "Vasser"). <b>v</b> = "f" (Vater = "Fater"). <b>z</b> = "ts" (Zeit = "Tsait").</li>
+        <li><b>ei</b> = "eye" (mein, Zeit). <b>ie</b> = "ee" (Bier, viel). This is easy to mix up!</li>
+        <li><b>sp / st</b> at the start = "shp / sht" (Sport, Straße).</li>
+        <li><b>ä</b> ≈ "e" in "bed". <b>ö</b>: say "e" with round lips. <b>ü</b>: say "ee" with round lips.</li>
+        <li><b>ch</b> after a/o/u = throat sound (Buch). After e/i = soft hiss (ich, nicht).</li>
+      </ul>
+      <h3>4. Speak from day one</h3>
+      <p>Don't wait until your grammar is perfect. Germans appreciate any effort, and if they switch to English, politely say: "Ich möchte Deutsch üben, bitte." (I'd like to practise German, please.)</p>
+      <h3>5. Daily German input</h3>
+      <p>Switch your phone to German, listen to Easy German or the DW news in slow German (Langsam gesprochene Nachrichten), and label things at home with sticky notes.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+// ================= DATA =================
+const LEVELS = [
+  {name:"A1.1", goal:"Erste Schritte — first steps"},
+  {name:"A1.2", goal:"Alltag — everyday life"},
+  {name:"A2.1", goal:"Leben in Deutschland — living in Germany"},
+  {name:"A2.2", goal:"Arbeit — at work"},
+  {name:"B1", goal:"Selbstständig — independent"},
+];
+// Each lesson: t (German title), en, learn (html), v (vocab [de,en]), say (repeat), tr ([English, [accepted German answers]])
+const COURSE = [
+  {t:"Begrüßen", en:"Greetings", learn:"Use <b>Hallo</b> with friends, and <b>Guten Morgen / Guten Tag / Guten Abend</b> in formal situations. To say goodbye: <b>Tschüss</b> (informal) or <b>Auf Wiedersehen</b> (formal).<br><b>Wie geht's?</b> = How are you? → <b>Gut, danke!</b> / <b>Es geht.</b> (so-so)<br>⚠️ <b>Bitte</b> means both \"please\" and \"you're welcome\".",
+   v:[["der Morgen","morning"],["der Tag","day"],["der Abend","evening"],["die Nacht","night"],["danke","thank you"],["bitte","please / you're welcome"],["Entschuldigung","excuse me / sorry"]],
+   say:["Guten Morgen!","Wie geht es Ihnen?","Mir geht es gut, danke."],
+   tr:[["Good evening!",["Guten Abend"]],["Thank you very much.",["Vielen Dank","Danke schön","Danke sehr"]],["Goodbye! (formal)",["Auf Wiedersehen"]]]},
+  {t:"Sich vorstellen", en:"Introducing yourself", learn:"<b>Ich heiße ...</b> (My name is) · <b>Ich komme aus Indien.</b> · <b>Ich wohne in Berlin.</b> · <b>Ich bin Ingenieur.</b> (no \"a\" before jobs!)<br><b>Du</b> = you (friends, kids, colleagues who offer it). <b>Sie</b> = you (formal: strangers, officials, older people). When unsure, use <b>Sie</b>.<br>Asking: <b>Wie heißen Sie?</b> (formal) / <b>Wie heißt du?</b> (informal)",
+   v:[["der Name","name"],["das Land","country"],["die Stadt","city"],["der Beruf","job / profession"],["heißen","to be called"],["kommen aus","to come from"],["wohnen","to live (reside)"]],
+   say:["Wie heißen Sie?","Ich komme aus Indien.","Ich wohne in Berlin."],
+   tr:[["I come from India.",["Ich komme aus Indien"]],["What is your name? (formal)",["Wie heißen Sie","Wie ist Ihr Name"]],["I live in Munich.",["Ich wohne in München","Ich lebe in München"]]]},
+  {t:"Aussprache", en:"Pronunciation", learn:"German is spelled (almost) the way it sounds. Learn these once and you can read anything:<br><b>w</b> = v (Wasser) · <b>v</b> = f (viel) · <b>z</b> = ts (Zeit)<br><b>ei</b> = \"eye\" (mein) · <b>ie</b> = \"ee\" (Bier)<br><b>sp/st</b> = shp/sht (Sprache, Straße) · <b>ß</b> = ss<br><b>ä ö ü</b>: see the Tips tab. <b>ch</b>: soft in \"ich\", throaty in \"Buch\".",
+   v:[["sprechen","to speak"],["verstehen","to understand"],["die Straße","street"],["das Wort","word"],["langsam","slowly"],["wiederholen","to repeat"]],
+   say:["Ich spreche ein bisschen Deutsch.","Die Straße ist sehr schön.","Wie viel kostet das?"],
+   tr:[["I speak a little German.",["Ich spreche ein bisschen Deutsch","Ich spreche ein wenig Deutsch"]],["Excuse me!",["Entschuldigung","Entschuldigen Sie"]],["I don't understand.",["Ich verstehe nicht","Ich verstehe das nicht"]]]},
+  {t:"Zahlen", en:"Numbers", learn:"1 eins · 2 zwei · 3 drei · 4 vier · 5 fünf · 6 sechs · 7 sieben · 8 acht · 9 neun · 10 zehn · 11 elf · 12 zwölf · 13 dreizehn · 20 zwanzig · 30 dreißig · 100 hundert<br>⚠️ From 21, Germans say the number <b>backwards</b>: 21 = <b>einundzwanzig</b> (\"one-and-twenty\"), 47 = <b>siebenundvierzig</b>. That's very important for phone numbers and prices!",
+   v:[["die Zahl","number"],["das Jahr","year"],["der Euro","euro"],["die Telefonnummer","phone number"],["alt","old"],["kosten","to cost"],["wie viel","how much"]],
+   say:["Ich bin dreißig Jahre alt.","Das kostet zwölf Euro.","Meine Nummer ist null, eins, sieben, sechs."],
+   tr:[["I am 25 years old.",["Ich bin fünfundzwanzig Jahre alt","Ich bin 25 Jahre alt"]],["How much does that cost?",["Wie viel kostet das","Was kostet das"]],["That costs 3 euros.",["Das kostet drei Euro","Das kostet 3 Euro"]]]},
+  {t:"Der, die, das", en:"Noun genders", learn:"Every German noun is <span class='a-der'>der</span> (masculine), <span class='a-die'>die</span> (feminine) or <span class='a-das'>das</span> (neuter), and it's often not logical (<span class='a-das'>das</span> Mädchen = the girl!). Nouns always start with a <b>capital letter</b>.<br>Patterns that help: <b>-ung, -heit, -keit, -ion</b> → die · <b>-chen, -lein</b> → das · male people, days, months → der.<br>Plural is always <span class='a-die'>die</span>.",
+   v:[["der Tisch","table"],["die Lampe","lamp"],["das Buch","book"],["die Wohnung","apartment"],["das Mädchen","girl"],["der Mann","man"],["die Frau","woman / wife"]],
+   say:["Der Tisch, die Lampe, das Buch.","Die Wohnung ist groß.","Das Mädchen ist nett."],
+   tr:[["The apartment is small.",["Die Wohnung ist klein"]],["The book is good.",["Das Buch ist gut"]],["The man is nice.",["Der Mann ist nett"]]]},
+  {t:"Sein und haben", en:"To be & to have", learn:"<b>sein</b> (to be): ich <b>bin</b>, du <b>bist</b>, er/sie/es <b>ist</b>, wir <b>sind</b>, ihr <b>seid</b>, sie/Sie <b>sind</b><br><b>haben</b> (to have): ich <b>habe</b>, du <b>hast</b>, er/sie/es <b>hat</b>, wir <b>haben</b>, ihr <b>habt</b>, sie/Sie <b>haben</b><br>German uses <i>haben</i> for things English says with \"be\": <b>Ich habe Hunger</b> (I'm hungry), <b>Ich habe Recht</b> (I'm right).",
+   v:[["sein","to be"],["haben","to have"],["müde","tired"],["der Bruder","brother"],["die Schwester","sister"],["die Frage","question"],["die Zeit","time"]],
+   say:["Ich bin müde.","Ich habe einen Bruder.","Wir sind Kollegen."],
+   tr:[["I have a question.",["Ich habe eine Frage"]],["We have time.",["Wir haben Zeit"]],["I am hungry.",["Ich habe Hunger"]]]},
+  // A1.2
+  {t:"Verben", en:"Present tense verbs", learn:"Regular verbs: take the stem (lern-en → <b>lern</b>) and add: ich lern<b>e</b>, du lern<b>st</b>, er lern<b>t</b>, wir lern<b>en</b>, ihr lern<b>t</b>, sie lern<b>en</b>.<br><b>Golden rule:</b> the verb is always the <b>2nd element</b> in a statement. \"Heute <b>arbeite</b> ich.\" (Not: Heute ich arbeite.)<br>German has no \"-ing\" form: <i>Ich lerne</i> = I learn / I am learning.",
+   v:[["arbeiten","to work"],["lernen","to learn"],["machen","to do / make"],["die Firma","company"],["heute","today"],["morgen","tomorrow"],["gern","gladly (to like doing)"]],
+   say:["Ich arbeite in einer IT-Firma.","Was machst du heute?","Heute lerne ich Deutsch."],
+   tr:[["I work in Berlin.",["Ich arbeite in Berlin"]],["What are you doing? (du)",["Was machst du"]],["Today I am learning German.",["Heute lerne ich Deutsch","Ich lerne heute Deutsch"]]]},
+  {t:"Fragen", en:"Asking questions", learn:"<b>W-questions:</b> W-word + verb + ... → <b>Wo</b> wohnst du? (where) · <b>Wann</b> (when) · <b>Was</b> (what) · <b>Wer</b> (who) · <b>Wie</b> (how) · <b>Warum</b> (why) · <b>Woher</b> (from where)<br><b>Yes/no questions:</b> verb first → <b>Sprechen</b> Sie Englisch? <b>Hast</b> du Zeit?<br>Answer with <b>Ja / Nein / Doch</b> (doch = \"yes\" to a negative question).",
+   v:[["wo","where"],["wann","when"],["warum","why"],["woher","where from"],["der Bahnhof","train station"],["der Zug","train"],["die Toilette","toilet"]],
+   say:["Wo ist der Bahnhof?","Wann beginnt der Kurs?","Sprechen Sie Englisch?"],
+   tr:[["Where is the toilet?",["Wo ist die Toilette"]],["Do you speak English? (formal)",["Sprechen Sie Englisch"]],["When does the train leave?",["Wann fährt der Zug","Wann fährt der Zug ab"]]]},
+  {t:"Essen und Trinken", en:"Food & ordering", learn:"Ordering politely: <b>Ich möchte ...</b> (I'd like) or <b>Ich hätte gern ...</b> (I'd like, very polite) + <b>bitte</b>.<br>At the end: <b>Die Rechnung, bitte!</b> or <b>Zahlen, bitte!</b> Germans often pay separately: <b>Zusammen oder getrennt?</b> (together or separately?)<br>Tip about 5–10% by rounding up: \"<b>Stimmt so</b>\" (keep the change).",
+   v:[["das Brötchen","bread roll"],["der Kaffee","coffee"],["das Wasser","water"],["die Rechnung","bill"],["die Karte","card / menu"],["bezahlen","to pay"],["ich möchte","I would like"]],
+   say:["Ich möchte zwei Brötchen, bitte.","Ich hätte gern einen Kaffee.","Die Rechnung, bitte."],
+   tr:[["I would like a water, please.",["Ich möchte ein Wasser bitte","Ich hätte gern ein Wasser bitte"]],["The bill, please.",["Die Rechnung bitte","Zahlen bitte"]],["Can I pay by card?",["Kann ich mit Karte zahlen","Kann ich mit Karte bezahlen"]]]},
+  {t:"Akkusativ", en:"The accusative (objects)", learn:"When a noun is the <b>object</b> (the thing you have, need, want), only <b>masculine</b> words change: <span class='a-der'>der → den</span>, <span class='a-der'>ein → einen</span>, <span class='a-der'>kein → keinen</span>.<br>Ich brauche <b>einen</b> Termin. Ich suche <b>eine</b> Wohnung. Ich habe <b>ein</b> Auto.<br><b>kein</b> = no / not a: Ich habe <b>kein</b> Auto.",
+   v:[["der Termin","appointment"],["der Hunger","hunger"],["brauchen","to need"],["suchen","to look for"],["kein / keine","no / not a"],["das Auto","car"]],
+   say:["Ich brauche einen Termin.","Ich habe keinen Hunger.","Ich suche eine Wohnung."],
+   tr:[["I need an appointment.",["Ich brauche einen Termin"]],["I am looking for an apartment.",["Ich suche eine Wohnung"]],["I don't have a car.",["Ich habe kein Auto"]]]},
+  {t:"Uhrzeit und Termine", en:"Time & appointments", learn:"<b>Wie spät ist es?</b> (What time is it?) · <b>Es ist neun Uhr.</b><br>⚠️ <b>halb drei</b> = 2:30 (half <i>to</i> three!) · <b>Viertel nach drei</b> = 3:15 · <b>Viertel vor drei</b> = 2:45<br><b>um</b> + time: um 9 Uhr · <b>am</b> + day: am Montag · Days: Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag.",
+   v:[["die Uhr","clock / o'clock"],["halb","half"],["das Viertel","quarter"],["der Montag","Monday"],["der Freitag","Friday"],["das Wochenende","weekend"],["spät","late"]],
+   say:["Es ist halb acht.","Der Termin ist am Montag um zehn Uhr.","Haben Sie am Freitag Zeit?"],
+   tr:[["It is half past two.",["Es ist halb drei","Es ist 2:30","Es ist zwei Uhr dreißig"]],["Do you have time on Monday?",["Haben Sie am Montag Zeit","Hast du am Montag Zeit"]],["The appointment is at nine o'clock.",["Der Termin ist um neun Uhr","Der Termin ist um 9 Uhr"]]]},
+  {t:"Modalverben", en:"can, must, want", learn:"<b>können</b> (can): ich kann · <b>müssen</b> (must): ich muss · <b>wollen</b> (want): ich will · <b>möchten</b> (would like): ich möchte · <b>dürfen</b> (may) · <b>sollen</b> (should)<br>The modal verb is in position 2, and the main verb goes to the <b>end</b> (infinitive): Ich <b>muss</b> heute <b>arbeiten</b>. <b>Kannst</b> du mir <b>helfen</b>?",
+   v:[["können","can"],["müssen","must / have to"],["wollen","to want"],["helfen","to help"],["dürfen","may / be allowed"],["sollen","should"]],
+   say:["Ich muss heute arbeiten.","Kannst du mir helfen?","Ich will Deutsch lernen."],
+   tr:[["Can you help me? (formal)",["Können Sie mir helfen","Können Sie mir bitte helfen"]],["I must work today.",["Ich muss heute arbeiten"]],["I want to learn German.",["Ich will Deutsch lernen","Ich möchte Deutsch lernen"]]]},
+  // A2.1
+  {t:"Wohnung", en:"Finding an apartment", learn:"Key words in German flat ads: <b>Kaltmiete</b> (rent without bills) vs <b>Warmmiete</b> (rent including heating and bills) · <b>Nebenkosten</b> (utilities) · <b>Kaution</b> (deposit, usually up to 3× Kaltmiete) · <b>2-Zimmer-Wohnung</b> (2 rooms, not counting the kitchen and bathroom) · <b>WG</b> (shared flat).<br>You'll need to register (<b>Anmeldung</b>) within 2 weeks of moving in.",
+   v:[["das Zimmer","room"],["die Miete","rent"],["die Kaution","deposit"],["die Nebenkosten","utilities / extra costs"],["einziehen","to move in"],["der Vermieter","landlord"],["die Küche","kitchen"]],
+   say:["Die Wohnung hat zwei Zimmer.","Wie hoch ist die Miete?","Sind die Nebenkosten inklusive?"],
+   tr:[["How much is the rent?",["Wie hoch ist die Miete","Wie viel kostet die Miete","Wie viel ist die Miete"]],["The apartment has three rooms.",["Die Wohnung hat drei Zimmer","Die Wohnung hat 3 Zimmer"]],["When can I move in?",["Wann kann ich einziehen"]]]},
+  {t:"Beim Arzt", en:"At the doctor", learn:"<b>Ich habe Kopfschmerzen / Bauchschmerzen / Halsschmerzen.</b> (head / stomach / throat ache) · <b>Ich habe Fieber.</b> · <b>Mir ist schlecht.</b> (I feel sick)<br><b>seit</b> + time = for/since: <b>seit drei Tagen</b> (for 3 days).<br>If you're sick, you need a <b>Krankmeldung</b> (sick note, also called <i>Krankschreibung</i>) for your employer, usually from day 3, sometimes day 1.",
+   v:[["der Arzt","doctor"],["der Kopf","head"],["die Schmerzen","pain"],["das Fieber","fever"],["krank","sick"],["die Krankmeldung","sick note"],["die Apotheke","pharmacy"]],
+   say:["Ich habe Kopfschmerzen.","Mir ist schlecht.","Seit drei Tagen habe ich Fieber."],
+   tr:[["I have a headache.",["Ich habe Kopfschmerzen"]],["I have had a fever for two days.",["Ich habe seit zwei Tagen Fieber","Seit zwei Tagen habe ich Fieber"]],["I need a sick note.",["Ich brauche eine Krankmeldung","Ich brauche eine Krankschreibung"]]]},
+  {t:"Perfekt", en:"Talking about the past", learn:"In spoken German you use the <b>Perfekt</b>: <b>haben/sein</b> (position 2) + <b>past participle</b> (at the end).<br>Ich <b>habe</b> gestern <b>gearbeitet</b>. Was <b>hast</b> du <b>gemacht</b>?<br>Use <b>sein</b> for movement and change: Ich <b>bin</b> nach Berlin <b>gefahren</b>. Ich <b>bin</b> nach Hause <b>gegangen</b>.<br>Regular verbs: <b>ge</b>-stem-<b>t</b> (gemacht, gelernt). Irregular ones you learn: gegangen, gefahren, gesehen, gegessen.",
+   v:[["gestern","yesterday"],["gemacht","done / made"],["gearbeitet","worked"],["gegangen","gone"],["gefahren","driven / travelled"],["gesehen","seen"],["letzte Woche","last week"]],
+   say:["Ich habe gestern lange gearbeitet.","Wir sind nach München gefahren.","Was hast du am Wochenende gemacht?"],
+   tr:[["I worked yesterday.",["Ich habe gestern gearbeitet","Gestern habe ich gearbeitet"]],["What did you do at the weekend? (du)",["Was hast du am Wochenende gemacht"]],["We went to Berlin. (by transport)",["Wir sind nach Berlin gefahren"]]]},
+  {t:"Dativ", en:"Dative & prepositions", learn:"After <b>mit, bei, nach, von, zu, aus, seit</b>, nouns take the <b>dative</b>: <span class='a-der'>der→dem</span>, <span class='a-die'>die→der</span>, <span class='a-das'>das→dem</span>.<br>Ich fahre <b>mit dem</b> Bus. Ich arbeite <b>bei einer</b> Bank. Ich gehe <b>zum</b> Arzt (zu + dem). Ich gehe <b>zur</b> Arbeit (zu + der).<br><b>nach</b> for cities and countries (nach Berlin), and <b>nach Hause</b> (home).",
+   v:[["der Bus","bus"],["die Bank","bank"],["mit","with / by"],["bei","at (a company / someone's place)"],["nach","to (cities) / after"],["zu","to"],["die Arbeit","work"]],
+   say:["Ich fahre mit dem Bus.","Ich arbeite bei einer Bank.","Ich gehe zum Arzt."],
+   tr:[["I go to work by train.",["Ich fahre mit dem Zug zur Arbeit"]],["I work at a bank.",["Ich arbeite bei einer Bank"]],["I am going to the doctor.",["Ich gehe zum Arzt"]]]},
+  {t:"Behörden", en:"Offices & paperwork", learn:"Your first German offices:<br><b>Bürgeramt</b>: register your address (<b>Anmeldung</b>); you get a <b>Meldebescheinigung</b>.<br><b>Ausländerbehörde</b>: residence permit (<b>Aufenthaltstitel</b>).<br><b>Finanzamt</b>: tax ID (<b>Steuer-ID</b>), usually arrives by post after the Anmeldung.<br>You almost always need a <b>Termin</b> (appointment), often booked online.",
+   v:[["die Anmeldung","registration"],["das Formular","form"],["die Unterlagen","documents"],["der Ausweis","ID card"],["die Ausländerbehörde","immigration office"],["unterschreiben","to sign"],["der Aufenthaltstitel","residence permit"]],
+   say:["Ich möchte mich anmelden.","Ich habe einen Termin um neun Uhr.","Welche Unterlagen brauche ich?"],
+   tr:[["I would like to register.",["Ich möchte mich anmelden"]],["Which documents do I need?",["Welche Unterlagen brauche ich","Welche Dokumente brauche ich"]],["I have an appointment.",["Ich habe einen Termin"]]]},
+  {t:"Einkaufen", en:"Shopping", learn:"<b>Wo finde ich ...?</b> (Where can I find...?) · <b>Haben Sie ...?</b> · <b>Ich schaue nur.</b> (I'm just looking)<br>German supermarket tips: bring your own bag (<b>Tasche</b>), or buy a <b>Tüte</b>. Bottles have a deposit (<b>Pfand</b>), so return them to the machine. You pack your bags <i>fast</i> at the checkout (<b>Kasse</b>)!<br>Most shops are <b>closed on Sundays</b>.",
+   v:[["die Milch","milk"],["das Brot","bread"],["die Tüte","bag"],["die Kasse","checkout"],["das Pfand","bottle deposit"],["die Größe","size"],["billig","cheap"]],
+   say:["Wo finde ich die Milch?","Brauchen Sie eine Tüte?","Nein danke, ich habe eine Tasche."],
+   tr:[["Where can I find bread?",["Wo finde ich Brot","Wo finde ich das Brot"]],["I'm just looking.",["Ich schaue nur","Ich gucke nur"]],["Do you have this in a different size?",["Haben Sie das in einer anderen Größe"]]]},
+  // A2.2
+  {t:"Im Büro", en:"At the office", learn:"Many German offices use <b>du</b> among colleagues (especially in tech), but wait until someone offers it. <b>Feierabend</b> = the end of the work day, a sacred concept. <b>Schönen Feierabend!</b> = Have a nice evening (after work).<br>Useful: <b>Ich habe gleich eine Besprechung</b> (I have a meeting soon), <b>Kannst du mir ... schicken?</b>",
+   v:[["der Kollege","colleague (m)"],["die Kollegin","colleague (f)"],["die Besprechung","meeting"],["die Datei","file"],["der Feierabend","end of the work day"],["schicken","to send"],["der Chef","boss"]],
+   say:["Ich habe gleich eine Besprechung.","Schönen Feierabend!","Kannst du mir die Datei schicken?"],
+   tr:[["Have a nice evening! (after work)",["Schönen Feierabend"]],["Can you send me the file? (du)",["Kannst du mir die Datei schicken"]],["I have a meeting at two o'clock.",["Ich habe um zwei Uhr eine Besprechung","Ich habe um zwei eine Besprechung","Ich habe um 2 Uhr eine Besprechung"]]]},
+  {t:"Weil, dass, wenn", en:"Because, that, if", learn:"After <b>weil</b> (because), <b>dass</b> (that) and <b>wenn</b> (if/when), the verb goes to the <b>end</b> of that part:<br>Ich lerne Deutsch, <b>weil</b> ich in Deutschland <b>wohne</b>.<br>Ich glaube, <b>dass</b> das richtig <b>ist</b>.<br>If the sentence starts with wenn: <b>Wenn</b> ich Zeit <b>habe</b>, <b>komme</b> ich. (verb, verb)",
+   v:[["weil","because"],["dass","that"],["wenn","if / when"],["glauben","to believe"],["richtig","correct"],["falsch","wrong"],["denken","to think"]],
+   say:["Ich lerne Deutsch, weil ich in Deutschland arbeite.","Ich glaube, dass das richtig ist.","Wenn ich Zeit habe, komme ich."],
+   tr:[["I am learning German because I live in Germany.",["Ich lerne Deutsch weil ich in Deutschland wohne","Ich lerne Deutsch weil ich in Deutschland lebe"]],["I think that is good.",["Ich glaube dass das gut ist","Ich denke dass das gut ist"]],["If I have time, I'll come.",["Wenn ich Zeit habe komme ich"]]]},
+  {t:"Telefonieren", en:"Phone calls", learn:"Germans answer the phone with their <b>last name</b>: \"Müller.\" Start your call with: <b>Guten Tag, hier spricht ...</b> (this is ... speaking).<br>Life-savers: <b>Könnten Sie bitte langsamer sprechen?</b> · <b>Können Sie das bitte wiederholen?</b> · <b>Können Sie das buchstabieren?</b><br>German alphabet for spelling: A (ah), E (eh), I (ee), J (yot), V (fow), W (veh), Y (üpsilon), Z (tset).",
+   v:[["anrufen","to call"],["das Handy","mobile phone"],["buchstabieren","to spell"],["zurückrufen","to call back"],["die Nachricht","message"],["besetzt","busy (line)"],["erreichen","to reach"]],
+   say:["Guten Tag, hier spricht Kumar.","Könnten Sie bitte langsamer sprechen?","Können Sie das bitte buchstabieren?"],
+   tr:[["Could you speak more slowly, please?",["Könnten Sie bitte langsamer sprechen","Können Sie bitte langsamer sprechen"]],["Can you repeat that, please?",["Können Sie das bitte wiederholen","Können Sie das wiederholen"]],["I'll call back later.",["Ich rufe später zurück"]]]},
+  {t:"Meinung sagen", en:"Giving your opinion", learn:"<b>Ich finde ...</b> (I think / find) · <b>Ich denke, dass ...</b> · <b>Meiner Meinung nach</b> + verb: Meiner Meinung nach <b>ist</b> das zu teuer.<br>Agreeing: <b>Das stimmt.</b> · <b>Ich bin einverstanden.</b> · <b>Das finde ich auch.</b><br>Disagreeing (Germans are direct, and that's normal!): <b>Das sehe ich anders.</b> · <b>Da bin ich anderer Meinung.</b>",
+   v:[["die Meinung","opinion"],["die Idee","idea"],["teuer","expensive"],["einverstanden","agreed"],["finden","to find / to think"],["der Vorschlag","suggestion"],["wichtig","important"]],
+   say:["Ich finde die Idee gut.","Meiner Meinung nach ist das zu teuer.","Das sehe ich anders."],
+   tr:[["I think the idea is good.",["Ich finde die Idee gut"]],["In my opinion that is too expensive.",["Meiner Meinung nach ist das zu teuer"]],["I agree.",["Ich bin einverstanden","Ich stimme zu","Das finde ich auch","Das stimmt"]]]},
+  {t:"Trennbare Verben", en:"Separable & reflexive verbs", learn:"Some verbs split: the prefix goes to the <b>end</b>. <b>auf</b>stehen → Ich <b>stehe</b> um 7 Uhr <b>auf</b>. <b>an</b>rufen → Ich <b>rufe</b> dich <b>an</b>. <b>ein</b>kaufen → Ich <b>kaufe</b> heute <b>ein</b>.<br>Reflexive verbs use <b>mich / dich / sich</b>: Ich <b>freue mich</b> auf das Wochenende (I'm looking forward to the weekend). Wir <b>treffen uns</b> um 8.",
+   v:[["aufstehen","to get up"],["einkaufen","to go shopping"],["sich freuen auf","to look forward to"],["sich treffen","to meet"],["anfangen","to start"],["ausgehen","to go out"],["aufhören","to stop"]],
+   say:["Ich stehe um sieben Uhr auf.","Ich rufe dich morgen an.","Ich freue mich auf das Wochenende."],
+   tr:[["I get up at six o'clock.",["Ich stehe um sechs Uhr auf","Ich stehe um sechs auf","Ich stehe um 6 Uhr auf"]],["I'll call you tomorrow.",["Ich rufe dich morgen an"]],["I'm looking forward to it.",["Ich freue mich darauf"]]]},
+  {t:"Vorstellungsgespräch", en:"Job interview basics", learn:"Even if the job is in English, a few German sentences impress a lot.<br><b>Ich habe ... Jahre Berufserfahrung.</b> · <b>Ich arbeite gern im Team.</b> · <b>Meine Stärke ist ...</b> · <b>Ich kann in ... Monaten anfangen.</b><br>Bring a <b>Lebenslauf</b> (CV). German CVs are short and factual, often with a photo.",
+   v:[["die Berufserfahrung","work experience"],["das Team","team"],["die Stelle","position / job"],["das Gehalt","salary"],["die Bewerbung","application"],["der Lebenslauf","CV"],["die Stärke","strength"]],
+   say:["Ich habe fünf Jahre Berufserfahrung.","Ich arbeite gern im Team.","Ich kann in drei Monaten anfangen."],
+   tr:[["I have five years of work experience.",["Ich habe fünf Jahre Berufserfahrung","Ich habe 5 Jahre Berufserfahrung"]],["I like working in a team.",["Ich arbeite gern im Team","Ich arbeite gerne im Team"]],["I can start in two months.",["Ich kann in zwei Monaten anfangen","Ich kann in 2 Monaten anfangen"]]]},
+  // B1
+  {t:"Präteritum", en:"Simple past of key verbs", learn:"For most verbs, spoken German uses the Perfekt. But for <b>sein, haben</b> and modal verbs, Germans use the <b>Präteritum</b>:<br>ich <b>war</b> (was) · ich <b>hatte</b> (had) · ich <b>konnte</b> (could) · ich <b>musste</b> (had to) · ich <b>wollte</b> (wanted)<br>Gestern <b>war</b> ich krank. Ich <b>hatte</b> keine Zeit. Ich <b>musste</b> lange warten.",
+   v:[["war","was"],["hatte","had"],["konnte","could"],["musste","had to"],["wollte","wanted"],["die Kindheit","childhood"],["früher","in the past / earlier"]],
+   say:["Gestern war ich krank.","Ich hatte keine Zeit.","Ich musste lange warten."],
+   tr:[["I was in Berlin.",["Ich war in Berlin"]],["I had no time.",["Ich hatte keine Zeit"]],["I couldn't come.",["Ich konnte nicht kommen"]]]},
+  {t:"Höflich sein", en:"Polite requests (Konjunktiv II)", learn:"To be extra polite, use: <b>würde</b> (would) · <b>könnte</b> (could) · <b>hätte</b> (would have).<br><b>Könnten Sie mir bitte helfen?</b> · <b>Ich würde gern einen Termin vereinbaren.</b> · <b>Hätten Sie morgen Zeit?</b><br>This is the best way to talk to officials, landlords and new colleagues.",
+   v:[["würde","would"],["könnte","could (polite)"],["hätte","would have"],["vereinbaren","to arrange"],["die Hilfe","help"],["vielleicht","maybe"]],
+   say:["Könnten Sie mir bitte helfen?","Ich würde gern einen Termin vereinbaren.","Hätten Sie morgen Zeit?"],
+   tr:[["I would like to make an appointment.",["Ich würde gern einen Termin vereinbaren","Ich würde gerne einen Termin vereinbaren","Ich möchte einen Termin vereinbaren"]],["Could you help me, please?",["Könnten Sie mir bitte helfen","Könnten Sie mir helfen"]],["Would you have time tomorrow?",["Hätten Sie morgen Zeit","Hättest du morgen Zeit"]]]},
+  {t:"Probleme lösen", en:"Problems & complaints", learn:"<b>... funktioniert nicht.</b> (... doesn't work) · <b>... ist kaputt.</b> (is broken) · <b>Leider ...</b> (unfortunately, + verb second!): <b>Leider ist</b> das Paket nicht angekommen.<br>Complaining politely but clearly is normal in Germany: <b>Ich möchte mich beschweren.</b> For flat problems, call the <b>Hausmeister</b> (caretaker) or the <b>Hausverwaltung</b> (property management).",
+   v:[["die Heizung","heating"],["kaputt","broken"],["funktionieren","to work / function"],["leider","unfortunately"],["das Paket","parcel"],["sich beschweren","to complain"],["der Hausmeister","caretaker"]],
+   say:["Die Heizung funktioniert nicht.","Leider ist das Paket nicht angekommen.","Ich möchte mich beschweren."],
+   tr:[["The heating doesn't work.",["Die Heizung funktioniert nicht"]],["Unfortunately I am sick.",["Leider bin ich krank"]],["The internet isn't working.",["Das Internet funktioniert nicht"]]]},
+  {t:"Erzählen", en:"Telling a story", learn:"Connect events with: <b>zuerst</b> (first) · <b>dann</b> (then) · <b>danach</b> (after that) · <b>später</b> (later) · <b>am Ende</b> (in the end).<br>⚠️ These count as position 1, so the verb comes right after: <b>Dann habe</b> ich ... · <b>Danach bin</b> ich ...<br>Useful: <b>Das hat gut geklappt.</b> (That worked out well.)",
+   v:[["zuerst","first"],["dann","then"],["danach","after that"],["am Ende","in the end"],["klappen","to work out"],["die Erfahrung","experience"],["schwierig","difficult"]],
+   say:["Zuerst habe ich einen Deutschkurs gemacht.","Danach habe ich eine Wohnung gefunden.","Am Ende hat alles gut geklappt."],
+   tr:[["First I looked for an apartment.",["Zuerst habe ich eine Wohnung gesucht"]],["After that I found a job.",["Danach habe ich eine Stelle gefunden","Danach habe ich einen Job gefunden","Danach habe ich eine Arbeit gefunden"]],["Everything worked out well.",["Alles hat gut geklappt","Alles hat geklappt"]]]},
+  {t:"Kultur & Smalltalk", en:"Culture & small talk", learn:"Things that surprise newcomers:<br><b>Pünktlichkeit</b>: on time means on time, or 5 minutes early.<br><b>Sonntagsruhe</b>: Sundays are quiet: no drilling, no loud music, shops closed.<br><b>Mülltrennung</b>: separate your rubbish (paper, plastic/packaging, organic, glass, other).<br><b>Direktheit</b>: Germans say what they think. It's not rude, just efficient.<br>Small-talk topics: weekend, holidays, weather, work. Avoid salary and religion.",
+   v:[["pünktlich","on time"],["die Ruhe","quiet / peace"],["der Müll","rubbish"],["trennen","to separate"],["anders","different"],["interessant","interesting"],["das Wetter","weather"]],
+   say:["Wie war dein Wochenende?","Bei uns in Indien ist das anders.","Das ist eine gute Frage."],
+   tr:[["How was your weekend? (du)",["Wie war dein Wochenende"]],["In India it is different.",["In Indien ist das anders","In Indien ist es anders"]],["That is interesting.",["Das ist interessant"]]]},
+  {t:"Prüfung B1", en:"Final: exam skills", learn:"The B1 speaking exam (Goethe/telc) has 3 parts:<br>1. <b>Plan something together</b> with a partner: <b>Was hältst du davon, wenn ...?</b> · <b>Sollen wir ...?</b> · <b>Gute Idee!</b><br>2. <b>Present a topic</b> (structure: introduce → your experience → situation in India → pros and cons → your opinion → <b>Vielen Dank für Ihre Aufmerksamkeit</b>).<br>3. <b>React to questions</b> about your presentation.<br>🏆 Finish this lesson and you've completed the course. Viel Erfolg!",
+   v:[["die Prüfung","exam"],["das Thema","topic"],["die Aufmerksamkeit","attention"],["der Vorteil","advantage"],["der Nachteil","disadvantage"],["das Beispiel","example"],["bestehen","to pass (an exam)"]],
+   say:["Ich möchte heute über mein Leben in Deutschland sprechen.","Was hältst du davon, wenn wir am Samstag gehen?","Vielen Dank für Ihre Aufmerksamkeit."],
+   tr:[["What do you think about that? (du)",["Was hältst du davon","Was denkst du darüber"]],["Shall we meet on Saturday?",["Sollen wir uns am Samstag treffen","Wollen wir uns am Samstag treffen"]],["Thank you for your attention.",["Vielen Dank für Ihre Aufmerksamkeit","Danke für Ihre Aufmerksamkeit"]]]},
+];
+
+// English meaning of every practice sentence
+const SAY_EN = {
+  "Guten Morgen!":"Good morning!","Wie geht es Ihnen?":"How are you? (formal)","Mir geht es gut, danke.":"I'm fine, thank you.",
+  "Wie heißen Sie?":"What is your name? (formal)","Ich komme aus Indien.":"I come from India.","Ich wohne in Berlin.":"I live in Berlin.",
+  "Ich spreche ein bisschen Deutsch.":"I speak a little German.","Die Straße ist sehr schön.":"The street is very beautiful.","Wie viel kostet das?":"How much does that cost?",
+  "Ich bin dreißig Jahre alt.":"I am thirty years old.","Das kostet zwölf Euro.":"That costs twelve euros.","Meine Nummer ist null, eins, sieben, sechs.":"My number is zero, one, seven, six.",
+  "Der Tisch, die Lampe, das Buch.":"The table, the lamp, the book.","Die Wohnung ist groß.":"The apartment is big.","Das Mädchen ist nett.":"The girl is nice.",
+  "Ich bin müde.":"I am tired.","Ich habe einen Bruder.":"I have a brother.","Wir sind Kollegen.":"We are colleagues.",
+  "Ich arbeite in einer IT-Firma.":"I work at an IT company.","Was machst du heute?":"What are you doing today?","Heute lerne ich Deutsch.":"Today I am learning German.",
+  "Wo ist der Bahnhof?":"Where is the train station?","Wann beginnt der Kurs?":"When does the course start?","Sprechen Sie Englisch?":"Do you speak English? (formal)",
+  "Ich möchte zwei Brötchen, bitte.":"I would like two bread rolls, please.","Ich hätte gern einen Kaffee.":"I'd like a coffee.","Die Rechnung, bitte.":"The bill, please.",
+  "Ich brauche einen Termin.":"I need an appointment.","Ich habe keinen Hunger.":"I'm not hungry.","Ich suche eine Wohnung.":"I'm looking for an apartment.",
+  "Es ist halb acht.":"It is half past seven (7:30).","Der Termin ist am Montag um zehn Uhr.":"The appointment is on Monday at ten o'clock.","Haben Sie am Freitag Zeit?":"Do you have time on Friday? (formal)",
+  "Ich muss heute arbeiten.":"I have to work today.","Kannst du mir helfen?":"Can you help me?","Ich will Deutsch lernen.":"I want to learn German.",
+  "Die Wohnung hat zwei Zimmer.":"The apartment has two rooms.","Wie hoch ist die Miete?":"How much is the rent?","Sind die Nebenkosten inklusive?":"Are the utilities included?",
+  "Ich habe Kopfschmerzen.":"I have a headache.","Mir ist schlecht.":"I feel sick.","Seit drei Tagen habe ich Fieber.":"I've had a fever for three days.",
+  "Ich habe gestern lange gearbeitet.":"I worked late yesterday.","Wir sind nach München gefahren.":"We went to Munich.","Was hast du am Wochenende gemacht?":"What did you do at the weekend?",
+  "Ich fahre mit dem Bus.":"I go by bus.","Ich arbeite bei einer Bank.":"I work at a bank.","Ich gehe zum Arzt.":"I'm going to the doctor.",
+  "Ich möchte mich anmelden.":"I would like to register (my address).","Ich habe einen Termin um neun Uhr.":"I have an appointment at nine o'clock.","Welche Unterlagen brauche ich?":"Which documents do I need?",
+  "Wo finde ich die Milch?":"Where can I find the milk?","Brauchen Sie eine Tüte?":"Do you need a bag?","Nein danke, ich habe eine Tasche.":"No thanks, I have a bag.",
+  "Ich habe gleich eine Besprechung.":"I have a meeting in a moment.","Schönen Feierabend!":"Have a nice evening! (after work)","Kannst du mir die Datei schicken?":"Can you send me the file?",
+  "Ich lerne Deutsch, weil ich in Deutschland arbeite.":"I'm learning German because I work in Germany.","Ich glaube, dass das richtig ist.":"I think that is correct.","Wenn ich Zeit habe, komme ich.":"If I have time, I'll come.",
+  "Guten Tag, hier spricht Kumar.":"Hello, this is Kumar speaking.","Könnten Sie bitte langsamer sprechen?":"Could you speak more slowly, please?","Können Sie das bitte buchstabieren?":"Can you spell that, please?",
+  "Ich finde die Idee gut.":"I think the idea is good.","Meiner Meinung nach ist das zu teuer.":"In my opinion that is too expensive.","Das sehe ich anders.":"I see it differently.",
+  "Ich stehe um sieben Uhr auf.":"I get up at seven o'clock.","Ich rufe dich morgen an.":"I'll call you tomorrow.","Ich freue mich auf das Wochenende.":"I'm looking forward to the weekend.",
+  "Ich habe fünf Jahre Berufserfahrung.":"I have five years of work experience.","Ich arbeite gern im Team.":"I like working in a team.","Ich kann in drei Monaten anfangen.":"I can start in three months.",
+  "Gestern war ich krank.":"Yesterday I was sick.","Ich hatte keine Zeit.":"I had no time.","Ich musste lange warten.":"I had to wait a long time.",
+  "Könnten Sie mir bitte helfen?":"Could you help me, please?","Ich würde gern einen Termin vereinbaren.":"I would like to make an appointment.","Hätten Sie morgen Zeit?":"Would you have time tomorrow?",
+  "Die Heizung funktioniert nicht.":"The heating doesn't work.","Leider ist das Paket nicht angekommen.":"Unfortunately the parcel hasn't arrived.","Ich möchte mich beschweren.":"I would like to make a complaint.",
+  "Zuerst habe ich einen Deutschkurs gemacht.":"First I did a German course.","Danach habe ich eine Wohnung gefunden.":"After that I found an apartment.","Am Ende hat alles gut geklappt.":"In the end everything worked out well.",
+  "Wie war dein Wochenende?":"How was your weekend?","Bei uns in Indien ist das anders.":"Back home in India it's different.","Das ist eine gute Frage.":"That's a good question.",
+  "Ich möchte heute über mein Leben in Deutschland sprechen.":"Today I'd like to talk about my life in Germany.","Was hältst du davon, wenn wir am Samstag gehen?":"What do you think about going on Saturday?","Vielen Dank für Ihre Aufmerksamkeit.":"Thank you for your attention.",
+};
+
+const TALK = [
+  {id:"baker", icon:"🥐", title:"In der Bäckerei", en:"At the bakery", who:"Verkäuferin", lvl:1, turns:[
+    {they:"Guten Morgen! Was darf es sein?", tEn:"Good morning! What would you like?", you:"Greet her and order two bread rolls.", keys:["brötchen","möchte","hätte","bitte","zwei"], model:"Guten Morgen! Ich hätte gern zwei Brötchen, bitte.", mEn:"Good morning! I'd like two bread rolls, please."},
+    {they:"Gerne. Sonst noch etwas?", tEn:"Sure. Anything else?", you:"Order a coffee to take away (zum Mitnehmen).", keys:["kaffee","mitnehmen"], model:"Ja, einen Kaffee zum Mitnehmen, bitte.", mEn:"Yes, a coffee to take away, please."},
+    {they:"Mit Milch und Zucker?", tEn:"With milk and sugar?", you:"Say: only with milk, no sugar.", keys:["milch","nur","ohne","nein","ja"], model:"Nur mit Milch, bitte. Ohne Zucker.", mEn:"Only with milk, please. No sugar."},
+    {they:"Das macht dann vier Euro fünfzig.", tEn:"That's 4.50 euros then.", you:"Ask if you can pay by card.", keys:["karte","zahlen","bezahlen"], model:"Kann ich mit Karte zahlen?", mEn:"Can I pay by card?"},
+    {they:"Ja, natürlich. Schönen Tag noch!", tEn:"Yes, of course. Have a nice day!", you:"Thank her and say goodbye.", keys:["danke","tschüss","wiedersehen","ihnen","gleichfalls"], model:"Danke, Ihnen auch! Tschüss!", mEn:"Thanks, you too! Bye!"},
+  ]},
+  {id:"colleague", icon:"☕", title:"Kaffeepause", en:"Coffee break with a colleague", who:"Anna", lvl:1, turns:[
+    {they:"Hallo! Du bist neu hier, oder? Ich bin Anna.", tEn:"Hi! You're new here, right? I'm Anna.", you:"Say hello, that you're new, and your name.", keys:["hallo","hi","heiße","bin","neu"], model:"Hallo Anna! Ja, ich bin neu. Ich heiße Ravi.", mEn:"Hi Anna! Yes, I'm new. My name is Ravi."},
+    {they:"Woher kommst du?", tEn:"Where are you from?", you:"Say where you're from.", keys:["komme","aus","indien"], model:"Ich komme aus Indien, aus Bangalore.", mEn:"I'm from India, from Bangalore."},
+    {they:"Cool! Und wie gefällt dir Deutschland?", tEn:"Cool! And how do you like Germany?", you:"Say you like it a lot, but the weather is cold.", keys:["gefällt","gut","schön","kalt","toll","super"], model:"Es gefällt mir sehr gut! Aber das Wetter ist kalt.", mEn:"I like it a lot! But the weather is cold."},
+    {they:"Haha, ja. Was machst du am Wochenende?", tEn:"Haha, yes. What are you doing at the weekend?", you:"Say your plan, then ask her back (Und du?).", keys:["?"], model:"Ich gehe ins Museum. Und du?", mEn:"I'm going to the museum. And you?"},
+    {they:"Ich gehe wandern. Willst du mitkommen?", tEn:"I'm going hiking. Do you want to come along?", you:"Accept the invitation happily.", keys:["ja","gern","gerne","super","toll","klar","gut"], model:"Ja, gern! Das klingt super.", mEn:"Yes, gladly! That sounds great."},
+  ]},
+  {id:"buero", icon:"🏛️", title:"Anmeldung beim Bürgeramt", en:"Registering your address", who:"Beamter", lvl:2, turns:[
+    {they:"Guten Tag. Was kann ich für Sie tun?", tEn:"Hello. What can I do for you?", you:"Say you'd like to register your apartment.", keys:["anmelden","anmeldung","wohnung"], model:"Guten Tag. Ich möchte meine Wohnung anmelden.", mEn:"Hello. I'd like to register my apartment."},
+    {they:"Haben Sie einen Termin?", tEn:"Do you have an appointment?", you:"Yes, at ten o'clock.", keys:["termin","uhr","zehn","10","ja"], model:"Ja, ich habe einen Termin um zehn Uhr.", mEn:"Yes, I have an appointment at ten."},
+    {they:"Ihren Pass und die Wohnungsgeberbestätigung, bitte.", tEn:"Your passport and the landlord's confirmation, please.", you:"Hand them over: \"Here is...\"", keys:["hier","pass","bestätigung","ist","sind"], model:"Hier ist mein Pass, und hier ist die Bestätigung.", mEn:"Here is my passport, and here is the confirmation."},
+    {they:"Danke. Unterschreiben Sie bitte hier.", tEn:"Thank you. Please sign here.", you:"Say OK and ask if it's here at the bottom.", keys:["?","okay","ok","gut","ja","hier"], model:"Okay. Hier unten?", mEn:"Okay. Here at the bottom?"},
+    {they:"Genau. Hier ist Ihre Meldebescheinigung. Brauchen Sie noch etwas?", tEn:"Exactly. Here's your registration certificate. Do you need anything else?", you:"No, that's all. Thank them and say goodbye.", keys:["nein","danke","wiedersehen","alles"], model:"Nein, das ist alles. Vielen Dank! Auf Wiedersehen.", mEn:"No, that's all. Thank you very much! Goodbye."},
+  ]},
+  {id:"flat", icon:"🏠", title:"Wohnungsbesichtigung", en:"Apartment viewing", who:"Vermieter", lvl:3, turns:[
+    {they:"Guten Tag! Sie sind wegen der Wohnung hier?", tEn:"Hello! You're here about the apartment?", you:"Confirm and greet him.", keys:["ja","genau","richtig","guten"], model:"Ja, genau. Guten Tag!", mEn:"Yes, exactly. Hello!"},
+    {they:"Die Wohnung hat zwei Zimmer, Küche und Bad. Die Kaltmiete ist neunhundert Euro.", tEn:"The apartment has two rooms, kitchen and bathroom. Rent without bills is 900 euros.", you:"Ask how much the utilities (Nebenkosten) are.", keys:["nebenkosten","warmmiete","inklusive","hoch","viel"], model:"Wie hoch sind die Nebenkosten?", mEn:"How much are the utilities?"},
+    {they:"Ungefähr zweihundert Euro im Monat.", tEn:"About 200 euros a month.", you:"Ask when you can move in.", keys:["wann","einziehen","frei"], model:"Wann kann ich einziehen?", mEn:"When can I move in?"},
+    {they:"Ab dem ersten März. Was machen Sie beruflich?", tEn:"From March 1st. What do you do for a living?", you:"Say your job and where you work.", keys:["arbeite","bin","als","bei","firma","ingenieur","entwickler"], model:"Ich arbeite als Ingenieur bei einer IT-Firma.", mEn:"I work as an engineer at an IT company."},
+    {they:"Gut. Schicken Sie mir bitte Ihre Unterlagen.", tEn:"Good. Please send me your documents.", you:"Say you'll send them today and thank him.", keys:["schicke","heute","gern","danke","mache"], model:"Ja, ich schicke sie Ihnen heute. Vielen Dank!", mEn:"Yes, I'll send them to you today. Thank you very much!"},
+  ]},
+  {id:"doctor", icon:"🩺", title:"Beim Arzt", en:"At the doctor", who:"Ärztin", lvl:3, turns:[
+    {they:"Guten Tag. Was fehlt Ihnen denn?", tEn:"Hello. What's the matter?", you:"Say you have a headache and a fever.", keys:["kopfschmerzen","fieber","schmerzen","krank","halsschmerzen"], model:"Ich habe Kopfschmerzen und Fieber.", mEn:"I have a headache and a fever."},
+    {they:"Seit wann haben Sie die Beschwerden?", tEn:"Since when have you had the symptoms?", you:"For three days (seit drei Tagen).", keys:["seit","tagen","gestern","montag","woche"], model:"Seit drei Tagen.", mEn:"For three days."},
+    {they:"Nehmen Sie Medikamente?", tEn:"Are you taking any medication?", you:"Say no, you're not taking any medication.", keys:["nein","keine","nehme","ja","paracetamol","ibuprofen"], model:"Nein, ich nehme keine Medikamente.", mEn:"No, I'm not taking any medication."},
+    {they:"Ich schreibe Sie für drei Tage krank.", tEn:"I'll give you a sick note for three days.", you:"Thank her and ask if you need to come back.", keys:["?","danke","muss","wiederkommen"], model:"Danke. Muss ich noch einmal wiederkommen?", mEn:"Thanks. Do I need to come back again?"},
+    {they:"Nur wenn es nicht besser wird. Gute Besserung!", tEn:"Only if it doesn't get better. Get well soon!", you:"Thank her and say goodbye.", keys:["danke","wiedersehen","tschüss","vielen"], model:"Vielen Dank. Auf Wiedersehen!", mEn:"Thank you very much. Goodbye!"},
+  ]},
+  {id:"market", icon:"🛒", title:"Im Supermarkt", en:"At the supermarket", who:"Mitarbeiter", lvl:2, turns:[
+    {they:"Kann ich Ihnen helfen?", tEn:"Can I help you?", you:"Ask where you can find the milk.", keys:["wo","milch","finde"], model:"Ja, bitte. Wo finde ich die Milch?", mEn:"Yes, please. Where can I find the milk?"},
+    {they:"Die Milch ist in Gang drei, hinten links.", tEn:"The milk is in aisle 3, at the back on the left.", you:"Thank him.", keys:["danke","vielen"], model:"Vielen Dank!", mEn:"Thank you very much!"},
+    {they:"(an der Kasse) Brauchen Sie eine Tüte?", tEn:"(at the checkout) Do you need a bag?", you:"No thanks, you have a bag (Tasche).", keys:["nein","danke","tasche","habe"], model:"Nein danke, ich habe eine Tasche.", mEn:"No thanks, I have a bag."},
+    {they:"Sammeln Sie Punkte?", tEn:"Do you collect (loyalty) points?", you:"Say no, thank you.", keys:["nein","danke","nicht"], model:"Nein, danke.", mEn:"No, thank you."},
+    {they:"Das macht zwölf Euro dreißig. Bar oder mit Karte?", tEn:"That's 12.30 euros. Cash or card?", you:"Say: by card, please.", keys:["karte","bar","mit"], model:"Mit Karte, bitte.", mEn:"By card, please."},
+  ]},
+];
+
+// questions: English; the first option is correct (shuffled on screen)
+const PASSAGES = [
+  {title:"Durchsage am Bahnhof", en:"Train station announcement", text:"Achtung an Gleis drei. Der ICE nach München, Abfahrt zehn Uhr fünfzehn, hat heute circa zwanzig Minuten Verspätung. Wir bitten um Entschuldigung.", textEn:"Attention at platform three. The ICE (high-speed train) to Munich, departing at 10:15, is about twenty minutes late today. We apologise.",
+   qs:[["Where is the train going?","To Munich","To Berlin","To Hamburg","To Frankfurt"],["Which platform?","Platform 3","Platform 10","Platform 15","Platform 20"],["What is the problem?","About 20 minutes late","About 15 minutes late","It is cancelled","It leaves from another platform"]]},
+  {title:"Anrufbeantworter: Arztpraxis", en:"Doctor's voicemail", text:"Hallo, hier ist die Praxis Doktor Weber. Ihr Termin am Donnerstag um neun Uhr muss leider ausfallen. Wir können Ihnen einen neuen Termin am Freitag um vierzehn Uhr anbieten. Bitte rufen Sie uns zurück.", textEn:"Hello, this is Dr Weber’s practice. Unfortunately your appointment on Thursday at nine o’clock has to be cancelled. We can offer you a new appointment on Friday at 2 pm. Please call us back.",
+   qs:[["What happened?","The Thursday appointment is cancelled","The doctor is on holiday","The practice has moved","The appointment is now earlier on Thursday"],["What is the new appointment?","Friday at 2 pm","Friday at 9 am","Thursday at 2 pm","Monday at 9 am"],["What should you do?","Call back","Send an email","Come at 9","Nothing"]]},
+  {title:"Nachricht vom Vermieter", en:"Message from your landlord", text:"Hallo, hier ist Herr Schmidt, Ihr Vermieter. Am Mittwoch kommt der Hausmeister und repariert die Heizung. Er kommt zwischen acht und zwölf Uhr. Bitte seien Sie zu Hause. Danke und schönen Tag noch!", textEn:"Hello, this is Mr Schmidt, your landlord. On Wednesday the caretaker is coming to repair the heating. He will come between eight and twelve o’clock. Please be at home. Thanks, and have a nice day!",
+   qs:[["What will be repaired?","The heating","The window","The door","The shower"],["When?","Wednesday, 8 to 12","Monday, 8 to 12","Wednesday afternoon","Friday morning"],["What should you do?","Be at home","Leave the key outside","Call the caretaker","Pay the rent"]]},
+  {title:"Einladung von Jonas", en:"Invitation from a colleague", text:"Hey, hier ist Jonas. Am Samstag habe ich Geburtstag und mache eine kleine Party bei mir zu Hause. Sie beginnt um acht Uhr abends. Kannst du einen Salat mitbringen? Sag mir bis Donnerstag Bescheid, ob du kommst!", textEn:"Hey, it’s Jonas. It’s my birthday on Saturday and I’m having a small party at my place. It starts at eight in the evening. Can you bring a salad? Let me know by Thursday if you’re coming!",
+   qs:[["What is the occasion?","His birthday","A work party","A wedding","A farewell party"],["When is it?","Saturday, 8 pm","Saturday, 8 am","Sunday, 8 pm","Thursday, 8 pm"],["What should you bring?","A salad","Drinks","A cake","Nothing"]]},
+  {title:"Wetterbericht", en:"Weather forecast", text:"Und jetzt das Wetter für morgen. Im Norden regnet es den ganzen Tag. Im Süden scheint die Sonne, bei Temperaturen bis zu achtzehn Grad. Am Wochenende wird es kälter.", textEn:"And now the weather for tomorrow. In the north it will rain all day. In the south the sun will shine, with temperatures up to eighteen degrees. At the weekend it will get colder.",
+   qs:[["What will the weather be like in the north?","Rain all day","Sunny","Snow","Windy but dry"],["Temperature in the south?","Up to 18 degrees","Up to 8 degrees","Up to 28 degrees","Up to 13 degrees"],["And at the weekend?","It gets colder","It gets warmer","It rains everywhere","No change"]]},
+  {title:"Durchsage im Supermarkt", en:"Supermarket announcement", text:"Liebe Kundinnen und Kunden, heute im Angebot: Äpfel, ein Kilo für nur ein Euro neunundneunzig. Bitte beachten Sie: Unser Markt schließt heute schon um achtzehn Uhr.", textEn:"Dear customers, on offer today: apples, one kilo for only 1.99 euros. Please note: our store closes early today, at 6 pm.",
+   qs:[["What is on offer?","Apples","Bananas","Bread","Milk"],["How much?","1.99 € per kilo","1.90 € per kilo","2.99 € per kilo","9.99 € per kilo"],["When does the shop close today?","At 6 pm","At 8 pm","At 10 pm","It's closed all day"]]},
+];
+
+const PHRASES = {
+  "Basics":[["Ja / Nein","Yes / No"],["Bitte","Please / You're welcome"],["Danke schön","Thank you very much"],["Entschuldigung","Excuse me / Sorry"],["Kein Problem","No problem"],["Ich weiß nicht","I don't know"]],
+  "When you don't understand":[["Ich verstehe nicht.","I don't understand."],["Können Sie das bitte wiederholen?","Can you repeat that, please?"],["Langsamer, bitte.","Slower, please."],["Was bedeutet das?","What does that mean?"],["Sprechen Sie Englisch?","Do you speak English?"],["Ich möchte Deutsch üben.","I'd like to practise German."]],
+  "Shopping & eating":[["Ich hätte gern ...","I'd like ..."],["Was kostet das?","How much is that?"],["Kann ich mit Karte zahlen?","Can I pay by card?"],["Die Rechnung, bitte.","The bill, please."],["Zum Mitnehmen, bitte.","To take away, please."],["Stimmt so.","Keep the change."]],
+  "Getting around":[["Wo ist der Bahnhof?","Where is the train station?"],["Wie komme ich zum Flughafen?","How do I get to the airport?"],["Eine Fahrkarte nach Berlin, bitte.","A ticket to Berlin, please."],["Ist dieser Platz frei?","Is this seat free?"],["Wann fährt der nächste Zug?","When does the next train leave?"]],
+  "At work":[["Guten Morgen zusammen!","Good morning, everyone!"],["Hast du kurz Zeit?","Do you have a moment?"],["Ich melde mich später.","I'll get back to you later."],["Schönes Wochenende!","Have a nice weekend!"],["Schönen Feierabend!","Have a nice evening!"]],
+  "Emergencies":[["Hilfe!","Help!"],["Rufen Sie einen Krankenwagen!","Call an ambulance!"],["Ich brauche einen Arzt.","I need a doctor."],["Wo ist die nächste Apotheke?","Where is the nearest pharmacy?"],["Notruf: 112","Emergency number: 112"]],
+};
+
+// Goethe A1 speaking practice
+const INTRO = [
+  ["Name", /heiße|mein name|name ist/],
+  ["Alter (age)", /jahre alt|\d+ jahre|jahre/],
+  ["Land (country)", /komme aus|aus indien|komme/],
+  ["Wohnort (where you live)", /wohne|lebe in/],
+  ["Sprachen (languages)", /spreche|sprachen/],
+  ["Beruf (job)", /arbeite|beruf|ingenieur|entwickler|student|informatiker|manager|lehrer|arzt|ärztin/],
+  ["Hobby", /hobby|hobbys|freizeit|gern|gerne|spiele|lese/],
+];
+const ASK = [
+  ["Essen & Trinken","Frühstück","Was isst du zum Frühstück?","breakfast","What do you eat for breakfast?"],["Essen & Trinken","Kaffee","Trinkst du gern Kaffee?","coffee","Do you like drinking coffee?"],["Essen & Trinken","Lieblingsessen","Was ist dein Lieblingsessen?","favourite food","What is your favourite food?"],["Essen & Trinken","Restaurant","Gehst du oft ins Restaurant?","restaurant","Do you often go to restaurants?"],
+  ["Freizeit","Wochenende","Was machst du am Wochenende?","weekend","What do you do at the weekend?"],["Freizeit","Sport","Machst du gern Sport?","sport","Do you like doing sport?"],["Freizeit","Kino","Gehst du gern ins Kino?","cinema","Do you like going to the cinema?"],["Freizeit","Urlaub","Wohin fährst du im Urlaub?","holiday","Where do you go on holiday?"],
+  ["Arbeit","Beruf","Was ist dein Beruf?","job","What is your job?"],["Arbeit","Büro","Wo ist dein Büro?","office","Where is your office?"],["Arbeit","Kollegen","Hast du nette Kollegen?","colleagues","Do you have nice colleagues?"],["Arbeit","Feierabend","Wann hast du Feierabend?","end of work","When do you finish work?"],
+  ["Wohnen","Wohnung","Wie groß ist deine Wohnung?","apartment","How big is your apartment?"],["Wohnen","Miete","Wie hoch ist deine Miete?","rent","How much is your rent?"],["Wohnen","Stadt","In welcher Stadt wohnst du?","city","Which city do you live in?"],["Wohnen","Nachbarn","Kennst du deine Nachbarn?","neighbours","Do you know your neighbours?"],
+];
+const REQUEST = [
+  ["🪟","Fenster","the window","Können Sie bitte das Fenster öffnen?","Can you open the window, please?"],["🖊️","Kuli","a pen","Kannst du mir bitte einen Kuli geben?","Can you give me a pen, please?"],["💧","Wasser","water","Kann ich bitte ein Wasser haben?","Can I have a water, please?"],["🚪","Tür","the door","Können Sie bitte die Tür schließen?","Can you close the door, please?"],
+  ["📱","Handy","phone","Kann ich bitte kurz dein Handy benutzen?","Can I use your phone for a moment, please?"],["🧂","Salz","salt","Kannst du mir bitte das Salz geben?","Can you pass me the salt, please?"],["🎫","Fahrkarte","ticket","Ich möchte bitte eine Fahrkarte kaufen.","I would like to buy a ticket, please."],["☕","Kaffee","coffee","Ich hätte gern einen Kaffee, bitte.","I would like a coffee, please."],
+];
+
+// ================= CORE =================
+const KEY = "deutschcoach.v1";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; // local date
+const today = () => ymd(new Date());
+const shuffle = a => a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+let DB = load();
+function initDB(){ for(const k of ["course","cards","real"]) DB[k] = DB[k] || {}; for(const k of ["log","talks","listens"]) DB[k] = DB[k] || []; }
+initDB();
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){} renderAll(); }
+function logAct(type, extra){ DB.log.push(Object.assign({date:today(), ts:Date.now(), type}, extra||{})); }
+
+// German-aware tokenising; comparison ignores umlauts/ß so typed answers without them still match
+function words(t){ return t.toLowerCase().replace(/€/g," euro ").replace(/[^a-zäöüß0-9'\s-]/g," ").split(/\s+/).filter(Boolean); }
+const fold = w => w.replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u").replace(/ß/g,"ss");
+function compareWords(target, said){
+  const a = words(target), b = words(said), fa = a.map(fold), fb = b.map(fold);
+  const dp = Array.from({length:a.length+1},()=>Array(b.length+1).fill(0));
+  for(let i=a.length-1;i>=0;i--) for(let j=b.length-1;j>=0;j--)
+    dp[i][j] = fa[i]===fb[j] ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j],dp[i][j+1]);
+  const matched = new Set(); let i=0,j=0;
+  while(i<a.length && j<b.length){ if(fa[i]===fb[j]){matched.add(i);i++;j++;} else if(dp[i+1][j]>=dp[i][j+1]) i++; else j++; }
+  // penalise extra words too, so "ich ich ich" doesn't pass
+  const acc = a.length ? Math.round(matched.size / Math.max(a.length, b.length) * 100) : 0;
+  return {acc, html: a.map((x,k)=>matched.has(k)?`<span class="hit">${esc(x)}</span>`:`<span class="miss">${esc(x)}</span>`).join(" ")};
+}
+function bestMatch(answers, said){
+  return answers.map(ans=>({ans, ...compareWords(ans, said)})).sort((x,y)=>y.acc-x.acc)[0];
+}
+const hasWord = (said, list) => { const s = " " + words(said).map(fold).join(" ") + " "; return list.some(k=>s.includes(" "+fold(k.toLowerCase())+" ")); };
+const QSTART = ["wo","wann","was","wie","warum","wer","woher","wohin","welche","welcher","welches","wieviel","muss","kann","kannst","können","könnten","haben","hast","hat","bist","sind","ist","gibt","soll","sollen","darf","machst","gehst","trinkst","isst","fährst","kennst","wohnst","arbeitest","magst","willst","möchtest","brauchen","brauche","spielst","liest"];
+function isQuestion(said){
+  if(/\?/.test(said)) return true;
+  const w = words(said);
+  return w.length>0 && (QSTART.map(fold).includes(fold(w[0])) || /\bund (du|sie)\b/.test(w.join(" ")));
+}
+
+// ---------- speech ----------
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(!SR) $("noSpeech").classList.remove("hidden");
+function makeRec(onText, onEnd, continuous){
+  const r = new SR();
+  r.lang = "de-DE"; r.continuous = !!continuous; r.interimResults = true;
+  let finalText = "";
+  r.onresult = ev=>{
+    let interim = "";
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      const t = ev.results[i][0].transcript;
+      if(ev.results[i].isFinal) finalText += t + " "; else interim += t;
+    }
+    onText(finalText, interim);
+  };
+  r.onend = ()=>onEnd(finalText.trim());
+  r.onerror = ev=>{ if(ev.error==="not-allowed") alert("Microphone blocked. Please allow microphone access in your browser."); };
+  return r;
+}
+let activeRec = null;
+function stopRec(silent){ if(activeRec){ const r = activeRec; activeRec = null; if(silent) r.onend = null; r.stop(); } }
+// one helper for every mic button: toggles recording and restores the button afterwards
+function micButton(btn, out, onDone, opts){
+  opts = opts || {};
+  if(!SR){ const t = prompt("No speech recognition here. Type your answer in German:"); if(t) onDone(t.trim()); return; }
+  if(activeRec){ stopRec(); return; }
+  speechSynthesis.cancel();
+  const label = btn.innerHTML;
+  btn.innerHTML = "⏹ Stop"; btn.classList.add("rec");
+  if(out) out.textContent = "Listening... speak now, then press Stop.";
+  activeRec = makeRec((f,i)=>{ if(out) out.textContent = f+i; }, said=>{
+    activeRec = null; btn.innerHTML = label; btn.classList.remove("rec");
+    onDone(said);
+  }, opts.continuous);
+  activeRec.start();
+}
+function deVoices(){ return speechSynthesis.getVoices().filter(v=>/^de[-_]/i.test(v.lang)); }
+function sayDE(text, rate, voiceName){
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "de-DE"; u.rate = rate || 0.85;
+  const vs = deVoices();
+  const v = (voiceName && vs.find(x=>x.name===voiceName)) || vs.find(x=>/Natural|Online|Google/i.test(x.name)) || vs[0];
+  if(v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+function checkVoices(){
+  const all = speechSynthesis.getVoices();
+  $("noVoice").classList.toggle("hidden", !all.length || deVoices().length>0);
+  fillVoices();
+}
+speechSynthesis.onvoiceschanged = checkVoices;
+setTimeout(checkVoices, 800);
+
+// ---------- tabs ----------
+$("nav").addEventListener("click", e=>{ const b = e.target.closest("button"); if(b) showTab(b.dataset.tab); });
+function showTab(t){
+  stopRec(true);
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on", x.dataset.tab===t));
+  document.querySelectorAll("main > section").forEach(s=>s.classList.toggle("hidden", s.id!=="tab-"+t));
+  window.scrollTo(0,0);
+}
+// article colouring for display
+function artHTML(de){
+  const m = de.match(/^(der|die|das) (.+)$/);
+  return m ? `<span class="a-${m[1]}">${m[1]}</span> ${esc(m[2])}` : esc(de);
+}
+
+// ================= COURSE =================
+let openLesson = null;
+function lp(i){ return DB.course[i] = DB.course[i] || {rep:{}, rt:{}, tr:{}, tt:{}}; }
+const okRep = (p,k) => (p.rep[k]||0) >= 80 || (p.rt[k]||0) >= 3;
+const okTr = (p,k) => (p.tr[k]||0) >= 75 || (p.tt[k]||0) >= 3;
+function checkDone(i){
+  const p = lp(i), L = COURSE[i];
+  if(!p.done && L.say.every((_,k)=>okRep(p,k)) && L.tr.every((_,k)=>okTr(p,k))){ p.done = true; p.doneDate = today(); }
+}
+const isDone = i => !!(DB.course[i] && DB.course[i].done);
+const unlocked = i => i===0 || isDone(i-1);
+function currentLesson(){ const i = COURSE.findIndex((_,k)=>!isDone(k)); return i<0 ? COURSE.length : i; }
+function renderCourse(){
+  const map = $("courseMap"), view = $("lessonView");
+  if(openLesson!=null){ map.classList.add("hidden"); view.classList.remove("hidden"); renderLesson(openLesson); return; }
+  map.classList.remove("hidden"); view.classList.add("hidden");
+  const cur = currentLesson(), total = COURSE.filter((_,i)=>isDone(i)).length;
+  let html = `<div class="card"><h2>Zero to B1: German in 30 lessons</h2>
+    <p class="muted">One lesson a day. Each lesson: <b>learn</b> one topic and its words → <b>repeat</b> 3 sentences → <b>say it in German</b> (translate out loud). Passing unlocks the next lesson. New words go into your vocabulary cards.</p>
+    ${total ? "" : `<div class="tip"><b>👋 Never learned German before? That's exactly who this is for.</b>
+      <ul class="fb">
+        <li>Everything is explained in <b>English</b>. Every German word and sentence has its English meaning next to it.</li>
+        <li>Press <b>🔊</b> to hear any German word, as often as you like. Copy the sound and don't worry about spelling yet.</li>
+        <li>German is spelled the way it sounds, so after Lesson 3 (pronunciation) you'll be able to read almost anything out loud.</li>
+        <li>Mistakes are normal. If the app doesn't understand you after 3 tries, it lets you move on.</li>
+        <li>Lesson 1 takes about 15 minutes. You'll learn to say hello, thank you and goodbye.</li>
+      </ul></div>`}
+    <div class="bar"><i style="width:${total/COURSE.length*100}%"></i></div><div class="muted">${total} of ${COURSE.length} lessons done</div>
+    ${cur<COURSE.length ? `<button class="btn primary" style="margin-top:12px" data-openlesson="${cur}">${total?"Continue":"Start"}: Lesson ${cur+1} — ${esc(COURSE[cur].en)} →</button>` : `<p class="pass" style="margin-top:12px">🏆 Course complete! You finished the whole course. Now book a real B1 exam!</p>`}</div>`;
+  LEVELS.forEach((Lv,li)=>{
+    const ids = [0,1,2,3,4,5].map(k=>li*6+k), done = ids.filter(isDone).length;
+    html += `<div class="card ${unlocked(ids[0])?"":"locked"}"><div class="lvl">Level ${Lv.name}</div><h2>${Lv.goal}</h2>
+      <div class="bar"><i style="width:${done/6*100}%"></i></div>
+      ${ids.map(i=>{
+        const d = isDone(i), u = unlocked(i);
+        return `<div class="task"><div class="check ${d?"done":""}">${d?"✓":u?"":"🔒"}</div>
+          <div style="flex:1"><span class="muted">${i+1}</span> · <b>${esc(COURSE[i].en)}</b> <span class="muted">· ${esc(COURSE[i].t)}</span></div>
+          ${u?`<button class="btn sm ${i===cur?"primary":""}" data-openlesson="${i}">${d?"Review":i===cur?"Start":"Open"}</button>`:""}</div>`;
+      }).join("")}</div>`;
+  });
+  map.innerHTML = html;
+}
+function renderLesson(i){
+  const L = COURSE[i], p = lp(i);
+  const rd = L.say.filter((_,k)=>okRep(p,k)).length, td = L.tr.filter((_,k)=>okTr(p,k)).length;
+  $("lessonView").innerHTML = `<div class="card">
+    <button class="btn sm" data-closelesson>← All lessons</button>
+    <div class="lvl" style="margin-top:14px">Level ${LEVELS[Math.floor(i/6)].name} · Lesson ${i+1}</div>
+    <h2 style="font-size:24px;margin-bottom:0">${esc(L.en)}</h2><div class="muted">In German: <span class="de">${esc(L.t)}</span></div>
+    ${p.done?`<div class="pass" style="margin-top:12px">✅ Lesson complete! ${i<COURSE.length-1?`<a href="#" data-openlesson="${i+1}">Next: ${esc(COURSE[i+1].en)} →</a>`:"You finished the course! 🏆"}</div>`:""}
+    <div class="step"><h3>Step 1 · Learn</h3><p>${L.learn}</p>
+      <h3>New words <span class="muted">(tap a word to hear it)</span></h3>
+      <div class="vocab">${L.v.map(([de,en])=>`<div data-sayde="${esc(de)}"><div class="de">${artHTML(de)}</div><div class="en">${esc(en)}</div></div>`).join("")}</div></div>
+    <div class="step"><h3>Step 2 · Listen and repeat <span class="muted">(${rd}/${L.say.length})</span></h3>
+      <p class="muted">Listen 🔊, then repeat 🎤. You need 80%. (If the app keeps mishearing you, it counts after 3 tries.)</p>
+      ${L.say.map((s,k)=>`<div class="phrase" style="flex-wrap:wrap"><span style="flex:1;min-width:200px"><span class="de">${okRep(p,k)?"✅ ":""}${esc(s)}</span><br><span class="en">${esc(SAY_EN[s]||"")}</span></span>
+        <span class="row"><button class="btn sm" data-sayde="${esc(s)}">🔊</button><button class="btn sm primary" data-rep="${k}">🎤</button></span>
+        <div id="rep-${k}" style="width:100%;font-size:14px"></div></div>`).join("")}
+    </div>
+    <div class="step"><h3>Step 3 · Say it in German <span class="muted">(${td}/${L.tr.length})</span></h3>
+      <p class="muted">Read the English, then say it in German. Try before you look at the answer!</p>
+      ${L.tr.map(([en],k)=>`<div class="phrase" style="flex-wrap:wrap"><span style="flex:1;min-width:200px">${okTr(p,k)?"✅ ":""}🇬🇧 ${esc(en)}</span>
+        <span class="row"><button class="btn sm primary" data-tr="${k}">🎤 Say it</button><button class="btn sm" data-trshow="${k}">👁</button></span>
+        <div id="tr-${k}" style="width:100%;font-size:14px"></div></div>`).join("")}
+    </div></div>`;
+}
+function lessonRepeat(k, btn){
+  const i = openLesson, target = COURSE[i].say[k], out = $("rep-"+k);
+  micButton(btn, out, said=>{
+    const p = lp(i), r = compareWords(target, said);
+    p.rt[k] = (p.rt[k]||0)+1; p.rep[k] = Math.max(p.rep[k]||0, r.acc);
+    logAct("rep", {acc:r.acc}); checkDone(i); save();
+    $("rep-"+k).innerHTML = `<b class="${r.acc>=80?"ok":r.acc>=60?"mid":"low"}">${r.acc}%</b> ${r.html}<br><span class="muted">Heard: ${esc(said||"(nothing)")}</span>`;
+  });
+}
+function lessonTranslate(k, btn){
+  const i = openLesson, [en, answers] = COURSE[i].tr[k], out = $("tr-"+k);
+  micButton(btn, out, said=>{
+    const p = lp(i), b = bestMatch(answers, said);
+    p.tt[k] = (p.tt[k]||0)+1; p.tr[k] = Math.max(p.tr[k]||0, b.acc);
+    logAct("tr", {acc:b.acc}); checkDone(i); save();
+    $("tr-"+k).innerHTML = `<b class="${b.acc>=75?"ok":b.acc>=50?"mid":"low"}">${b.acc>=75?"✅ Correct!":b.acc>=50?"Almost!":"Not yet"} ${b.acc}%</b> — ${b.html}
+      <br><span class="muted">Heard: ${esc(said||"(nothing)")}</span>${b.acc<75 && (p.tt[k]||0)>=3?`<br><span class="muted">This now counts as done. The correct answer is shown above in green.</span>`:""}`;
+  });
+}
+document.addEventListener("click", e=>{
+  const t = e.target.closest("[data-openlesson],[data-closelesson],[data-sayde],[data-rep],[data-tr],[data-trshow]");
+  if(!t) return;
+  if(t.dataset.openlesson!=null){ e.preventDefault(); openLesson = +t.dataset.openlesson; showTab("course"); renderCourse(); }
+  else if(t.hasAttribute("data-closelesson")){ openLesson = null; renderCourse(); window.scrollTo(0,0); }
+  else if(t.dataset.sayde!=null) sayDE(t.dataset.sayde.replace(/^(der|die|das) /,"$1 "));
+  else if(t.dataset.rep!=null) lessonRepeat(+t.dataset.rep, t);
+  else if(t.dataset.tr!=null) lessonTranslate(+t.dataset.tr, t);
+  else if(t.dataset.trshow!=null){ const ans = COURSE[openLesson].tr[+t.dataset.trshow][1][0]; $("tr-"+t.dataset.trshow).innerHTML = `<span class="de">${esc(ans)}</span> <a href="#" data-sayde="${esc(ans)}">🔊</a>`; }
+});
+
+// ================= WORDS: spaced repetition =================
+const BOX_DAYS = [0, 1, 3, 7, 14, 30]; // box n -> review again after n days
+function allCards(){
+  // words unlock with the course: lessons done plus the current one
+  const upto = Math.min(COURSE.length-1, currentLesson());
+  const list = [];
+  for(let i=0;i<=upto;i++) COURSE[i].v.forEach(([de,en],k)=>list.push({id:`${i}.${k}`, de, en}));
+  return list;
+}
+function addDays(n){ const d = new Date(); d.setDate(d.getDate()+n); return ymd(d); }
+function dueCards(){
+  const t = today(), all = allCards();
+  const due = all.filter(c=>DB.cards[c.id] && DB.cards[c.id].due <= t);
+  const fresh = all.filter(c=>!DB.cards[c.id]);
+  const newToday = (DB.log||[]).filter(x=>x.type==="newcard" && x.date===t).length;
+  return [...shuffle(due), ...fresh.slice(0, Math.max(0, 10-newToday))];
+}
+let W = {dir:"de", queue:[], cur:null, shown:false, done:0};
+function renderWordStats(){
+  const all = allCards(), learned = all.filter(c=>DB.cards[c.id] && DB.cards[c.id].box>=3).length;
+  const seen = all.filter(c=>DB.cards[c.id]).length;
+  $("wStats").innerHTML = `<div class="stat"><b>${dueCards().length}</b><span>To review now</span></div>
+    <div class="stat"><b>${seen}</b><span>Words seen</span></div>
+    <div class="stat"><b class="ok">${learned}</b><span>Words learned (box 3+)</span></div>
+    <div class="stat"><b>${all.length}</b><span>Unlocked words</span></div>`;
+}
+function startWords(){ W.queue = dueCards(); W.done = 0; nextCard(); }
+function nextCard(){
+  W.cur = W.queue.shift(); W.shown = false;
+  if(!W.cur){ $("wBox").innerHTML = `<div class="pass" style="margin-top:12px">✅ Done! No more cards for now${W.done?` (${W.done} reviewed)`:""}. Come back tomorrow, or finish the next lesson to unlock new words.</div>`; renderWordStats(); return; }
+  drawCard();
+}
+function drawCard(){
+  const c = W.cur, front = W.dir==="de" ? `<div class="big">${artHTML(c.de)}</div>` : `<div class="big">${esc(c.en)}</div>`;
+  const back = W.dir==="de" ? `<div class="prompt">${esc(c.en)}</div>` : `<div class="big">${artHTML(c.de)}</div>`;
+  $("wBox").innerHTML = `<div class="flash">${front}${W.shown?`<hr style="border:0;border-top:1px solid var(--line);margin:16px 0">${back}`:""}</div>
+    <div class="row" style="justify-content:center">
+      <button class="btn" id="wHear">🔊</button>
+      ${W.shown ? `<button class="btn" id="wNo">❌ Didn't know</button><button class="btn primary" id="wYes">✅ Knew it</button>` : `<button class="btn primary" id="wShow">Show answer</button>`}
+    </div><p class="muted" style="text-align:center">${W.queue.length} left · Say the answer out loud before you flip!</p>`;
+  $("wHear").onclick = ()=>sayDE(c.de);
+  if(W.dir==="de" && !W.shown) sayDE(c.de);
+  if(!W.shown){ $("wShow").onclick = ()=>{ W.shown = true; drawCard(); if(W.dir==="en") sayDE(c.de); }; return; }
+  const rate = knew=>{
+    const st = DB.cards[c.id];
+    if(!st) logAct("newcard");
+    const box = knew ? Math.min(5, (st?st.box:0)+1) : 1;
+    DB.cards[c.id] = {box, due: knew ? addDays(BOX_DAYS[box]) : today()};
+    if(!knew) W.queue.splice(Math.min(3, W.queue.length), 0, c); // see it again soon
+    W.done++; logAct("card", {knew}); save(); nextCard();
+  };
+  $("wNo").onclick = ()=>rate(false); $("wYes").onclick = ()=>rate(true);
+}
+$("wStart").onclick = startWords;
+$("wDir").onclick = ()=>{ W.dir = W.dir==="de" ? "en" : "de"; $("wDir").textContent = `Direction: ${W.dir==="de"?"German → English":"English → German"}`; if(W.cur) drawCard(); };
+
+// der/die/das game
+function genderHint(noun){
+  const n = noun.toLowerCase();
+  if(/(ung|heit|keit|ion|tät|schaft)$/.test(n)) return "Words ending in -ung, -heit, -keit, -ion, -tät or -schaft are always die.";
+  if(/(chen|lein)$/.test(n)) return "Words ending in -chen or -lein are always das.";
+  if(/(ment|um)$/.test(n)) return "Words ending in -ment or -um are usually das.";
+  if(/(montag|freitag|abend|morgen|tag)$/.test(n)) return "Days and times of day are der (except die Nacht).";
+  return "No rule for this one. You just need to learn it with the article.";
+}
+let G = null;
+function gNouns(){ return allCards().filter(c=>/^(der|die|das) /.test(c.de) && !/^die (Nebenkosten|Unterlagen|Schmerzen)$/.test(c.de)); }
+function startGender(){ G = {n:0, right:0, streak:0}; nextGender(); }
+function nextGender(){
+  const pool = gNouns();
+  if(!pool.length){ $("gBox").innerHTML = `<p class="muted">Finish lesson 1 to unlock nouns.</p>`; return; }
+  const c = pool[Math.floor(Math.random()*pool.length)], [art, ...rest] = c.de.split(" "), noun = rest.join(" ");
+  $("gBox").innerHTML = `<div class="flash"><div class="big">___ ${esc(noun)}</div><div class="en">${esc(c.en)}</div></div>
+    <div class="row">${["der","die","das"].map(a=>`<button class="btn gbtn" data-g="${a}"><span class="a-${a}">${a}</span></button>`).join("")}</div>
+    <div id="gOut" style="margin-top:10px"></div><p class="muted">${G.right}/${G.n} right · streak ${G.streak} 🔥</p>`;
+  $("gBox").querySelectorAll("[data-g]").forEach(b=>b.onclick = ()=>{
+    if(G.answered) return; G.answered = true;
+    const ok = b.dataset.g===art; G.n++; if(ok){ G.right++; G.streak++; } else G.streak = 0;
+    logAct("gender", {ok}); save();
+    $("gOut").innerHTML = `<div class="${ok?"pass":"fail"}"><b class="${ok?"ok":"low"}">${ok?"✅ Correct!":"❌ Wrong"}</b> — ${artHTML(c.de)}<div class="muted">${esc(genderHint(noun))}</div>
+      <button class="btn primary" id="gNext" style="margin-top:8px">Next →</button></div>`;
+    sayDE(c.de);
+    $("gNext").onclick = ()=>{ G.answered = false; nextGender(); };
+  });
+}
+$("gStart").onclick = startGender;
+
+// ================= TALK =================
+let TK = null;
+function renderTalkList(){
+  $("talkList").innerHTML = TALK.map(s=>{
+    const runs = DB.talks.filter(d=>d.id===s.id), best = runs.length ? Math.max(...runs.map(r=>r.pct)) : null;
+    return `<div class="card"><div class="row" style="justify-content:space-between">
+      <div><h2 style="margin:0">${s.icon} ${esc(s.en)}</h2><div class="muted">${esc(s.title)} · good from level ${LEVELS[s.lvl-1].name}${best!=null?` · best ${best}%`:""}</div></div>
+      <button class="btn ${runs.length?"":"primary"}" data-talk="${s.id}">${runs.length?"Practise again":"Start"}</button></div></div>`;
+  }).join("");
+}
+function startTalk(id){
+  TK = {s: TALK.find(x=>x.id===id), i:0, log:[], ok:0, en:true};
+  $("talkMenu").classList.add("hidden"); $("talkRun").classList.remove("hidden");
+  renderTalk(); sayDE(TK.s.turns[0].they.replace(/^\(.*?\)\s*/,""));
+}
+function renderTalk(after){
+  const s = TK.s, t = s.turns[TK.i];
+  const hist = TK.log.map(l=>`<div class="bubble them"><span class="who">${esc(s.who)}</span>${esc(l.they)}${TK.en?`<div class="en">${esc(l.tEn)}</div>`:""}</div><div class="bubble me"><span class="who">You</span>${esc(l.said||"(skipped)")}</div>`).join("");
+  $("talkRun").innerHTML = `<div class="card">
+    <div class="row" style="justify-content:space-between"><span class="lvl">${s.icon} ${esc(s.en)} · ${TK.i+1} / ${s.turns.length}</span>
+      <span class="row"><button class="btn sm" id="tkEn">${TK.en?"Hide English":"Show English"}</button><button class="btn sm" id="tkQuit">✕ End</button></span></div>
+    <div class="bar"><i style="width:${TK.i/s.turns.length*100}%"></i></div>
+    <div class="chat">${hist}<div class="bubble them"><span class="who">${esc(s.who)} <a href="#" id="tkHear">🔊 hear again</a></span>${esc(t.they)}${TK.en?`<div class="en">${esc(t.tEn)}</div>`:""}</div>
+      ${after?`<div class="bubble me"><span class="who">You</span>${esc(after.said||"(nothing heard)")}</div>`:""}</div>
+    ${after ? after.html : `<div class="tip">🎯 <b>Your turn:</b> ${esc(t.you)}</div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" id="tkRec">🎤 Reply</button><button class="btn" id="tkType">Type instead</button><button class="btn" id="tkHint">💡 Example</button></div>
+      <div id="tkLive" class="transcript hidden"></div><div id="tkHintBox"></div>`}
+  </div>`;
+  $("tkQuit").onclick = ()=>{ stopRec(true); speechSynthesis.cancel(); TK=null; $("talkRun").classList.add("hidden"); $("talkMenu").classList.remove("hidden"); };
+  $("tkEn").onclick = ()=>{ TK.en = !TK.en; after ? renderTalk(after) : renderTalk(); if(after) bindAfter(after); };
+  $("tkHear").onclick = e=>{ e.preventDefault(); sayDE(t.they.replace(/^\(.*?\)\s*/,"")); };
+  if(after){ bindAfter(after); return; }
+  $("tkHint").onclick = ()=>{ $("tkHintBox").innerHTML = `<div class="tip">Example: <span class="de">${esc(t.model)}</span> <a href="#" data-sayde="${esc(t.model)}">🔊</a><div class="en">${esc(t.mEn)}</div></div>`; };
+  $("tkType").onclick = ()=>{ $("tkLive").classList.remove("hidden"); $("tkLive").innerHTML = `<textarea id="tkTyped" placeholder="Type your reply in German..."></textarea><button class="btn primary sm" id="tkSend" style="margin-top:6px">Send</button>`; $("tkSend").onclick = ()=>judgeTalk($("tkTyped").value.trim()); };
+  $("tkRec").onclick = ()=>{ $("tkLive").classList.remove("hidden"); micButton($("tkRec"), $("tkLive"), said=>judgeTalk(said)); };
+}
+function bindAfter(after){
+  const s = TK.s, t = s.turns[TK.i];
+  $("tkRetry").onclick = ()=>renderTalk();
+  $("tkNext").onclick = ()=>{
+    TK.log.push({they:t.they, tEn:t.tEn, said:after.said}); if(after.ok) TK.ok++; TK.i++;
+    if(TK.i>=s.turns.length) return finishTalk();
+    renderTalk(); sayDE(s.turns[TK.i].they.replace(/^\(.*?\)\s*/,""));
+  };
+}
+function judgeTalk(said){
+  const t = TK.s.turns[TK.i], n = words(said||"").length;
+  const needQ = t.keys.includes("?"), keys = t.keys.filter(k=>k!=="?");
+  const hit = hasWord(said||"", keys), asked = isQuestion(said||"");
+  const sim = compareWords(t.model, said||"").acc;
+  let ok = true; const notes = [];
+  if(n < 2){ ok = false; notes.push("Too short. Try a full sentence."); }
+  else if(needQ && !asked && !hit){ ok = false; notes.push("Ask a question back, e.g. „Und du?“ (And you?) or „Und Sie?“ (formal)"); }
+  else if(!needQ && keys.length && !hit && sim < 50){ ok = false; notes.push(`Your reply may not fit the situation. Task: <i>${esc(t.you)}</i>`); }
+  if(ok) notes.push(sim>=70 ? "Very good! Very close to a natural answer." : "Good! You got the message across. Compare with the model answer to sound more natural.");
+  const html = `<div class="${ok?"pass":"fail"}"><b class="${ok?"ok":"low"}">${ok?"✅ Well done":"🔁 Try again"}</b><ul class="fb">${notes.map(x=>"<li>"+x+"</li>").join("")}</ul></div>
+    <div class="tip">Model answer: <span class="de">${esc(t.model)}</span> <a href="#" data-sayde="${esc(t.model)}">🔊</a><div class="en">${esc(t.mEn)}</div></div>
+    <div class="row" style="margin-top:12px"><button class="btn" id="tkRetry">🔁 Try again</button><button class="btn primary" id="tkNext">${TK.i+1<TK.s.turns.length?"Continue →":"Finish"}</button></div>`;
+  renderTalk({said, ok, html});
+}
+function finishTalk(){
+  const s = TK.s, pct = Math.round(TK.ok/s.turns.length*100);
+  DB.talks.push({id:s.id, date:today(), ts:Date.now(), pct}); save();
+  $("talkRun").innerHTML = `<div class="card"><h2>${s.icon} Conversation finished!</h2>
+    <div class="prompt ${pct>=80?"ok":pct>=50?"mid":"low"}" style="font-size:42px">${pct}%</div><p class="muted">${TK.ok} of ${s.turns.length} replies were good.</p>
+    <p>${pct>=80?"Great! Next time, press \"Hide English\" and try without the examples.":"Read the model answers out loud a few times, then try again tomorrow."}</p>
+    <div class="row"><button class="btn primary" data-talk="${s.id}">Practise again</button><button class="btn" id="tkBack">Other conversations</button></div></div>`;
+  $("tkBack").onclick = ()=>{ TK=null; $("talkRun").classList.add("hidden"); $("talkMenu").classList.remove("hidden"); };
+  TK = null;
+}
+document.addEventListener("click", e=>{ const b = e.target.closest("[data-talk]"); if(b){ showTab("talk"); startTalk(b.dataset.talk); } });
+
+// ================= LISTEN =================
+const DICTATION = COURSE.flatMap(c=>c.say);
+let LS = {mode:"comp", p:0, d:0};
+function fillVoices(){
+  const vs = deVoices(), sel = $("voiceSel"), cur = sel.value;
+  sel.innerHTML = vs.length ? `<option value="">🔀 Mix (different voice each time)</option>` + vs.map(v=>`<option value="${esc(v.name)}">${esc(v.name.replace(/Microsoft |Google | Online \(Natural\).*$/g,""))} (${esc(v.lang)})</option>`).join("") : `<option value="">No German voice installed</option>`;
+  sel.value = cur;
+}
+function listenVoice(){ const n = $("voiceSel").value; if(n) return n; const vs = deVoices(); return vs.length ? vs[Math.floor(Math.random()*vs.length)].name : null; }
+function listenSay(text, rate){ LS.voice = LS.voice || listenVoice(); sayDE(text, rate || +$("listenRate").value, LS.voice); }
+function renderListen(){
+  $("modeComp").classList.toggle("primary", LS.mode==="comp"); $("modeDict").classList.toggle("primary", LS.mode==="dict");
+  LS.voice = null;
+  if(LS.mode==="comp"){
+    const P = PASSAGES[LS.p % PASSAGES.length]; LS.answers = {};
+    $("listenBox").innerHTML = `<div class="lvl">Message ${LS.p % PASSAGES.length + 1} of ${PASSAGES.length}</div><h2>${esc(P.en)}</h2><div class="muted">${esc(P.title)}</div>
+      <p class="muted">Listen without reading, then answer. Replay as often as you need, but the goal is 2 listens.</p>
+      <div class="row"><button class="btn primary" id="lsPlay">▶ Play</button><button class="btn" id="lsStop">⏹</button><span class="muted" id="lsPlays">Played 0×</span></div>
+      ${P.qs.map((q,qi)=>`<h3>${qi+1}. ${esc(q[0])}</h3>` + shuffle(q.slice(1).map((o,oi)=>[o,oi===0])).map(([o,c])=>`<button class="btn opt" data-q="${qi}" data-c="${c?1:0}">${esc(o)}</button>`).join("")).join("")}
+      <div id="lsResult"></div>
+      <details style="margin-top:12px"><summary>Show the text in German and English (after answering)</summary><div class="transcript de">${esc(P.text)}</div><div class="transcript en">${esc(P.textEn)}</div></details>
+      <div class="row" style="margin-top:12px"><button class="btn" id="lsNext">Next message →</button></div>`;
+    let plays = 0;
+    $("lsPlay").onclick = ()=>{ plays++; $("lsPlays").textContent = `Played ${plays}×`; listenSay(P.text); };
+    $("lsStop").onclick = ()=>speechSynthesis.cancel();
+    $("lsNext").onclick = ()=>{ LS.p++; renderListen(); };
+    $("listenBox").querySelectorAll(".opt").forEach(b=>b.onclick = ()=>{
+      const qi = b.dataset.q; if(LS.answers[qi]!=null) return;
+      LS.answers[qi] = b.dataset.c==="1";
+      $("listenBox").querySelectorAll(`.opt[data-q="${qi}"]`).forEach(x=>{ if(x.dataset.c==="1") x.classList.add("correct"); });
+      if(b.dataset.c!=="1") b.classList.add("wrongpick");
+      if(Object.keys(LS.answers).length===P.qs.length){
+        const right = Object.values(LS.answers).filter(Boolean).length;
+        $("lsResult").innerHTML = `<p class="${right===P.qs.length?"pass":"fail"}" style="margin-top:12px">${right} of ${P.qs.length} correct. ${right===P.qs.length?"Very good! Try it at normal speed next time.":"Open the German text, read along while you listen again, and find the words you missed."}</p>`;
+        DB.listens.push({date:today(), ts:Date.now(), type:"comp", right, total:P.qs.length}); save();
+      }
+    });
+  } else {
+    const s = DICTATION[LS.d % DICTATION.length];
+    $("listenBox").innerHTML = `<h2>✍️ Dictation</h2><p class="muted">Listen and type exactly what you hear. You don't need to type ä/ö/ü/ß; "a", "o", "u" and "ss" are accepted.</p>
+      <div class="row"><button class="btn primary" id="dPlay">▶ Play</button><button class="btn" id="dSlow">🐢 Slow</button></div>
+      <input type="text" id="dIn" placeholder="Type what you hear..." style="margin-top:12px" autocomplete="off">
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="dCheck">Check</button><button class="btn" id="dNext">Next →</button></div>
+      <div id="dOut" style="margin-top:10px"></div>`;
+    $("dPlay").onclick = ()=>listenSay(s);
+    $("dSlow").onclick = ()=>listenSay(s, 0.6);
+    $("dNext").onclick = ()=>{ LS.d = Math.floor(Math.random()*DICTATION.length); renderListen(); };
+    const check = ()=>{
+      const typed = $("dIn").value.trim(); if(!typed) return;
+      const r = compareWords(s, typed);
+      $("dOut").innerHTML = `<b class="${r.acc>=90?"ok":r.acc>=70?"mid":"low"}">${r.acc}% correct</b><div class="transcript">${r.html}</div><div class="muted">Correct sentence: <span class="de">${esc(s)}</span><br>Meaning: ${esc(SAY_EN[s]||"")}</div>`;
+      DB.listens.push({date:today(), ts:Date.now(), type:"dict", acc:r.acc}); save();
+    };
+    $("dCheck").onclick = check;
+    $("dIn").onkeydown = e=>{ if(e.key==="Enter") check(); };
+    setTimeout(()=>listenSay(s), 300);
+  }
+}
+$("modeComp").onclick = ()=>{ LS.mode="comp"; renderListen(); };
+$("modeDict").onclick = ()=>{ LS.mode="dict"; LS.d = Math.floor(Math.random()*DICTATION.length); renderListen(); };
+
+// ================= EXAM (Goethe A1 speaking) =================
+let EXQ = null;
+function renderExam(kind){
+  EXQ = {kind};
+  const box = $("exBox");
+  if(kind==="intro"){
+    box.innerHTML = `<h2>Part 1 — Introduce yourself <span class="muted">(Sich vorstellen)</span></h2>
+      <p class="muted">In the exam you get keyword cards and introduce yourself in about 1 minute. Cover <b>all 7 points</b>:</p>
+      <div id="introKeys" class="row">${INTRO.map(([k],i)=>`<span class="pill" id="ik-${i}">${esc(k)}</span>`).join("")}</div>
+      <div class="tip">Example (copy this and change the details): <i>Ich heiße Ravi. Ich bin dreißig Jahre alt. Ich komme aus Indien und wohne jetzt in Berlin. Ich spreche Englisch, Hindi und ein bisschen Deutsch. Ich bin Ingenieur von Beruf. Mein Hobby ist Kochen.</i><div class="en">My name is Ravi. I am thirty years old. I come from India and now live in Berlin. I speak English, Hindi and a little German. I am an engineer by profession. My hobby is cooking.</div></div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" id="introRec">🎤 Start</button></div>
+      <div id="introOut" class="transcript"><span class="muted">Speak, then press Stop.</span></div><div id="introRes"></div>`;
+    $("introRec").onclick = ()=>micButton($("introRec"), $("introOut"), said=>{
+      const s = words(said).join(" ");
+      const hits = INTRO.map(([k,re])=>re.test(s));
+      hits.forEach((h,i)=>{ $("ik-"+i).style.background = h ? "var(--good-soft)" : "var(--bad-soft)"; $("ik-"+i).style.color = h ? "var(--good)" : "var(--bad)"; });
+      const n = hits.filter(Boolean).length;
+      $("introRes").innerHTML = `<div class="${n===7?"pass":"fail"}" style="margin-top:12px"><b>${n} of 7 points covered.</b> ${n===7?"Perfect! Now practise until you can say it smoothly without pausing.":"The red points are missing. Add them and try again."}</div>`;
+      logAct("exam", {part:"intro", n}); save();
+    }, {continuous:true});
+  } else if(kind==="ask"){
+    const c = ASK[Math.floor(Math.random()*ASK.length)];
+    box.innerHTML = `<h2>Part 2 — Ask questions <span class="muted">(Fragen stellen)</span></h2>
+      <p class="muted">You get a card with a topic and a word. Make a <b>question</b> with that word. (In the exam, your partner then answers.)</p>
+      <div class="flash"><div class="muted">Topic: ${esc(c[0])}</div><div class="big">${esc(c[1])}</div><div class="en">${esc(c[3])}</div></div>
+      <div class="row"><button class="btn primary" id="askRec">🎤 Ask your question</button><button class="btn" id="askNext">New card →</button><button class="btn" id="askShow">💡 Example</button></div>
+      <div id="askOut" class="transcript"><span class="muted">Your question will appear here.</span></div><div id="askRes"></div>`;
+    $("askNext").onclick = ()=>renderExam("ask");
+    $("askShow").onclick = ()=>{ $("askRes").innerHTML = `<div class="tip">Example: <span class="de">${esc(c[2])}</span> <a href="#" data-sayde="${esc(c[2])}">🔊</a><div class="en">${esc(c[4])}</div></div>`; };
+    $("askRec").onclick = ()=>micButton($("askRec"), $("askOut"), said=>{
+      const usesWord = hasWord(said, [c[1]]) || words(said).some(w=>fold(w).startsWith(fold(c[1].toLowerCase()).slice(0,5)));
+      const q = isQuestion(said), ok = usesWord && q;
+      const tips = [];
+      if(!usesWord) tips.push(`Use the word „${esc(c[1])}“ in your question.`);
+      if(!q) tips.push("That doesn't sound like a question. Start with a W-word (Was, Wo, Wann...) or put the verb first (Trinkst du...?).");
+      $("askRes").innerHTML = `<div class="${ok?"pass":"fail"}" style="margin-top:12px"><b class="${ok?"ok":"low"}">${ok?"✅ Good question!":"🔁 Try again"}</b>${tips.length?`<ul class="fb">${tips.map(t=>"<li>"+t+"</li>").join("")}</ul>`:""}
+        <div class="muted">Example: <span class="de">${esc(c[2])}</span> = ${esc(c[4])}</div></div>`;
+      logAct("exam", {part:"ask", ok}); save();
+    });
+  } else {
+    const c = REQUEST[Math.floor(Math.random()*REQUEST.length)];
+    box.innerHTML = `<h2>Part 3 — Make polite requests <span class="muted">(Bitten formulieren)</span></h2>
+      <p class="muted">You see a picture. Make a <b>polite request</b> with it, using <i>Können Sie bitte...?</i>, <i>Kannst du mir bitte...?</i> or <i>Ich möchte bitte...</i></p>
+      <div class="flash"><div class="big" style="font-size:56px">${c[0]}</div><div class="muted">${esc(c[2])} = <span class="de">${esc(c[1])}</span></div></div>
+      <div class="row"><button class="btn primary" id="reqRec">🎤 Make a request</button><button class="btn" id="reqNext">New card →</button><button class="btn" id="reqShow">💡 Example</button></div>
+      <div id="reqOut" class="transcript"><span class="muted">Your request will appear here.</span></div><div id="reqRes"></div>`;
+    $("reqNext").onclick = ()=>renderExam("request");
+    $("reqShow").onclick = ()=>{ $("reqRes").innerHTML = `<div class="tip">Example: <span class="de">${esc(c[3])}</span> <a href="#" data-sayde="${esc(c[3])}">🔊</a><div class="en">${esc(c[4])}</div></div>`; };
+    $("reqRec").onclick = ()=>micButton($("reqRec"), $("reqOut"), said=>{
+      const usesWord = hasWord(said, [c[1]]), polite = hasWord(said, ["bitte","können","könnten","kannst","möchte","hätte"]);
+      const ok = usesWord && polite, tips = [];
+      if(!usesWord) tips.push(`Use the word „${esc(c[1])}“.`);
+      if(!polite) tips.push("Make it polite: add „bitte“ and use „Können Sie...?“ or „Ich möchte...“.");
+      $("reqRes").innerHTML = `<div class="${ok?"pass":"fail"}" style="margin-top:12px"><b class="${ok?"ok":"low"}">${ok?"✅ Very polite!":"🔁 Try again"}</b>${tips.length?`<ul class="fb">${tips.map(t=>"<li>"+t+"</li>").join("")}</ul>`:""}
+        <div class="muted">Example: <span class="de">${esc(c[3])}</span> = ${esc(c[4])}</div></div>`;
+      logAct("exam", {part:"request", ok}); save();
+    });
+  }
+}
+document.addEventListener("click", e=>{ const b = e.target.closest("[data-ex]"); if(b){ document.querySelectorAll("[data-ex]").forEach(x=>x.classList.toggle("primary", x===b)); renderExam(b.dataset.ex); } });
+
+// ================= PHRASES =================
+function renderPhrases(){
+  $("phraseList").innerHTML = Object.entries(PHRASES).map(([cat,list])=>`<h3>${esc(cat)}</h3>` + list.map(([de,en])=>`
+    <div class="phrase"><span>${esc(en)}<br><span class="de">${esc(de)}</span></span>
+    <span class="row"><button class="btn sm" data-sayde="${esc(de)}">🔊</button></span></div>`).join("")).join("");
+}
+
+// ================= REAL-WORLD TRACKER =================
+const REAL = [
+  {k:"nico", label:"Did an episode of DW \"Nicos Weg\" (free online course)", unit:"", step:1, goal:3},
+  {k:"tandem", label:"Spoke German with a real person (tandem, colleague, shop)", unit:"", step:1, goal:3},
+  {k:"media", label:"German input: Easy German, podcasts, series (minutes)", unit:" min", step:15, goal:120},
+  {k:"life", label:"Used German in daily life (ordering, asking, phone call)", unit:"", step:1, goal:5},
+];
+function weekDates(){
+  const d = new Date(), dow = (d.getDay()+6)%7; d.setDate(d.getDate()-dow);
+  return Array.from({length:7},(_,i)=>{ const x = new Date(d); x.setDate(d.getDate()+i); return ymd(x); });
+}
+function renderReal(){
+  const wk = weekDates();
+  $("realLog").innerHTML = REAL.map(r=>{
+    const total = wk.reduce((t,day)=>t+((DB.real[day]||{})[r.k]||0),0), todayN = (DB.real[today()]||{})[r.k]||0;
+    return `<div class="counter"><div style="flex:2;min-width:220px">${esc(r.label)}<div class="muted">${total}${r.unit} / ${r.goal}${r.unit} this week</div></div>
+      <div class="bar"><i style="width:${Math.min(100,total/r.goal*100)}%"></i></div>
+      <span class="row"><button class="btn sm" data-real="${r.k}" data-n="-1" ${todayN?"":"disabled"}>−</button><button class="btn sm primary" data-real="${r.k}" data-n="1">+${r.step}${r.unit}</button></span></div>`;
+  }).join("");
+}
+$("realLog").addEventListener("click", e=>{
+  const b = e.target.closest("[data-real]"); if(!b) return;
+  const r = REAL.find(x=>x.k===b.dataset.real), t = today();
+  DB.real[t] = DB.real[t] || {};
+  DB.real[t][r.k] = Math.max(0, (DB.real[t][r.k]||0) + (+b.dataset.n)*r.step);
+  save();
+});
+
+// ================= TODAY / STREAK / PROGRESS =================
+function activeDays(){
+  const d = new Set();
+  [DB.log, DB.talks, DB.listens].forEach(l=>l.forEach(x=>d.add(x.date)));
+  Object.values(DB.course).forEach(p=>p.doneDate && d.add(p.doneDate));
+  Object.entries(DB.real).forEach(([day,v])=>{ if(Object.values(v).some(Boolean)) d.add(day); });
+  return d;
+}
+function streak(){
+  const d = activeDays(); let n = 0; const dt = new Date();
+  if(!d.has(today())) dt.setDate(dt.getDate()-1);
+  while(d.has(ymd(dt))){ n++; dt.setDate(dt.getDate()-1); }
+  return n;
+}
+function renderToday(){
+  const t = today(), cur = currentLesson();
+  const lessonToday = Object.values(DB.course).some(x=>x.doneDate===t);
+  const cards = DB.log.filter(x=>x.type==="card" && x.date===t).length;
+  const tk = DB.talks.filter(x=>x.date===t).length;
+  const L = DB.listens.filter(x=>x.date===t), ls = (L.some(x=>x.type==="comp") || L.filter(x=>x.type==="dict").length>=5) ? 1 : 0;
+  const gd = DB.log.filter(x=>x.type==="gender" && x.ok && x.date===t).length;
+  const ci = Math.min(cur, COURSE.length-1);
+  const tasks = [
+    [lessonToday, cur<COURSE.length||lessonToday ? `🎓 Lesson ${ci+1}: ${esc(COURSE[ci].t)} <span class="muted">(${esc(COURSE[ci].en)})</span>` : "🎓 Course complete!", lessonToday?"1/1":"0/1", "course"],
+    [cards>=15, "🃏 Review 15 vocabulary cards", `${Math.min(cards,15)}/15`, "words"],
+    [gd>=10, "🎲 Get 10 der/die/das right", `${Math.min(gd,10)}/10`, "words"],
+    [tk>=1, "💬 Have 1 conversation", `${Math.min(tk,1)}/1`, "talk"],
+    [ls>=1, "🎧 Understand 1 message or do 5 dictations", `${ls}/1`, "listen"],
+  ];
+  $("tasks").innerHTML = tasks.map(([done,label,cnt,tab])=>`<div class="task"><div class="check ${done?"done":""}">${done?"✓":""}</div>
+    <div style="flex:1">${label} <span class="muted">(${cnt})</span></div><button class="btn sm" data-go="${tab}">${done?"Again":"Start"}</button></div>`).join("");
+}
+$("tasks").addEventListener("click", e=>{ const b = e.target.closest("[data-go]"); if(b) showTab(b.dataset.go); });
+function renderProgress(){
+  const all = allCards(), learned = Object.values(DB.cards).filter(c=>c.box>=3).length;
+  const done = COURSE.filter((_,i)=>isDone(i)).length;
+  const lvl = done>=30 ? "B1 ✓" : LEVELS[Math.floor(Math.min(done,29)/6)].name;
+  $("progStats").innerHTML = `
+    <div class="stat"><b>${streak()} 🔥</b><span>Day streak</span></div>
+    <div class="stat"><b>${activeDays().size}</b><span>Days practised</span></div>
+    <div class="stat"><b>${done}/30</b><span>Lessons done</span></div>
+    <div class="stat"><b>${lvl}</b><span>Current level</span></div>
+    <div class="stat"><b class="ok">${learned}</b><span>Words learned</span></div>
+    <div class="stat"><b>${DB.talks.length}</b><span>Conversations</span></div>`;
+  const ad = activeDays();
+  $("dayGrid").innerHTML = Array.from({length:28},(_,k)=>{ const d = new Date(); d.setDate(d.getDate()-27+k); const s = ymd(d); return `<span class="${ad.has(s)?"on":""}" title="${s}"></span>`; }).join("");
+}
+$("exportBtn").onclick = ()=>{
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(DB,null,2)],{type:"application/json"}));
+  a.download = "deutsch-coach-backup-"+today()+".json"; a.click();
+};
+$("importFile").onchange = e=>{
+  const f = e.target.files[0]; if(!f) return;
+  f.text().then(t=>{ try{ const d = JSON.parse(t); if(!d.course) throw 0; DB = d; initDB(); save(); alert("Backup restored."); }catch(_){ alert("That file isn't a valid backup."); } });
+};
+$("resetBtn").onclick = ()=>{ if(confirm("Delete all your progress? Download a backup first if you want to keep it.")){ DB = {}; initDB(); openLesson = null; save(); } };
+
+// ================= THEME & INIT =================
+function setTheme(t){
+  if(t==="light") document.documentElement.setAttribute("data-theme","light"); else document.documentElement.removeAttribute("data-theme");
+  $("themeBtn").textContent = t==="light" ? "🌙" : "☀️";
+  try{ localStorage.setItem("deutschcoach.theme", t); }catch(e){}
+}
+let theme = "dark"; try{ theme = localStorage.getItem("deutschcoach.theme") || "dark"; }catch(e){}
+setTheme(theme);
+$("themeBtn").onclick = ()=>{ theme = theme==="light" ? "dark" : "light"; setTheme(theme); };
+
+function renderAll(){
+  const s = streak(), cur = currentLesson();
+  $("streak").textContent = `${cur>=COURSE.length ? "🏆 B1" : "Level " + LEVELS[Math.floor(cur/6)].name}  ·  ` + (s ? `🔥 ${s}-day streak` : "Start your streak today");
+  renderCourse(); renderToday(); renderProgress(); renderTalkList(); renderReal(); renderWordStats();
+}
+renderPhrases(); fillVoices(); renderListen(); renderExam("intro"); renderAll();
+</script>
+</body>
+</html>
