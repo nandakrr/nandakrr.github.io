@@ -353,6 +353,13 @@ tbody tr:last-child td{border-bottom:0}
 .jdrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
 .jdrow .row{grid-column:1 / -1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+.crn{font:13px/1.5 var(--f-body,inherit);white-space:normal;margin:2px 12px 8px 54px;padding:7px 11px;border-radius:6px;border-left:3px solid var(--muted);background:var(--soft);max-width:860px;position:sticky;left:54px;cursor:default}
+.crn b{font-family:var(--f-mono);font-size:12px;margin-right:6px}
+.crn.s-crit,.crn.s-high{border-left-color:var(--bad)}.crn.s-crit b,.crn.s-high b{color:var(--bad)}
+.crn.s-med{border-left-color:var(--warn)}.crn.s-med b{color:var(--warn)}
+.crn.s-safe{border-left-color:var(--ok)}.crn.s-safe b{color:var(--ok)}
+.ln.tgt{border-left-color:var(--bad)}
 </style>
 
 <header class="top">
@@ -378,7 +385,7 @@ tbody tr:last-child td{border-bottom:0}
 const KEY="prodsec-lab-v1";
 let S={};
 try{S=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){S={}}
-["r","k","dr","tm","tr","ir","cc","code","st","plan","ds","lv","ln","sb","ia","fl","pd","jd","hq","hx"].forEach(k=>{if(!S[k]||typeof S[k]!=="object")S[k]={}});
+["r","k","dr","tm","tr","ir","cc","code","st","plan","ds","lv","ln","sb","ia","fl","pd","jd","hq","hx","cr"].forEach(k=>{if(!S[k]||typeof S[k]!=="object")S[k]={}});
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}updateMeter();renderRail()}
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -412,7 +419,7 @@ function updateMeter(){const p=prog();const v=Object.values(p);const pct=Math.ro
 const ROUTES=[
  ["Plan",[["home","Start here"],["loops","How loops work"],["pdf","Your PDF questions"],["mock","Mock interview"]]],
  ["Learn",[["map","Domain map"],["system","SaaS system"],["headers","Headers & CSP lab","Every security header and CSP value, a live CSP analyzer, a response-header grader and a quiz"],["flows","Protocol walkthroughs"],["ai","AI at every layer"],["metrics","Metrics & MTTR"]]],
- ["Do",[["design","Architecture deep dives"],["cloud","Cloud IAM lab"],["headers","Headers & CSP lab"],["code","Code review drills"],["threat","Threat model lab"],["triage","Triage & CVSS"],["incident","Incident sims"],["coding","Coding lab"]]],
+ ["Do",[["design","Architecture deep dives"],["cloud","Cloud IAM lab"],["headers","Headers & CSP lab"],["code","Code review drills"],["reviews","Code review tests"],["threat","Threat model lab"],["triage","Triage & CVSS"],["incident","Incident sims"],["coding","Coding lab"]]],
  ["Recall",[["questions","Question bank"]]],
  ["Tell",[["stories","Your story bank"],["behavioral","Behavioral stories"]]]
 ];
@@ -441,7 +448,7 @@ R.home=v=>{
   ["Day 9","Threat model: payments + LLM agent"],["Day 10","Cloud IAM lab: predict + write policies + CloudTrail case"],
   ["Day 11","Coding lab: all 5 challenges"],["Day 12","Code review drills 13-19 (IaC, CI, containers)"],
   ["Day 13","Architecture deep dives: authZ, secrets, ASPM; Metrics lab"],["Day 14","Two 45-minute mock interviews, recorded; redo anything you scored 1–2"]];
- const MODS=[["map","Domain map","See the whole field: 31 domains, how they fit, how a programme is built"],["system","SaaS system","Click through a real architecture and follow a request hop by hop"],["ai","AI at every layer","Where AI speeds up each stage, the guardrails, and the metric it moves"],["metrics","Metrics & MTTR","Compute MTTR and SLA compliance yourself; pull levers and watch MTTR fall"],["design","Architecture deep dives","10 senior design prompts: plan your answer, then compare"],["cloud","Cloud IAM lab","Predict decisions, write least-privilege policies against tests, find escalation paths, investigate CloudTrail"],["headers","Headers & CSP lab","Every security header and CSP value, a live CSP analyzer, a response-header grader and a quiz"],["flows","Protocol walkthroughs","Step through OAuth+PKCE, TLS 1.3, CORS, CSRF, SSRF→IMDS, GitHub OIDC, SAML, Kerberos"],["mock","Mock interview","A timed loop built from the whole lab, with self-scoring and history"],["pdf","Your PDF questions","All 161 questions from your three PDFs, mapped and answerable inline"],["stories","Your story bank","Your real stories from your PDFs, framed senior, with number conflicts flagged"],["code","Code review drills","Click the vulnerable lines in 19 real-looking snippets across 9 stacks"],["threat","Threat model lab","Write your own threat model, then compare with a ranked model answer"],["triage","Triage & CVSS","Judge bug bounty reports and score them with a live CVSS 3.1 calculator"],["incident","Incident sims","Make decisions under pressure in three realistic incidents"],["coding","Coding lab","Write and run security scripts against tests, right in the page"],["questions","Question bank",QB.length+" questions with 30-second answers, follow-ups and flashcards"],["behavioral","Behavioral stories","Build STAR stories with live feedback on numbers, ownership and length"]];
+ const MODS=[["map","Domain map","See the whole field: 31 domains, how they fit, how a programme is built"],["system","SaaS system","Click through a real architecture and follow a request hop by hop"],["ai","AI at every layer","Where AI speeds up each stage, the guardrails, and the metric it moves"],["metrics","Metrics & MTTR","Compute MTTR and SLA compliance yourself; pull levers and watch MTTR fall"],["design","Architecture deep dives","10 senior design prompts: plan your answer, then compare"],["cloud","Cloud IAM lab","Predict decisions, write least-privilege policies against tests, find escalation paths, investigate CloudTrail"],["headers","Headers & CSP lab","Every security header and CSP value, a live CSP analyzer, a response-header grader and a quiz"],["flows","Protocol walkthroughs","Step through OAuth+PKCE, TLS 1.3, CORS, CSRF, SSRF→IMDS, GitHub OIDC, SAML, Kerberos"],["mock","Mock interview","A timed loop built from the whole lab, with self-scoring and history"],["pdf","Your PDF questions","All 161 questions from your three PDFs, mapped and answerable inline"],["stories","Your story bank","Your real stories from your PDFs, framed senior, with number conflicts flagged"],["reviews","Code review tests","Full interview-style files: click the lines you think are vulnerable, then check against a line-by-line answer key"],["code","Code review drills","Click the vulnerable lines in 19 real-looking snippets across 9 stacks"],["threat","Threat model lab","Write your own threat model, then compare with a ranked model answer"],["triage","Triage & CVSS","Judge bug bounty reports and score them with a live CVSS 3.1 calculator"],["incident","Incident sims","Make decisions under pressure in three realistic incidents"],["coding","Coding lab","Write and run security scripts against tests, right in the page"],["questions","Question bank",QB.length+" questions with 30-second answers, follow-ups and flashcards"],["behavioral","Behavioral stories","Build STAR stories with live feedback on numbers, ownership and length"]];
  v.innerHTML=`
  <section class="hero">
   <div style="display:grid;gap:16px">
@@ -556,7 +563,7 @@ R.map=v=>{
 };
 function relCat(c){return {WEB:"Web",IAM:"AuthN & AuthZ",CRY:"Cryptography",NET:"Networking",CODE:"SDLC & Tooling",MOB:"Mobile",CLD:"Cloud",K8S:"Containers & K8s",AI:"AI & LLM",TM:"Threat modeling",SDL:"SDLC & Tooling",CI:"SDLC & Tooling",SUP:"Supply chain",VM:"Programme",DET:"Detection & IR",RISK:"Programme",GRC:"Programme",MET:"Programme",MAT:"Programme"}[c]}
 function practice(c){
- const L={WEB:[["#headers","Headers & CSP lab"],["#code","Code review drills"],["#questions-Web","Web questions"]],IAM:[["#design-authz","Multi-tenant authZ design"],["#code-jwt","JWT drill"],["#questions-AuthN & AuthZ","Auth questions"]],CRY:[["#design-keys","Key management design"],["#questions-Cryptography","Crypto questions"]],NET:[["#questions-Networking","Network questions"]],CODE:[["#code","All code drills"]],MOB:[["#code-android","Android manifest drill"],["#questions-Mobile","Mobile questions"]],CLD:[["#cloud","Cloud IAM lab"],["#code-iam","IAM drill"],["#questions-Cloud","Cloud questions"]],K8S:[["#code-k8s","Pod spec drill"],["#code-istio","Istio drill"],["#code-docker","Dockerfile drill"]],AI:[["#ai","AI at every layer"],["#design-llmgw","LLM gateway design"],["#threat-agent","LLM agent threat model"]],TM:[["#threat","Threat model lab"]],SDL:[["#questions-SDLC & Tooling","SDLC questions"]],CI:[["#code-gha","GitHub Actions drill"]],SUP:[["#design-supply","Supply chain design"],["#code-gha","CI drill"]],PT:[["#triage","Triage lab"]],BB:[["#triage","Triage lab"]],VM:[["#metrics","MTTR lab"],["#design-aspm","ASPM design"],["#triage","CVSS calculator"]],EDGE:[["#system","SaaS system: edge"]],CSPM:[["#code-tf","Terraform drill"]],SEC:[["#design-secrets","Secrets platform design"],["#coding-secrets","Secret detector"],["#incident-key","Leaked key sim"]],DET:[["#design-detect","Detection pipeline design"],["#incident","Incident sims"],["#coding-brute","Brute-force detector"]],RISK:[["#questions-Programme","Programme questions"]],COM:[["#stories","Your story bank"],["#behavioral","Behavioral stories"]],CUL:[["#behavioral-scale","Scaling story"]],MET:[["#metrics","Metrics & MTTR lab"]],TOOL:[["#coding","Coding lab"]]}[c];
+ const L={WEB:[["#headers","Headers & CSP lab"],["#code","Code review drills"],["#questions-Web","Web questions"]],IAM:[["#design-authz","Multi-tenant authZ design"],["#code-jwt","JWT drill"],["#questions-AuthN & AuthZ","Auth questions"]],CRY:[["#design-keys","Key management design"],["#questions-Cryptography","Crypto questions"]],NET:[["#questions-Networking","Network questions"]],CODE:[["#reviews","Code review tests"],["#code","All code drills"]],MOB:[["#code-android","Android manifest drill"],["#questions-Mobile","Mobile questions"]],CLD:[["#cloud","Cloud IAM lab"],["#code-iam","IAM drill"],["#questions-Cloud","Cloud questions"]],K8S:[["#code-k8s","Pod spec drill"],["#code-istio","Istio drill"],["#code-docker","Dockerfile drill"]],AI:[["#ai","AI at every layer"],["#design-llmgw","LLM gateway design"],["#threat-agent","LLM agent threat model"]],TM:[["#threat","Threat model lab"]],SDL:[["#questions-SDLC & Tooling","SDLC questions"]],CI:[["#code-gha","GitHub Actions drill"]],SUP:[["#design-supply","Supply chain design"],["#code-gha","CI drill"]],PT:[["#triage","Triage lab"]],BB:[["#triage","Triage lab"]],VM:[["#metrics","MTTR lab"],["#design-aspm","ASPM design"],["#triage","CVSS calculator"]],EDGE:[["#system","SaaS system: edge"]],CSPM:[["#code-tf","Terraform drill"]],SEC:[["#design-secrets","Secrets platform design"],["#coding-secrets","Secret detector"],["#incident-key","Leaked key sim"]],DET:[["#design-detect","Detection pipeline design"],["#incident","Incident sims"],["#coding-brute","Brute-force detector"]],RISK:[["#questions-Programme","Programme questions"]],COM:[["#stories","Your story bank"],["#behavioral","Behavioral stories"]],CUL:[["#behavioral-scale","Scaling story"]],MET:[["#metrics","Metrics & MTTR lab"]],TOOL:[["#coding","Coding lab"]]}[c];
  return L?`<div><div class="lbl">Practise this</div><div class="row" style="gap:6px">${L.map(([h,t])=>`<a class="chip" href="${h}">${t} →</a>`).join("")}</div></div>`:"";
 }
 function drawFlow(svg){
@@ -918,6 +925,62 @@ R.stories=v=>{
 };
 
 // ================= CLOUD IAM LAB =================
+
+const CR_FILES=[
+ ["01_document_service_ANSWERS.py","Document storage service","Python · Flask","Practice pack"],
+ ["02_WalletController_ANSWERS.java","Wallet / payments service","Java · Spring","Practice pack"],
+ ["03_shop_api_ANSWERS.js","Shop API","Node · Express · Mongo","Practice pack"],
+ ["04_internal_tools_ANSWERS.go","Internal tools service","Go · net/http","Practice pack"],
+ ["05_ai_support_bot_ANSWERS.py","AI support assistant","Python · FastAPI · LLM","Practice pack"],
+ ["code_review_flask_marked.py","Auth + admin + users API","Python · Flask","Interview tests"],
+ ["UserController_marked.java","User controller","Java · Spring","Interview tests"],
+ ["server_marked.js","User API","Node · Express","Interview tests"]];
+let crSel=null,crMode="practice";const crCache={};
+function crParse(txt){
+ const L=txt.replace(/\r/g,"").split("\n");let end=L.length;
+ for(let i=0;i<L.length;i++){if(/^\s*(#|\/\/)\s*(={20,}|#{20,})/.test(L[i])||/^#{20,}\s*$/.test(L[i])){end=i;break}}
+ let last=end;while(last>0&&!L[last-1].trim())last--;
+ const lines=L.slice(0,last).map((l,i)=>{const m=l.match(/^(.*?)\s+(?:#|\/\/) (?:<-- )?LINE (\d+): (.*)$/);if(!m)return {n:i+1,code:l};
+  const note=m[3];let sev="info";if(/^NOT A VULN/i.test(note))sev="safe";else{const b=(note.match(/^\[([^\]]+)\]/)||[])[1]||"";const u=b.toUpperCase();sev=u.includes("CRIT")?"crit":u.includes("HIGH")?"high":u.includes("MED")?"med":u.includes("LOW")?"low":"info"}
+  return {n:i+1,code:m[1],note,sev}});
+ return {lines,summary:L.slice(end).join("\n").trim()};
+}
+R.reviews=v=>{
+ const want=decodeURIComponent(location.hash.split("-").slice(1).join("-"));if(want&&CR_FILES.some(f=>f[0]===want))crSel=want;
+ if(!crSel)crSel=CR_FILES[0][0];
+ S.cr.p=S.cr.p||{};S.cr.c=S.cr.c||{};
+ v.innerHTML=`<div class="head"><div class="eyebrow">Do · code review round</div><h2>Code review tests</h2><p class="muted">Full files, the way the interview hands them to you. In <b>Practice</b>, click every line you think is vulnerable (30 minutes), then <b>Check</b>: green = found, amber = missed, red = false positive, with the explanation under each line. <b>Answer key</b> shows every note straight away. Files load from the <code>code_review/</code> folder next to this page.</p></div>
+ <div class="split"><div class="picker" id="crpick"></div><div style="display:grid;gap:12px;min-width:0" id="crmain"></div></div>`;
+ const pick=()=>{let g="";$("#crpick").innerHTML=CR_FILES.map(([f,t,st,grp])=>{const sc=S.cr.c[f];const h=grp!==g?`<div class="lbl" style="margin:${g?"10px":"0"} 0 4px">${esc(grp)}</div>`:"";g=grp;return h+`<button type="button" class="pick${f===crSel?" on":""}" data-f="${esc(f)}"><span class="t">${esc(t)}</span><span class="m"><span>${esc(st)}</span>${sc?`<span class="tag ${sc.hit===sc.tot&&!sc.fp?"ok":""}">${sc.hit}/${sc.tot}</span>`:""}</span></button>`}).join("");
+  $$("#crpick .pick").forEach(b=>b.onclick=()=>{crSel=b.dataset.f;history.replaceState(null,"","#reviews-"+encodeURIComponent(crSel));pick();load()})};
+ function load(){const f=crSel,meta=CR_FILES.find(x=>x[0]===f),m=$("#crmain");
+  m.innerHTML=`<div class="card"><p class="muted">Loading ${esc(f)}…</p></div>`;
+  const go=txt=>{crCache[f]=crCache[f]||crParse(txt);render(crCache[f],meta)};
+  if(crCache[f])return go();
+  fetch("code_review/"+encodeURIComponent(f)).then(r=>r.ok?r.text():Promise.reject(r.status)).then(go).catch(e=>{m.innerHTML=`<div class="fb bad"><b>Couldn't load code_review/${esc(f)}</b>Make sure the file is in a <code>code_review</code> folder next to index.html (on GitHub Pages: int/code_review/). Opening index.html directly from disk also blocks this; use the hosted page.</div>`})}
+ function render(d,meta){const f=crSel,m=$("#crmain");const picks=new Set(S.cr.p[f]||[]),checked=!!S.cr.c[f];
+  const tg=new Set(d.lines.filter(l=>["crit","high","med","low"].includes(l.sev)).map(l=>l.n)),safe=new Set(d.lines.filter(l=>l.sev==="safe").map(l=>l.n));
+  const showNotes=crMode==="answers"||checked;
+  const SV={crit:"CRITICAL",high:"HIGH",med:"MEDIUM",low:"LOW",safe:"SAFE",info:"NOTE"};
+  const rows=d.lines.map(l=>{let cls="";if(crMode==="practice"){if(checked){cls=tg.has(l.n)?(picks.has(l.n)?"hit":"miss"):(picks.has(l.n)?"extra":"")}else if(picks.has(l.n))cls="sel"}else if(tg.has(l.n))cls="tgt";
+   const note=showNotes&&l.note&&(crMode==="answers"||tg.has(l.n)||picks.has(l.n)||safe.has(l.n))?`<div class="crn s-${l.sev}"><b>LINE ${l.n} · ${SV[l.sev]}</b>${esc(l.note.replace(/^\[[^\]]+\]\s*/,"").replace(/^NOT A VULN:?\s*/i,""))}</div>`:"";
+   return `<div class="ln ${cls}" data-n="${l.n}"><span class="no">${l.n}</span><span class="tx">${esc(l.code)||" "}</span></div>${note}`}).join("");
+  let score="";if(crMode==="practice"&&checked){const hit=[...tg].filter(n=>picks.has(n)).length,fp=[...picks].filter(n=>!tg.has(n)),fpd=fp.filter(n=>safe.has(n)).length;
+   score=`<div class="fb ${hit===tg.size&&!fp.length?"ok":hit/tg.size>=.6?"warn":"bad"}"><b>You flagged ${hit} of ${tg.size} vulnerable lines · ${fp.length} false positive${fp.length===1?"":"s"}${fpd?` (${fpd} on known decoys)`:""}</b>Amber lines are what you missed; read the note under each one. A real finding often spans several lines, so missing a continuation line is less serious than missing the bug.</div>`}
+  const cnt=k=>d.lines.filter(l=>l.sev===k).length;
+  m.innerHTML=`<div class="card" style="display:grid;gap:10px"><div class="row" style="justify-content:space-between;gap:8px;flex-wrap:wrap"><div><h3>${esc(meta[1])}</h3><p class="muted small">${esc(meta[2])} · ${d.lines.length} lines · <span class="mono">${esc(f)}</span></p></div>
+   <div class="seg" role="group" aria-label="Mode" id="crmode"><button type="button" data-m="practice" aria-pressed="${crMode==="practice"}">Practice</button><button type="button" data-m="answers" aria-pressed="${crMode==="answers"}">Answer key</button></div></div>
+   ${crMode==="practice"?`<div class="row" style="gap:8px"><button class="btn pri" id="crchk" type="button" ${checked?"disabled":""}>Check my picks (${picks.size})</button><button class="btn ghost" id="crclr" type="button">Reset</button><span class="muted small">${checked?"Checked. Reset to try again.":"Click lines to flag them."}</span></div>`:`<p class="muted small">${cnt("crit")} critical · ${cnt("high")} high · ${cnt("med")} medium · ${cnt("low")} low · ${cnt("safe")} decoys marked safe</p>`}
+   ${score}</div>
+   <div class="codeview" id="crcode">${rows}</div>
+   ${crMode==="answers"&&d.summary?`<details class="fold"><summary><h3>Summary and attack chain</h3></summary><div class="inner"><pre class="blk">${esc(d.summary)}</pre></div></details>`:""}`;
+  $$("#crmode button").forEach(b=>b.onclick=()=>{crMode=b.dataset.m;render(d,meta)});
+  if(crMode==="practice"&&!checked)$$("#crcode .ln").forEach(el=>el.onclick=()=>{const n=+el.dataset.n,a=new Set(S.cr.p[f]||[]);a.has(n)?a.delete(n):a.add(n);S.cr.p[f]=[...a];save();el.classList.toggle("sel",a.has(n));$("#crchk").textContent=`Check my picks (${a.size})`});
+  if($("#crchk"))$("#crchk").onclick=()=>{const p=new Set(S.cr.p[f]||[]);S.cr.c[f]={hit:[...tg].filter(n=>p.has(n)).length,tot:tg.size,fp:[...p].filter(n=>!tg.has(n)).length};save();pick();render(d,meta)};
+  if($("#crclr"))$("#crclr").onclick=()=>{delete S.cr.p[f];delete S.cr.c[f];save();pick();render(d,meta)};
+ }
+ pick();load();
+};
 
 let hdTab="ref";
 R.headers=v=>{
