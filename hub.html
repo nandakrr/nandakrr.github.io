@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Workspace — Nandakumar M</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --ink:#080B11;--panel:#111824;--panel-2:#161F2E;--line:#1F2A3A;
+  --text:#E6EAF2;--muted:#8694AC;--amber:#FF7A45;--amber-soft:rgba(255,122,69,.12);
+  --teal:#52E0C4;--teal-soft:rgba(82,224,196,.10);
+  --display:'Space Grotesk',system-ui,sans-serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ink);color:var(--text);font:16px/1.55 var(--body)}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1040px;margin:0 auto;padding:40px 16px 56px}
+header{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:28px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+h1{font:700 clamp(28px,5vw,40px)/1.1 var(--display);margin:6px 0 4px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0}
+.search{flex:1 1 260px;max-width:340px}
+.search input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px 14px;font:14px var(--mono);outline:none}
+.search input:focus{border-color:var(--amber)}
+section{margin-top:30px}
+h2{font:600 13px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 12px;display:flex;align-items:center;gap:10px}
+h2::after{content:"";flex:1;height:1px;background:var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.card{display:flex;flex-direction:column;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;transition:border-color .15s,transform .15s}
+a.card:hover,a.card:focus-visible{border-color:var(--amber);transform:translateY(-2px);outline:none}
+.card .t{font:600 18px var(--display);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card .t .arr{color:var(--amber);font-family:var(--mono);font-size:14px}
+.card .d{color:var(--muted);font-size:14px}
+.card .u{font:12px var(--mono);color:var(--teal);margin-top:auto;padding-top:6px;word-break:break-all}
+.card.big{grid-column:1/-1;background:linear-gradient(135deg,var(--panel),var(--panel-2))}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{font:13px var(--mono);border:1px solid var(--line);background:var(--ink);border-radius:999px;padding:6px 12px;color:var(--text)}
+.chip:hover,.chip:focus-visible{border-color:var(--teal);color:var(--teal);outline:none}
+.hidden{display:none!important}
+.empty{color:var(--muted);font:14px var(--mono);margin-top:24px}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font:12px var(--mono);display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-between}
+footer a{color:var(--amber)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">nandakrr.github.io / hub</div>
+      <h1>Workspace</h1>
+      <p class="sub">Every page on this site, in one place.</p>
+    </div>
+    <label class="search"><input id="q" type="search" placeholder="Filter…  (press / )" aria-label="Filter links" autocomplete="off" /></label>
+  </header>
+
+  <section data-sec>
+    <h2>Career</h2>
+    <div class="grid">
+      <a class="card" href="/" data-k="portfolio home about cv cves">
+        <span class="t">Portfolio <span class="arr">→</span></span>
+        <span class="d">Public profile: expertise, disclosures, experience, contact.</span>
+        <span class="u">nandakrr.github.io</span>
+      </a>
+      <a class="card" href="/Nandakumar_Senior_AppSec_Resume.pdf" data-k="resume cv pdf">
+        <span class="t">Résumé (PDF) <span class="arr">↓</span></span>
+        <span class="d">Senior Application Security Engineer résumé.</span>
+        <span class="u">/Nandakumar_Senior_AppSec_Resume.pdf</span>
+      </a>
+      <div class="card big" data-k="interview prep lab prodsec appsec questions">
+        <a href="/int/" class="t">Interview Preparation Lab <span class="arr">→</span></a>
+        <span class="d">The full ProdSec / AppSec lab. Jump straight to a section:</span>
+        <div class="chips">
+          <a class="chip" href="/int/#home" data-k="plan home">Plan &amp; progress</a>
+          <a class="chip" href="/int/#reviews" data-k="code review tests answers">Code review tests</a>
+          <a class="chip" href="/int/#code" data-k="code drills">Code drills</a>
+          <a class="chip" href="/int/#headers" data-k="headers csp">Headers &amp; CSP</a>
+          <a class="chip" href="/int/#cloud" data-k="cloud iam aws">Cloud IAM</a>
+          <a class="chip" href="/int/#threat" data-k="threat model">Threat models</a>
+          <a class="chip" href="/int/#design" data-k="architecture design">Architecture</a>
+          <a class="chip" href="/int/#questions" data-k="question bank">Question bank</a>
+          <a class="chip" href="/int/#mock" data-k="mock interview">Mock interview</a>
+          <a class="chip" href="/int/#stories" data-k="stories behavioral star">Story bank</a>
+        </div>
+        <span class="u">nandakrr.github.io/int</span>
+      </div>
+    </div>
+  </section>
+
+  <section data-sec>
+    <h2>Security work</h2>
+    <div class="grid">
+      <a class="card" href="/bounty" data-k="bug bounty target picker hackerone">
+        <span class="t">Bug Bounty Target Picker <span class="arr">→</span></span>
+        <span class="d">Pick the next program or target to hunt on.</span>
+        <span class="u">nandakrr.github.io/bounty</span>
+      </a>
+    </div>
+  </section>
+
+  <section data-sec>
+    <h2>Fitness</h2>
+    <div class="grid">
+      <a class="card" href="/1" data-k="workout fitness gym body transformation">
+        <span class="t">Body Transformation Program <span class="arr">→</span></span>
+        <span class="d">Workout plan 1 — 7-day V-taper program.</span>
+        <span class="u">nandakrr.github.io/1</span>
+      </a>
+      <a class="card" href="/2" data-k="workout fitness gym push pull legs ppl">
+        <span class="t">Push / Pull / Legs <span class="arr">→</span></span>
+        <span class="d">Workout plan 2 — PPL V-taper build.</span>
+        <span class="u">nandakrr.github.io/2</span>
+      </a>
+    </div>
+  </section>
+
+  <section data-sec>
+    <h2>Communication</h2>
+    <div class="grid">
+      <a class="card" href="/lang/e" data-k="english speak coach language communication">
+        <span class="t">English — Speak Coach <span class="arr">→</span></span>
+        <span class="d">Spoken English practice.</span>
+        <span class="u">nandakrr.github.io/lang/e</span>
+      </a>
+      <a class="card" href="/lang/g" data-k="german deutsch coach language">
+        <span class="t">German — Deutsch Coach <span class="arr">→</span></span>
+        <span class="d">German practice.</span>
+        <span class="u">nandakrr.github.io/lang/g</span>
+      </a>
+      <a class="card" href="/lang/p" data-k="polish polski coach language">
+        <span class="t">Polish — Polski Coach <span class="arr">→</span></span>
+        <span class="d">Polish practice.</span>
+        <span class="u">nandakrr.github.io/lang/p</span>
+      </a>
+    </div>
+  </section>
+
+  <p class="empty hidden" id="empty">No matches.</p>
+
+  <footer>
+    <span>© <span id="y"></span> Nandakumar M</span>
+    <span><a href="/">← back to portfolio</a></span>
+  </footer>
+</div>
+<script>
+document.getElementById("y").textContent=new Date().getFullYear();
+const q=document.getElementById("q");
+function filter(){
+  const s=q.value.trim().toLowerCase();let any=false;
+  document.querySelectorAll("[data-sec]").forEach(sec=>{
+    let shown=0;
+    sec.querySelectorAll(".grid > [data-k]").forEach(c=>{
+      const hay=(c.dataset.k+" "+c.textContent).toLowerCase();
+      const chipHit=[...c.querySelectorAll(".chip")].some(ch=>(ch.dataset.k+" "+ch.textContent).toLowerCase().includes(s));
+      const ok=!s||hay.includes(s)||chipHit;
+      c.classList.toggle("hidden",!ok);if(ok)shown++;
+    });
+    sec.classList.toggle("hidden",!shown);if(shown)any=true;
+  });
+  document.getElementById("empty").classList.toggle("hidden",any);
+}
+q.addEventListener("input",filter);
+document.addEventListener("keydown",e=>{if(e.key==="/"&&document.activeElement!==q){e.preventDefault();q.focus()}if(e.key==="Escape"){q.value="";filter();q.blur()}});
+</script>
+</body>
+</html>
